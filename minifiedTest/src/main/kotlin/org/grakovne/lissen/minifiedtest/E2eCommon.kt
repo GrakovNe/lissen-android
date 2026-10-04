@@ -209,13 +209,23 @@ fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
 // makes it kill the freshly started process, and on the slow CI emulator that race repeats
 // until the launch machinery wedges; wait until both the process and its activity records
 // are gone before launching again.
+//
+// The display keeps naming the removed task as mLastFocusedRootTask until another task takes
+// focus, which never happens between two tests; that line is not a record of the app and is
+// left out, otherwise every reset sits through the whole timeout. The framework kills the
+// processes of a removed task one second after removing it, so the settle pause has to
+// outlast that.
 private fun UiAutomatorTestScope.waitForAppGone(timeoutMs: Long = 15_000) {
   val deadline = System.currentTimeMillis() + timeoutMs
   while (System.currentTimeMillis() < deadline) {
     val pid = device.executeShellCommand("pidof $TARGET_PACKAGE").trim()
-    val records = device.executeShellCommand("dumpsys activity activities").contains(TARGET_PACKAGE)
+    val records =
+      device
+        .executeShellCommand("dumpsys activity activities")
+        .lineSequence()
+        .any { TARGET_PACKAGE in it && "mLastFocusedRootTask" !in it }
     if (pid.isEmpty() && !records) {
-      Thread.sleep(500)
+      Thread.sleep(3_000)
       return
     }
     Thread.sleep(250)

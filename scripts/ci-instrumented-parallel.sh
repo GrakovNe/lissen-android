@@ -7,6 +7,7 @@
 #   slot 0  debug build + androidTest APK   -> HiltTestRunner (connected suite)
 #   slot 1  minified app + minifiedTest APK -> E2E shard 1
 #   slot 2  ...                             -> E2E shard 2
+#   slot 3  ...                             -> E2E shard 3 (everything else)
 #
 # The connected suite runs alone first: CoverOomReproTest measures HTTP/2
 # buffering throughput and the UI tests have wall-clock timeouts, so both
@@ -38,22 +39,24 @@ DEBUG_TEST_APK="app/build/outputs/apk/androidTest/debug/app-debug-androidTest.ap
 MINIFIED_INSTR="org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner"
 CONNECTED_INSTR="org.grakovne.lissen.debug.test/org.grakovne.lissen.HiltTestRunner"
 
-# Shard plan: balanced by test count. Slot 1 runs an explicit class list and
-# slot 2 runs everything else (notClass), so a new test class lands in a shard
-# without touching this file; rebalance the list when slot 2 grows too long.
-# Widget and shortcut tests must stay together on slot 2 because they mutate
-# the same ambient launcher state. Override a slot's classes with
-# SLOT_CLASSES_<n> and the connected suite's classes with CONNECTED_CLASSES
-# (smoke runs); the defaults are the full suite.
+# Shard plan: balanced by measured wall time. Slots 1 and 2 run explicit class
+# lists and the last slot runs everything else (notClass), so a new test class
+# lands in a shard without touching this file; rebalance the lists when the
+# last slot grows too long. Widget and shortcut tests must stay together on
+# the last slot because they mutate the same ambient launcher state. Override
+# a slot's classes with SLOT_CLASSES_<n> and the connected suite's classes
+# with CONNECTED_CLASSES (smoke runs); the defaults are the full suite.
 NS=org.grakovne.lissen.minifiedtest
-SHARD_CLASSES[1]="$NS.SettingsGapsE2ETest,$NS.LoginRobustnessE2ETest,$NS.LoginFlowE2ETest,$NS.SettingsFlowE2ETest"
+SHARD_CLASSES[1]="$NS.SettingsGapsE2ETest,$NS.SettingsFlowE2ETest"
 SHARD_FILTER[1]=class
-SHARD_CLASSES[2]="${SHARD_CLASSES[1]}"
-SHARD_FILTER[2]=notClass
+SHARD_CLASSES[2]="$NS.LoginFlowE2ETest,$NS.LoginRobustnessE2ETest,$NS.LibraryGapsE2ETest,$NS.LibraryFlowE2ETest,$NS.RobustnessFlowE2ETest"
+SHARD_FILTER[2]=class
+SHARD_CLASSES[3]="${SHARD_CLASSES[1]},${SHARD_CLASSES[2]}"
+SHARD_FILTER[3]=notClass
 
 AVD_PREFIX="ci-e2e"
 BASE_PORT=5554
-SLOTS="${FLEET_SLOTS:-0 1 2}"
+SLOTS="${FLEET_SLOTS:-0 1 2 3}"
 CONNECTED_CLASSES="${CONNECTED_CLASSES:-}"
 for slot in $SLOTS; do
   override="SLOT_CLASSES_$slot"
@@ -287,7 +290,7 @@ kill_stale_fleet
 wait_for_load
 create_avds
 
-E2E_SLOTS="1 2"
+E2E_SLOTS="1 2 3"
 [ -n "${FLEET_SLOTS:-}" ] && E2E_SLOTS="$(echo " $FLEET_SLOTS " | sed 's/ 0 / /' | xargs)"
 
 log "booting slot 0 (connected suite runs alone: CoverOomReproTest and audio"
@@ -317,15 +320,16 @@ for slot in $E2E_SLOTS; do
 done
 
 log "installing minified APKs"
-for slot in $E2E_SLOTS; do
-  serial="$(serial_of "$slot")"
+prepare_e2e_slot() {
+  local serial
+  serial="$(serial_of "$1")"
   # Uninstall, not reinstall: the launcher drops its widget host views for a
   # removed package. pm clear alone leaves the previous run's pins behind as
   # zombie cells, and pinWidget then drags onto occupied/rejected targets.
   $ADB -s "$serial" uninstall org.grakovne.lissen.minified >/dev/null 2>&1 || true
   $ADB -s "$serial" uninstall org.grakovne.lissen.minifiedtest >/dev/null 2>&1 || true
-  $ADB -s "$serial" install "$MINIFIED_APP_APK" >/dev/null || { log "install failed: $MINIFIED_APP_APK"; exit 1; }
-  $ADB -s "$serial" install -t "$MINIFIED_TEST_APK" >/dev/null || { log "install failed: $MINIFIED_TEST_APK"; exit 1; }
+  $ADB -s "$serial" install "$MINIFIED_APP_APK" >/dev/null || { log "install failed: $MINIFIED_APP_APK"; return 1; }
+  $ADB -s "$serial" install -t "$MINIFIED_TEST_APK" >/dev/null || { log "install failed: $MINIFIED_TEST_APK"; return 1; }
   # The AVD (and its launcher database) survives between CI runs; a polluted
   # workspace makes widget drops land on rejected cells and pressHome stop
   # foregrounding. Reset the launcher to its default workspace instead.
@@ -333,8 +337,18 @@ for slot in $E2E_SLOTS; do
   $ADB -s "$serial" shell input keyevent KEYCODE_HOME >/dev/null 2>&1 || true
   sleep 3
   prepare_device "$serial" org.grakovne.lissen.minified
-  start_logcat "$slot"
+}
+# Each guest installs and AOT-compiles on its own vCPUs, so the slots are
+# prepared side by side instead of one after another.
+PIDS=()
+for slot in $E2E_SLOTS; do
+  prepare_e2e_slot "$slot" &
+  PIDS+=($!)
 done
+for pid in "${PIDS[@]}"; do
+  wait "$pid" || { log "aborting: E2E slot preparation failed"; exit 1; }
+done
+for slot in $E2E_SLOTS; do start_logcat "$slot"; done
 
 log "running E2E shards in parallel on slots: $E2E_SLOTS"
 PIDS=()
