@@ -106,13 +106,18 @@ create_avds() {
 kill_stale_fleet() {
   # A previous run can leave emulators behind (emu kill races the adb server
   # teardown). Stale guests pile up across runs until the host thrashes and
-  # every QEMU CPU thread hangs. Kill only our own AVDs, never other tenants.
+  # every QEMU CPU thread hangs. Match on the AVD name, not "avd <name>":
+  # qemu children may not repeat the -avd argument. Never kill other tenants.
   local slot
   for slot in $SLOTS; do
     timeout 15 $ADB -s "$(serial_of "$slot")" emu kill >/dev/null 2>&1 || true
   done
-  pkill -f "avd ${AVD_PREFIX}-" 2>/dev/null || true
+  pkill -f "${AVD_PREFIX}-" 2>/dev/null || true
   sleep 5
+  # Drop the long-lived adb server so half-open transports to dead guests
+  # cannot answer sys.boot_completed for the fresh boots below.
+  timeout 20 $ADB kill-server >/dev/null 2>&1 || true
+  timeout 20 $ADB devices >/dev/null 2>&1 || true
 }
 
 boot_emulator() {
@@ -130,13 +135,21 @@ boot_emulator() {
 }
 
 wait_for_boot() {
-  local slot="$1" serial deadline
+  local slot="$1" serial deadline seen
   serial="$(serial_of "$slot")"
   deadline=$((SECONDS + BOOT_TIMEOUT))
+  seen=0
   while [ $SECONDS -lt $deadline ]; do
     if [ "$($ADB -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; then
-      log "$serial booted"
-      return 0
+      # Require two consecutive confirmations: a guest dying under host load
+      # can answer once and vanish.
+      seen=$((seen + 1))
+      if [ "$seen" -ge 2 ]; then
+        log "$serial booted"
+        return 0
+      fi
+    else
+      seen=0
     fi
     if ! kill -0 "${EMU_PID[$slot]:-0}" 2>/dev/null; then
       log "ERROR: emulator for slot $slot exited during boot; log tail:"
@@ -224,6 +237,7 @@ run_instrumentation() {
 }
 
 # ---- main --------------------------------------------------------------------
+log "host: $(nproc) cpus, $(free -h | awk '/^Mem:/{print $2}') ram, $(df -h "$HOME" | awk 'NR==2{print $4}') free disk, load $(cut -d" " -f1-3 /proc/loadavg)"
 kill_stale_fleet
 create_avds
 
@@ -310,6 +324,7 @@ for name in $RESULT_NAMES; do
   fi
 done
 
+log "host at finish: $(free -h | awk '/^Mem:/{print $2" total, "$3" used, "$7" avail"}'), $(df -h "$HOME" | awk 'NR==2{print $4}') free disk, load $(cut -d" " -f1-3 /proc/loadavg)"
 log "total tests passed: $TOTAL"
 
 for slot in $SLOTS; do
