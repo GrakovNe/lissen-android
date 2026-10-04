@@ -81,7 +81,7 @@
     <string name="mini_player_action_close">Zamknij</string>
     <string name="playing_item_details_author">Autor</string>
     <string name="playing_item_details_publisher">Wydawca</string>
-    <string name="playing_item_details_narrator">Narrator</string>
+    <string name="playing_item_details_narrator">Lektor</string>
     <string name="playing_item_details_duration">Długość</string>
     <string name="playing_item_details_year">Rok</string>
     <string name="playing_item_details_series">Cykl</string>
@@ -296,4 +296,13 @@
     <string name="episode_ordering_file_name_option">Nazwa pliku</string>
     <string name="episode_ordering_ascending">Rosnąco</string>
     <string name="episode_ordering_descending">Malejąco</string>
+    <string name="library_grouping_genre">Według gatunku</string>
+    <string name="library_grouping_narrator">Według lektora</string>
+    <string name="player_settings_auto_skip">Automatyczne pomijanie</string>
+    <string name="player_settings_skip_disabled">Wyłączone</string>
+    <string name="player_settings_intro_value">Wstęp %1$s</string>
+    <string name="player_settings_outro_value">Zakończenie %1$s</string>
+    <string name="sleep_timer_fade_disabled">Wyłączone</string>
+    <string name="rewind_on_pause_title">Przewiń do tyłu po wznowieniu</string>
+    <string name="rewind_on_pause_disabled">Wyłączone</string>
 </resources>
