@@ -64,6 +64,7 @@ log() { echo "[fleet] $*"; }
 cleanup() {
   for pid in "${LOGCAT_PIDS[@]:-}"; do kill "$pid" 2>/dev/null; done
   for pid in "${EMU_PIDS[@]:-}"; do kill "$pid" 2>/dev/null; done
+  pkill -f "avd ${AVD_PREFIX}-" 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -100,6 +101,18 @@ create_avds() {
     set_avd_config "$cfg" vm.heapSize "512M"
     set_avd_config "$cfg" disk.dataPartition.size "$DISK_SIZE"
   done
+}
+
+kill_stale_fleet() {
+  # A previous run can leave emulators behind (emu kill races the adb server
+  # teardown). Stale guests pile up across runs until the host thrashes and
+  # every QEMU CPU thread hangs. Kill only our own AVDs, never other tenants.
+  local slot
+  for slot in $SLOTS; do
+    timeout 15 $ADB -s "$(serial_of "$slot")" emu kill >/dev/null 2>&1 || true
+  done
+  pkill -f "avd ${AVD_PREFIX}-" 2>/dev/null || true
+  sleep 5
 }
 
 boot_emulator() {
@@ -211,6 +224,7 @@ run_instrumentation() {
 }
 
 # ---- main --------------------------------------------------------------------
+kill_stale_fleet
 create_avds
 
 E2E_SLOTS="1 2"
@@ -299,7 +313,8 @@ done
 log "total tests passed: $TOTAL"
 
 for slot in $SLOTS; do
-  $ADB -s "$(serial_of "$slot")" emu kill 2>/dev/null || true
+  timeout 15 $ADB -s "$(serial_of "$slot")" emu kill 2>/dev/null || true
 done
+pkill -f "avd ${AVD_PREFIX}-" 2>/dev/null || true
 
 exit $FAILED
