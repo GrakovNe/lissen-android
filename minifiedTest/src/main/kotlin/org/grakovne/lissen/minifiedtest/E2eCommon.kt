@@ -242,7 +242,11 @@ fun UiAutomatorTestScope.ensureLoginScreen() {
 private fun UiAutomatorTestScope.dismissSystemDialog() {
   device.executeShellCommand("settings put global hide_error_dialogs 1")
   for (label in listOf("Wait", "Close app", "OK")) {
-    device.findObject(By.text(label))?.click()
+    try {
+      device.findObject(By.text(label))?.click()
+    } catch (_: StaleObjectException) {
+      // The dialog vanished on its own, which is exactly the state we want.
+    }
   }
 }
 

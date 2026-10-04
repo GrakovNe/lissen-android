@@ -5,6 +5,10 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+concurrency:
+  group: instrumented-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   instrumented-tests:
     runs-on: self-hosted
@@ -26,41 +30,35 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
-      - name: Run instrumented tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          target: google_apis
-          arch: x86_64
-          profile: pixel_6
-          ram-size: 4096M
-          heap-size: 512M
-          disk-size: 8192M
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: true
-          script: |
-            adb shell settings put global hide_error_dialogs 1
-            ./gradlew :app:connectedDebugAndroidTest -Proom.schemaLocation=$GITHUB_WORKSPACE/app/schemas
-            ./gradlew :app:assembleMinified :minifiedTest:assembleMinified
-            adb install -r app/build/outputs/apk/minified/app-minified.apk
-            adb install -r -t minifiedTest/build/outputs/apk/minified/minifiedTest-minified.apk
-            mkdir -p minifiedTest/build/outputs/androidTest-results
-            adb shell input keyevent KEYCODE_WAKEUP || true
-            adb shell wm dismiss-keyguard || true
-            adb logcat -c || true
-            adb logcat -v threadtime ActivityManager:I ActivityTaskManager:I am_kill:V am_anr:V am_crash:V AndroidRuntime:E System.err:V LissenE2E:V "*":S > minifiedTest/build/outputs/androidTest-results/minified-logcat.txt &
-            LOGCAT_PID=$!
-            timeout --kill-after=60s 2400s adb shell am instrument -w org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner | tee minifiedTest/build/outputs/androidTest-results/minified.txt
-            adb exec-out screencap -p > minifiedTest/build/outputs/androidTest-results/minified-screen.png || true
-            adb pull /sdcard/Android/data/org.grakovne.lissen.minifiedtest/files/ minifiedTest/build/outputs/androidTest-results/e2e-dumps/ || true
-            kill $LOGCAT_PID || true
-            grep -Eq '^OK \([1-9][0-9]* tests?\)$' minifiedTest/build/outputs/androidTest-results/minified.txt
+      - name: Ensure emulator packages
+        run: |
+          # The runner keeps a pre-provisioned SDK at /opt/android-sdk that is
+          # not writable by the runner user, and its tools are not on PATH.
+          # Locate the binaries by path, install only what is genuinely
+          # missing, then export ANDROID_HOME/PATH for the following steps.
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android-sdk}}"
+          SDKM="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDK/emulator/emulator" ] || [ ! -x "$SDK/platform-tools/adb" ] ||
+             [ ! -d "$SDK/system-images/android-34/google_apis/x86_64" ]; then
+            yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+            "$SDKM" "emulator" "platform-tools" "system-images;android-34;google_apis;x86_64"
+          fi
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+
+      - name: Build test APKs
+        run: >
+          ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+          :app:assembleMinified :minifiedTest:assembleMinified
+          -Proom.schemaLocation=$GITHUB_WORKSPACE/app/schemas
+
+      - name: Run instrumented tests on emulator fleet
+        run: ./scripts/ci-instrumented-parallel.sh
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v5
         with:
           name: instrumented-test-results
-          path: |
-            app/build/outputs/androidTest-results/
-            minifiedTest/build/outputs/androidTest-results/
+          path: build/instrumented-results/
