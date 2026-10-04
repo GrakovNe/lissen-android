@@ -53,6 +53,10 @@ jobs:
           :app:assembleMinified :minifiedTest:assembleMinified
           -Proom.schemaLocation=$GITHUB_WORKSPACE/app/schemas
 
+      # The daemons would otherwise sit on their heap through the emulator phase.
+      - name: Stop Gradle daemons
+        run: ./gradlew --stop
+
       - name: Run instrumented tests on emulator fleet
         run: ./scripts/ci-instrumented-parallel.sh
 

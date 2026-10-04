@@ -11,7 +11,8 @@
 # The connected suite runs alone first: CoverOomReproTest measures HTTP/2
 # buffering throughput and the UI tests have wall-clock timeouts, so both
 # flake when several emulators render at once. The E2E shards then run in
-# parallel on the remaining slots. Every shard is a plain `am instrument`
+# parallel on the remaining slots, after slot 0 has been shut down so it does
+# not idle on its RAM and vCPUs. Every shard is a plain `am instrument`
 # run; a shard passes when its output ends with "OK (N tests)" with N > 0.
 # Failed tests are re-run once on their own (launcher gestures get swallowed
 # under load); a shard whose failures pass in isolation counts as green. The
@@ -37,13 +38,18 @@ DEBUG_TEST_APK="app/build/outputs/apk/androidTest/debug/app-debug-androidTest.ap
 MINIFIED_INSTR="org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner"
 CONNECTED_INSTR="org.grakovne.lissen.debug.test/org.grakovne.lissen.HiltTestRunner"
 
-# Shard plan: balanced by test count; widget and shortcut tests share one slot
-# because they mutate the same ambient launcher state. Override a slot's classes
-# with SLOT_CLASSES_<n> and the connected suite's classes with CONNECTED_CLASSES
+# Shard plan: balanced by test count. Slot 1 runs an explicit class list and
+# slot 2 runs everything else (notClass), so a new test class lands in a shard
+# without touching this file; rebalance the list when slot 2 grows too long.
+# Widget and shortcut tests must stay together on slot 2 because they mutate
+# the same ambient launcher state. Override a slot's classes with
+# SLOT_CLASSES_<n> and the connected suite's classes with CONNECTED_CLASSES
 # (smoke runs); the defaults are the full suite.
 NS=org.grakovne.lissen.minifiedtest
 SHARD_CLASSES[1]="$NS.SettingsGapsE2ETest,$NS.LoginRobustnessE2ETest,$NS.LoginFlowE2ETest,$NS.SettingsFlowE2ETest"
-SHARD_CLASSES[2]="$NS.LibraryGapsE2ETest,$NS.LibraryFlowE2ETest,$NS.RobustnessFlowE2ETest,$NS.PlaybackFlowE2ETest,$NS.PlayerTabsFlowE2ETest,$NS.PlayerGapsE2ETest,$NS.ShortcutFlowE2eTest,$NS.WidgetFlowE2eTest"
+SHARD_FILTER[1]=class
+SHARD_CLASSES[2]="${SHARD_CLASSES[1]}"
+SHARD_FILTER[2]=notClass
 
 AVD_PREFIX="ci-e2e"
 BASE_PORT=5554
@@ -51,7 +57,10 @@ SLOTS="${FLEET_SLOTS:-0 1 2}"
 CONNECTED_CLASSES="${CONNECTED_CLASSES:-}"
 for slot in $SLOTS; do
   override="SLOT_CLASSES_$slot"
-  [ -n "${!override:-}" ] && SHARD_CLASSES[$slot]="${!override}"
+  if [ -n "${!override:-}" ]; then
+    SHARD_CLASSES[$slot]="${!override}"
+    SHARD_FILTER[$slot]=class
+  fi
 done
 
 mkdir -p "$RESULTS_DIR"
@@ -162,6 +171,17 @@ wait_for_boot() {
   return 1
 }
 
+stop_emulator() {
+  local slot="$1" pid i
+  pid="${EMU_PID[$slot]:-}"
+  timeout 15 $ADB -s "$(serial_of "$slot")" emu kill >/dev/null 2>&1 || true
+  for i in $(seq 1 30); do
+    kill -0 "$pid" 2>/dev/null || return 0
+    sleep 1
+  done
+  kill "$pid" 2>/dev/null || true
+}
+
 wait_for_load() {
   # After killing a stale fleet the host keeps thrashing for minutes; QEMU
   # CPU threads hang for 15-30s in that state and the guest crashes. Let the
@@ -208,7 +228,7 @@ start_logcat() {
 }
 
 run_instrumentation() {
-  local slot="$1" component="$2" out="$3" classes="${4:-}"
+  local slot="$1" component="$2" out="$3" filter="${4:-class}" classes="${5:-}"
   local serial pkg attempt rc failed
   serial="$(serial_of "$slot")"
   pkg="${component%%/*}"
@@ -225,7 +245,7 @@ run_instrumentation() {
     $ADB -s "$serial" shell pm clear "$pkg" >/dev/null || true
     if [ -n "$classes" ]; then
       timeout --kill-after=60s "$TEST_TIMEOUT" \
-        $ADB -s "$serial" shell am instrument -w -e class "$classes" "$component" \
+        $ADB -s "$serial" shell am instrument -w -e "$filter" "$classes" "$component" \
         >"$out" 2>&1
     else
       timeout --kill-after=60s "$TEST_TIMEOUT" \
@@ -283,7 +303,12 @@ prepare_device "$DEBUG_SERIAL" org.grakovne.lissen.debug
 start_logcat 0
 
 log "running connected suite on slot 0"
-run_instrumentation 0 "$CONNECTED_INSTR" "$RESULTS_DIR/connected.txt" "$CONNECTED_CLASSES"
+run_instrumentation 0 "$CONNECTED_INSTR" "$RESULTS_DIR/connected.txt" class "$CONNECTED_CLASSES"
+
+# The connected suite is done; left running, its guest would hold 4 GB of RAM
+# and 4 vCPUs through the whole E2E phase.
+log "shutting down slot 0"
+stop_emulator 0
 
 log "booting E2E emulators in parallel on slots: $E2E_SLOTS"
 for slot in $E2E_SLOTS; do boot_emulator "$slot"; done
@@ -317,7 +342,7 @@ RESULT_NAMES="connected"
 for slot in $E2E_SLOTS; do
   [ -z "${SHARD_CLASSES[$slot]:-}" ] && continue
   run_instrumentation "$slot" "$MINIFIED_INSTR" "$RESULTS_DIR/e2e-shard$slot.txt" \
-    "${SHARD_CLASSES[$slot]}" &
+    "${SHARD_FILTER[$slot]:-class}" "${SHARD_CLASSES[$slot]}" &
   PIDS+=($!)
   RESULT_NAMES="$RESULT_NAMES e2e-shard$slot"
 done
