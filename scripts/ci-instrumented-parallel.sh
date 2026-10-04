@@ -162,6 +162,24 @@ wait_for_boot() {
   return 1
 }
 
+wait_for_load() {
+  # After killing a stale fleet the host keeps thrashing for minutes; QEMU
+  # CPU threads hang for 15-30s in that state and the guest crashes. Let the
+  # 1-minute load average fall below 3/4 of the CPUs before starting suites.
+  local limit deadline l1
+  limit=$(( $(nproc) * 3 / 4 ))
+  deadline=$((SECONDS + 600))
+  while [ $SECONDS -lt $deadline ]; do
+    l1="$(cut -d' ' -f1 /proc/loadavg | cut -d. -f1)"
+    if [ "${l1:-999}" -lt "$limit" ]; then
+      log "load settled: $l1"
+      return 0
+    fi
+    sleep 10
+  done
+  log "WARN: load still $(cut -d' ' -f1 /proc/loadavg) after 10m, proceeding anyway"
+}
+
 prepare_device() {
   local serial="$1"; shift
   $ADB -s "$serial" shell input keyevent KEYCODE_WAKEUP || true
@@ -195,6 +213,13 @@ run_instrumentation() {
   serial="$(serial_of "$slot")"
   pkg="${component%%/*}"
   for attempt in 1 2; do
+    # A guest that crashed mid-suite takes the adb transport with it; bring
+    # the emulator back before spending the retry on "device not found".
+    if ! $ADB devices 2>/dev/null | grep -q "^$serial"; then
+      log "WARN $serial offline, rebooting emulator for slot $slot"
+      boot_emulator "$slot"
+      wait_for_boot "$slot" || { log "ERROR: slot $slot did not reboot"; break; }
+    fi
     # Wipe app state first: a sticky PlaybackService restored from a previous
     # run starts outside the Hilt rule and crashes the instrumentation process.
     $ADB -s "$serial" shell pm clear "$pkg" >/dev/null || true
@@ -239,6 +264,7 @@ run_instrumentation() {
 # ---- main --------------------------------------------------------------------
 log "host: $(nproc) cpus, $(free -h | awk '/^Mem:/{print $2}') ram, $(df -h "$HOME" | awk 'NR==2{print $4}') free disk, load $(cut -d" " -f1-3 /proc/loadavg)"
 kill_stale_fleet
+wait_for_load
 create_avds
 
 E2E_SLOTS="1 2"
