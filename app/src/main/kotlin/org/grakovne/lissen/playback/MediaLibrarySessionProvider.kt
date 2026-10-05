@@ -4,12 +4,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.OptIn
-import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.grakovne.lissen.BuildConfig
+import kotlinx.coroutines.CoroutineScope
 import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,7 +23,10 @@ class MediaLibrarySessionProvider
     private val callback: MediaLibrarySessionCallback,
   ) {
     @OptIn(UnstableApi::class)
-    fun provideMediaLibrarySession(mediaLibraryService: MediaLibraryService): MediaLibraryService.MediaLibrarySession {
+    fun provideMediaLibrarySession(
+      mediaLibraryService: MediaLibraryService,
+      scope: CoroutineScope,
+    ): MediaLibraryService.MediaLibrarySession {
       val knownPackages =
         listOf(
           // by https://github.com/PaulWoitaschek/Voice/blob/main/core/playback/src/main/kotlin/voice/core/playback/session/ImageFileProvider.kt
@@ -37,15 +39,8 @@ class MediaLibrarySessionProvider
           "com.google.android.clockwork.home",
           "androidx.media3.testapp.controller", // Media3 controller test app
         )
-      for (pkg in knownPackages) {
-        context.grantUriPermission(
-          pkg,
-          "content://${BuildConfig.APPLICATION_ID}.cover/".toUri(),
-          Intent.FLAG_GRANT_READ_URI_PERMISSION or
-            Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
-            Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
-        )
-      }
+      knownPackages.forEach(callback::grantCoverPermission)
+
       return MediaLibraryService.MediaLibrarySession
         .Builder(mediaLibraryService, exoPlayer, callback)
         .setSessionActivity(
@@ -57,5 +52,6 @@ class MediaLibrarySessionProvider
           ),
         ).setPeriodicPositionUpdateEnabled(false)
         .build()
+        .also { callback.observeMediaButtons(it, scope) }
     }
   }

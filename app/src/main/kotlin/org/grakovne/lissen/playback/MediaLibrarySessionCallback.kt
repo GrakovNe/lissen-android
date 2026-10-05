@@ -10,6 +10,7 @@ import android.view.KeyEvent
 import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
 import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -33,6 +34,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import org.grakovne.lissen.BuildConfig
+import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Bookmark
@@ -45,6 +48,7 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(UnstableApi::class)
 @Singleton
@@ -65,6 +69,49 @@ class MediaLibrarySessionCallback
 
     /** The bookmark press being handled, from creating the bookmark to the end of its confirmation. */
     private var bookmarkFeedback: Job? = null
+    private var speedFeedback: Job? = null
+    private var bookmarkConfirmation = false
+    private var speedConfirmation = false
+    private lateinit var feedbackScope: CoroutineScope
+
+    internal fun observeMediaButtons(
+      session: MediaSession,
+      scope: CoroutineScope,
+    ) {
+      feedbackScope = scope
+      bookmarkConfirmation = false
+      speedConfirmation = false
+      scope.launch(Dispatchers.Main) {
+        try {
+          preferences.seekTimeFlow
+            .collect { refreshMediaButtons(session) }
+        } finally {
+          bookmarkFeedback?.cancel()
+          speedFeedback?.cancel()
+          bookmarkConfirmation = false
+          speedConfirmation = false
+        }
+      }
+    }
+
+    private fun refreshMediaButtons(session: MediaSession) {
+      session.setMediaButtonPreferences(mediaButtons())
+    }
+
+    private fun cyclePlaybackSpeed(session: MediaSession) {
+      val currentSpeed = mediaRepository.playbackSpeed.value
+      val nextSpeed = SPEED_ICONS.keys.firstOrNull { it > currentSpeed + 0.01f } ?: SPEED_ICONS.keys.first()
+      mediaRepository.setPlaybackSpeed(nextSpeed)
+      speedConfirmation = true
+      refreshMediaButtons(session)
+      speedFeedback?.cancel()
+      speedFeedback =
+        feedbackScope.launch(Dispatchers.Main) {
+          delay(BUTTON_FEEDBACK_DURATION)
+          speedConfirmation = false
+          refreshMediaButtons(session)
+        }
+    }
 
     private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
       val key = query.trim().lowercase()
@@ -114,45 +161,52 @@ class MediaLibrarySessionCallback
     private val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
     private val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
     private val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
+    private val speedCommand = SessionCommand(SPEED_COMMAND, Bundle.EMPTY)
     private val bookmarkCommand = SessionCommand(BOOKMARK_COMMAND, Bundle.EMPTY)
 
     private data class MediaButtonSpec(
-      val icon: Int,
+      val icon: Icon,
       val command: SessionCommand,
       val displayName: String,
       val slot: Int,
     )
 
-    private fun mediaButtons(bookmarkConfirmed: Boolean = false): List<CommandButton> {
+    private fun mediaButtons(): List<CommandButton> {
       val seekTime = preferences.getSeekTime()
 
       return listOf(
         MediaButtonSpec(
-          icon = SKIP_BACK_ICONS[seekTime.rewind] ?: CommandButton.ICON_SKIP_BACK,
+          icon = SKIP_BACK_ICONS[seekTime.rewind] ?: Icon(CommandButton.ICON_SKIP_BACK),
           command = rewindCommand,
           displayName = "Rewind",
           slot = CommandButton.SLOT_BACK,
         ),
         MediaButtonSpec(
-          icon = SKIP_FORWARD_ICONS[seekTime.forward] ?: CommandButton.ICON_SKIP_FORWARD,
+          icon = SKIP_FORWARD_ICONS[seekTime.forward] ?: Icon(CommandButton.ICON_SKIP_FORWARD),
           command = forwardCommand,
           displayName = "Forward",
           slot = CommandButton.SLOT_FORWARD,
         ),
         MediaButtonSpec(
-          icon = CommandButton.ICON_PREVIOUS,
+          icon = Icon(CommandButton.ICON_PREVIOUS),
           command = prevChapterCommand,
           displayName = "Previous Chapter",
           slot = CommandButton.SLOT_OVERFLOW,
         ),
         MediaButtonSpec(
-          icon = CommandButton.ICON_NEXT,
+          icon = Icon(CommandButton.ICON_NEXT),
           command = nextChapterCommand,
           displayName = "Next Chapter",
           slot = CommandButton.SLOT_OVERFLOW,
         ),
         MediaButtonSpec(
-          icon = if (bookmarkConfirmed) CommandButton.ICON_CHECK_CIRCLE_UNFILLED else CommandButton.ICON_BOOKMARK_UNFILLED,
+          icon = if (speedConfirmation) speedIcon(mediaRepository.playbackSpeed.value) else Icon(CommandButton.ICON_PLAYBACK_SPEED),
+          command = speedCommand,
+          displayName = "Playback speed",
+          slot = CommandButton.SLOT_OVERFLOW,
+        ),
+        MediaButtonSpec(
+          icon = if (bookmarkConfirmation) Icon(CommandButton.ICON_CHECK_CIRCLE_UNFILLED) else Icon(CommandButton.ICON_BOOKMARK_UNFILLED),
           command = bookmarkCommand,
           displayName = "Create bookmark",
           slot = CommandButton.SLOT_OVERFLOW,
@@ -161,18 +215,31 @@ class MediaLibrarySessionCallback
     }
 
     private fun MediaButtonSpec.toCommandButton(): CommandButton =
-      CommandButton
-        .Builder(icon)
-        .setSessionCommand(command)
+      when (icon) {
+        is Icon.Media3 -> CommandButton.Builder(icon.id)
+        is Icon.Res -> CommandButton.Builder(CommandButton.ICON_UNDEFINED).setCustomIconResId(icon.id)
+      }.setSessionCommand(command)
         .setDisplayName(displayName)
         .setEnabled(true)
         .setSlots(slot)
         .build()
 
+    internal fun grantCoverPermission(packageName: String) {
+      context.grantUriPermission(
+        packageName,
+        "content://${BuildConfig.APPLICATION_ID}.cover/".toUri(),
+        Intent.FLAG_GRANT_READ_URI_PERMISSION or
+          Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
+          Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
+      )
+    }
+
     override fun onConnect(
       session: MediaSession,
       controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult {
+      grantCoverPermission(controller.packageName)
+
       val sessionCommands =
         MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
           .buildUpon()
@@ -180,6 +247,7 @@ class MediaLibrarySessionCallback
           .add(rewindCommand)
           .add(forwardCommand)
           .add(nextChapterCommand)
+          .add(speedCommand)
           .add(bookmarkCommand)
           .build()
 
@@ -206,6 +274,7 @@ class MediaLibrarySessionCallback
         REWIND_COMMAND -> accepted { mediaRepository.rewind() }
         FORWARD_COMMAND -> accepted { mediaRepository.forward() }
         NEXT_CHAPTER_COMMAND -> accepted { mediaRepository.nextTrack() }
+        SPEED_COMMAND -> accepted { cyclePlaybackSpeed(session) }
         BOOKMARK_COMMAND -> accepted { createBookmark(session) }
         else -> super.onCustomCommand(session, controller, customCommand, args)
       }
@@ -227,7 +296,7 @@ class MediaLibrarySessionCallback
       }
 
       bookmarkFeedback =
-        futureScope.launch(Dispatchers.Main) {
+        feedbackScope.launch(Dispatchers.Main) {
           createBookmarkOrNull()?.let { showBookmarkConfirmation(session) }
         }
     }
@@ -243,9 +312,11 @@ class MediaLibrarySessionCallback
       }
 
     private suspend fun showBookmarkConfirmation(session: MediaSession) {
-      session.setMediaButtonPreferences(mediaButtons(bookmarkConfirmed = true))
-      delay(BOOKMARK_BUTTON_FEEDBACK_DURATION_MS)
-      session.setMediaButtonPreferences(mediaButtons(bookmarkConfirmed = false))
+      bookmarkConfirmation = true
+      refreshMediaButtons(session)
+      delay(BUTTON_FEEDBACK_DURATION)
+      bookmarkConfirmation = false
+      refreshMediaButtons(session)
     }
 
     override fun onGetLibraryRoot(
@@ -345,7 +416,7 @@ class MediaLibrarySessionCallback
     private suspend fun refreshBookForResumption(storedBook: DetailedItem): DetailedItem? {
       val refreshed =
         try {
-          withTimeoutOrNull(REFRESH_TIMEOUT_MS) { lissenMediaProvider.fetchBook(storedBook.id, storedBook.libraryType) }
+          withTimeoutOrNull(REFRESH_TIMEOUT) { lissenMediaProvider.fetchBook(storedBook.id, storedBook.libraryType) }
         } catch (e: CancellationException) {
           throw e
         } catch (e: Exception) {
@@ -425,25 +496,53 @@ class MediaLibrarySessionCallback
       internal const val REWIND_COMMAND = "notification_rewind"
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
+      internal const val SPEED_COMMAND = "notification_playback_speed"
       internal const val BOOKMARK_COMMAND = "notification_bookmark"
 
-      private const val REFRESH_TIMEOUT_MS = 2_000L
-      private const val BOOKMARK_BUTTON_FEEDBACK_DURATION_MS = 3_000L
+      private val REFRESH_TIMEOUT = 2_000.milliseconds
+      private val BUTTON_FEEDBACK_DURATION = 3_000.milliseconds
+
+      sealed interface Icon {
+        val id: Int
+
+        @JvmInline
+        value class Media3(
+          override val id: Int,
+        ) : Icon
+
+        @JvmInline
+        value class Res(
+          override val id: Int,
+        ) : Icon
+      }
+
+      fun Icon(value: Int): Icon = Icon.Media3(value)
+
+      private val SPEED_ICONS =
+        mapOf(
+          1.0f to Icon(CommandButton.ICON_PLAYBACK_SPEED_1_0),
+          1.2f to Icon(CommandButton.ICON_PLAYBACK_SPEED_1_2),
+          1.5f to Icon(CommandButton.ICON_PLAYBACK_SPEED_1_5),
+          2.0f to Icon(CommandButton.ICON_PLAYBACK_SPEED_2_0),
+          3.0f to Icon.Res(R.drawable.ic_playback_speed_3_0),
+        )
+
+      private fun speedIcon(speed: Float) = SPEED_ICONS[speed] ?: Icon(CommandButton.ICON_PLAYBACK_SPEED)
 
       private val SKIP_BACK_ICONS =
         mapOf(
-          5 to CommandButton.ICON_SKIP_BACK_5,
-          10 to CommandButton.ICON_SKIP_BACK_10,
-          15 to CommandButton.ICON_SKIP_BACK_15,
-          30 to CommandButton.ICON_SKIP_BACK_30,
+          5 to Icon(CommandButton.ICON_SKIP_BACK_5),
+          10 to Icon(CommandButton.ICON_SKIP_BACK_10),
+          15 to Icon(CommandButton.ICON_SKIP_BACK_15),
+          30 to Icon(CommandButton.ICON_SKIP_BACK_30),
         )
 
       private val SKIP_FORWARD_ICONS =
         mapOf(
-          5 to CommandButton.ICON_SKIP_FORWARD_5,
-          10 to CommandButton.ICON_SKIP_FORWARD_10,
-          15 to CommandButton.ICON_SKIP_FORWARD_15,
-          30 to CommandButton.ICON_SKIP_FORWARD_30,
+          5 to Icon(CommandButton.ICON_SKIP_FORWARD_5),
+          10 to Icon(CommandButton.ICON_SKIP_FORWARD_10),
+          15 to Icon(CommandButton.ICON_SKIP_FORWARD_15),
+          30 to Icon(CommandButton.ICON_SKIP_FORWARD_30),
         )
     }
   }
