@@ -4,13 +4,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.OptIn
-import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,15 +39,8 @@ class MediaLibrarySessionProvider
           "com.google.android.clockwork.home",
           "androidx.media3.testapp.controller", // Media3 controller test app
         )
-      for (pkg in knownPackages) {
-        context.grantUriPermission(
-          pkg,
-          "content://${BuildConfig.APPLICATION_ID}.cover/".toUri(),
-          Intent.FLAG_GRANT_READ_URI_PERMISSION or
-            Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
-            Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
-        )
-      }
+      knownPackages.forEach(callback::grantCoverPermission)
+
       return MediaLibraryService.MediaLibrarySession
         .Builder(mediaLibraryService, exoPlayer, callback)
         .setSessionActivity(
