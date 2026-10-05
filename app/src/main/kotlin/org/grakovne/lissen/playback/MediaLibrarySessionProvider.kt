@@ -9,6 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject
@@ -24,7 +25,10 @@ class MediaLibrarySessionProvider
     private val callback: MediaLibrarySessionCallback,
   ) {
     @OptIn(UnstableApi::class)
-    fun provideMediaLibrarySession(mediaLibraryService: MediaLibraryService): MediaLibraryService.MediaLibrarySession {
+    fun provideMediaLibrarySession(
+      mediaLibraryService: MediaLibraryService,
+      scope: CoroutineScope,
+    ): MediaLibraryService.MediaLibrarySession {
       val knownPackages =
         listOf(
           // by https://github.com/PaulWoitaschek/Voice/blob/main/core/playback/src/main/kotlin/voice/core/playback/session/ImageFileProvider.kt
@@ -57,5 +61,6 @@ class MediaLibrarySessionProvider
           ),
         ).setPeriodicPositionUpdateEnabled(false)
         .build()
+        .also { callback.observeMediaButtons(it, scope) }
     }
   }
