@@ -275,4 +275,13 @@
     <string name="episode_ordering_descending">降序</string>
     <string name="episode_ordering_season_option">季数</string>
     <string name="episode_ordering_episode_option">集数</string>
+    <string name="library_grouping_genre">按流派</string>
+    <string name="library_grouping_narrator">按演播者</string>
+    <string name="player_settings_skip_disabled">禁用</string>
+    <string name="sleep_timer_fade_disabled">禁用</string>
+    <string name="rewind_on_pause_title">暂停回退</string>
+    <string name="rewind_on_pause_disabled">禁用</string>
+    <string name="player_settings_auto_skip">自动跳过</string>
+    <string name="player_settings_intro_value">片头 %1$s</string>
+    <string name="player_settings_outro_value">片尾 %1$s</string>
 </resources>
