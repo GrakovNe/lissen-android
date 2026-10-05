@@ -11,6 +11,8 @@
     <string name="a11y_collapse_queue">Свернуть очередь</string>
     <string name="a11y_open">Открыть</string>
     <string name="a11y_previous_track">Предыдущий трек</string>
+    <string name="a11y_rewind">Перемотать назад</string>
+    <string name="a11y_fast_forward">Перемотать вперёд</string>
     <string name="a11y_rewind_seconds">Перемотать назад на %1$d секунд</string>
     <string name="a11y_fast_forward_seconds">Перемотать вперёд на %1$d секунд</string>
     <string name="a11y_next_track">Следующий трек</string>
@@ -111,6 +113,8 @@
     <string name="player_screen_timer_navigation">Таймер</string>
     <string name="chapter_search_hint">Поиск по названию эпизода</string>
     <string name="widget_placeholder_text">Нажмите чтобы открыть</string>
+    <string name="player_state_widget_label">Сейчас играет</string>
+    <string name="player_cover_widget_label">Сейчас играет (обложка)</string>
     <string name="the_offline_podcasts_is_empty">Загруженных подкастов нет</string>
     <string name="player_screen_downloads_navigation">Загрузки</string>
     <string name="episode_ordering_published_at_option">По дате выхода</string>
