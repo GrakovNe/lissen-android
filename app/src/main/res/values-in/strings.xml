@@ -275,4 +275,13 @@
     <string name="tree_node_authors">Penulis</string>
     <string name="tree_node_series">Seri</string>
     <string name="a11y_rewind">Putar balik</string>
+    <string name="library_grouping_genre">Berdasarkan Genre</string>
+    <string name="library_grouping_narrator">Berdasarkan Narator</string>
+    <string name="player_settings_auto_skip">Lewati otomatis</string>
+    <string name="player_settings_skip_disabled">Nonaktif</string>
+    <string name="player_settings_intro_value">Intro %1$s</string>
+    <string name="player_settings_outro_value">Outro %1$s</string>
+    <string name="sleep_timer_fade_disabled">Nonaktif</string>
+    <string name="rewind_on_pause_title">Mundurkan saat jeda</string>
+    <string name="rewind_on_pause_disabled">Nonaktif</string>
 </resources>
