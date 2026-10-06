@@ -293,4 +293,9 @@
     <string name="player_settings_skip_disabled">Onemogućeno</string>
     <string name="player_settings_intro_value">Uvod %1$s</string>
     <string name="player_settings_outro_value">Odjava %1$s</string>
+    <string name="library_grouping_genre">po žanru</string>
+    <string name="library_grouping_narrator">po pripovjedaču</string>
+    <string name="sleep_timer_fade_disabled">Onemogućeno</string>
+    <string name="rewind_on_pause_title">Premotavanje tijekom pauze</string>
+    <string name="rewind_on_pause_disabled">Onemogućeno</string>
 </resources>
