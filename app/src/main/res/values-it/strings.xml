@@ -291,4 +291,5 @@
     <string name="library_grouping_narrator">Per narratore</string>
     <string name="sleep_timer_fade_disabled">Disabilitato</string>
     <string name="rewind_on_pause_disabled">Disabilitato</string>
+    <string name="rewind_on_pause_title">Riavvolgi sulla pausa</string>
 </resources>
