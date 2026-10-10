@@ -43,6 +43,35 @@ class PlayerGapsE2ETest {
   }
 
   @Test
+  fun miniPlayer_showsPlayingChapterUnderTheBookTitle() = loggedInApp {
+    val gridItem = waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
+    val gridTexts = gridItem.findObjects(By.text(Pattern.compile(".+"))).map { it.text.toString() }
+    val bookTitle = gridTexts.firstOrNull().orEmpty()
+    val bookAuthor = gridTexts.getOrNull(1)
+
+    openFirstBook()
+    clickElement(By.desc("Play"))
+    waitForElement(By.desc("Pause"))
+
+    val chapterTitle = playingMediaTitle()
+    assertTrue("the playback notification should expose the title of the playing chapter", chapterTitle.isNotBlank())
+
+    pressBack()
+    val miniBounds = waitForElement(By.res("miniPlayer"), 30_000).visibleBounds
+    val lines = textNodesWithin(miniBounds)
+    assertTrue(
+      "the mini player should show the playing chapter '$chapterTitle', got $lines",
+      lines.any { it.contains(chapterTitle) },
+    )
+    if (bookTitle.isNotEmpty()) {
+      assertTrue("the mini player should keep showing the book title '$bookTitle', got $lines", lines.any { it.contains(bookTitle) })
+    }
+    if (bookAuthor != null && bookAuthor != bookTitle) {
+      assertTrue("the mini player should no longer show the author '$bookAuthor', got $lines", lines.none { it == bookAuthor })
+    }
+  }
+
+  @Test
   fun player_sleepTimer_setThenCancelled() = loggedInApp {
     openFirstBook()
     clickUntil(By.text("Timer"), By.text("Sleep Timer"))
