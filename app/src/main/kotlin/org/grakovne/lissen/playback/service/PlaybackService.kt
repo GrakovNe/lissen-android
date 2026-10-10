@@ -128,7 +128,7 @@ class PlaybackService : MediaLibraryService() {
           playbackSynchronizationService.startPlaybackSynchronization(book)
         }
       } else {
-        val itemsWithPosition = bookToChapterMediaItems(book)
+        val itemsWithPosition = bookToMediaItems(book)
 
         withContext(Dispatchers.Main) {
           exoPlayer.setMediaItems(itemsWithPosition.mediaItems)

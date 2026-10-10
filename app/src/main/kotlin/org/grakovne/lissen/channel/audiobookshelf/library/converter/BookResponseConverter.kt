@@ -97,6 +97,7 @@ class BookResponseConverter
             }
             ?: emptyList(),
         chapters = maybeChapters ?: filesAsChapters(),
+        hasServerChapters = maybeChapters != null,
         libraryId = item.libraryId,
         libraryType = LibraryType.LIBRARY,
         localProvided = false,

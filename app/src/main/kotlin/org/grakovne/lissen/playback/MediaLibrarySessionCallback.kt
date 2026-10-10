@@ -43,6 +43,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
+import org.grakovne.lissen.playback.service.bookToMediaItems
 import org.grakovne.lissen.util.listenableFuture
 import timber.log.Timber
 import javax.inject.Inject
@@ -358,7 +359,7 @@ class MediaLibrarySessionCallback
                   onSuccess = {
                     preferences.savePlayingItem(it)
                     registerPlayback(it)
-                    PlaybackService.bookToChapterMediaItems(it)
+                    bookToMediaItems(it)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
                 )
@@ -393,7 +394,7 @@ class MediaLibrarySessionCallback
             registerPlayback(book)
           }
 
-          PlaybackService.bookToChapterMediaItems(book)
+          bookToMediaItems(book)
         }
 
     private suspend fun registerPlayback(book: DetailedItem) =

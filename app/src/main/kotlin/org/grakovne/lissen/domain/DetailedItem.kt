@@ -26,6 +26,7 @@ data class DetailedItem(
   val localProvided: Boolean,
   val createdAt: Long,
   val updatedAt: Long,
+  val hasServerChapters: Boolean = true,
 ) : Serializable {
   companion object {
     fun DetailedItem.same(other: DetailedItem) =
