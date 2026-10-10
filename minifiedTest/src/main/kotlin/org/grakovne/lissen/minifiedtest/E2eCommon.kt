@@ -195,29 +195,40 @@ fun UiAutomatorTestScope.scrollUntilVisible(
 
 const val TARGET_PACKAGE = "org.grakovne.lissen.minified"
 
+private fun e2eArgument(name: String, fallback: String): String =
+  androidx.test.platform.app.InstrumentationRegistry.getArguments().getString(name) ?: fallback
+
+val E2E_HOST: String
+  get() = e2eArgument("e2eHost", "https://demo.lissenapp.org")
+
+val E2E_USERNAME: String
+  get() = e2eArgument("e2eUsername", "demo")
+
+val E2E_PASSWORD: String
+  get() = e2eArgument("e2ePassword", "demo")
+
 const val LOGIN_SCREEN_WAIT_MS = 15_000L
 
-fun e2eArgument(name: String, fallback: String): String =
-  androidx.test.platform.app.InstrumentationRegistry.getArguments().getString(name) ?: fallback
+/** A paused instance left by the previous test may still report once. */
+fun clearApp() {
+  // the uiautomator shell server occasionally fails to start on a busy emulator
+  repeat(3) {
+    try {
+      androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+      return
+    } catch (_: IllegalStateException) {
+      Thread.sleep(2_000)
+    }
+  }
+  androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+}
 
 fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
   androidx.test.uiautomator.uiAutomator {
     // the launcher ANRs on the CI emulator often enough that its system dialog covers the
     // app window and every selector lookup fails behind it
     device.executeShellCommand("settings put global hide_error_dialogs 1")
-    // the uiautomator shell server occasionally fails to start on a busy emulator
-    var cleared = false
-    repeat(3) {
-      if (!cleared) {
-        try {
-          androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
-          cleared = true
-        } catch (_: IllegalStateException) {
-          Thread.sleep(2_000)
-        }
-      }
-    }
-    if (!cleared) androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+    clearApp()
     waitForAppGone()
     watchFor(androidx.test.uiautomator.watcher.PermissionDialog) { clickAllow() }
     startApp(TARGET_PACKAGE)
@@ -334,13 +345,13 @@ const val LOGIN_ATTEMPT_MS = 30_000L
  * again. A failed attempt only shows a toast and leaves the form in place, so a second
  * submit is always safe; what the device showed at that moment is recorded for the CI logs.
  */
-fun UiAutomatorTestScope.loginToLibrary(password: String = e2eArgument("e2ePassword", "demo")) {
+fun UiAutomatorTestScope.loginToLibrary(password: String = E2E_PASSWORD) {
   val deadline = System.currentTimeMillis() + LOGIN_TIMEOUT_MS
   var attempt = 0
   while (true) {
     attempt++
-    setTextOf(By.res("hostInput"), e2eArgument("e2eHost", "https://demo.lissenapp.org"))
-    setTextOf(By.res("usernameInput"), e2eArgument("e2eUsername", "demo"))
+    setTextOf(By.res("hostInput"), E2E_HOST)
+    setTextOf(By.res("usernameInput"), E2E_USERNAME)
     setTextOf(By.res("passwordInput"), password)
     clickElement(By.res("loginButton"))
     if (elementExists(By.res("libraryScreen"), LOGIN_ATTEMPT_MS)) return
@@ -359,9 +370,28 @@ fun loggedInApp(block: UiAutomatorTestScope.() -> Unit) = freshApp {
   block()
 }
 
-fun UiAutomatorTestScope.openFirstBook() {
-  clickElement(By.res(java.util.regex.Pattern.compile("bookItem_.*")), 60_000)
-  waitForElement(By.res("playerScreen"))
+val anyBook: BySelector = By.res(java.util.regex.Pattern.compile("bookItem_.*"))
+
+/** A swipe flings; the tap must wait for the grid to stop. */
+private fun UiAutomatorTestScope.awaitSettled(selector: BySelector) {
+  val boundsOf = { runCatching { device.findObject(selector)?.visibleBounds }.getOrNull() }
+  var bounds = boundsOf()
+  repeat(20) {
+    Thread.sleep(300)
+    val now = boundsOf()
+    if (now != null && now == bounds) return
+    bounds = now
+  }
+}
+
+fun UiAutomatorTestScope.openFirstBook() = openBook(anyBook)
+
+/** Swipes on a grid still loading are lost. */
+fun UiAutomatorTestScope.openBook(book: BySelector) {
+  waitForElement(anyBook, 60_000)
+  scrollUntilVisible(book)
+  awaitSettled(book)
+  clickUntil(book, By.res("playerScreen"))
   // the player draws a placeholder (same chapter-number tag, same tab labels, none of it
   // interactive) until playback is ready; the track controls are the first thing that only
   // the ready player has. The chapter list is the content of the "Chapters" tab and is not

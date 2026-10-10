@@ -7,7 +7,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.regex.Pattern
 
 @RunWith(AndroidJUnit4::class)
 class PlaybackFlowE2ETest {
@@ -67,9 +66,7 @@ class PlaybackFlowE2ETest {
   }
 
   private fun UiAutomatorTestScope.openFirstBookAndReady() {
-    clickElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
-    waitForElement(By.res("playerScreen"))
-    waitForElement(By.res("trackControls"), PLAYBACK_TIMEOUT_MS)
+    openFirstBook()
     waitForElement(By.res("chapterList"), PLAYBACK_TIMEOUT_MS)
   }
 

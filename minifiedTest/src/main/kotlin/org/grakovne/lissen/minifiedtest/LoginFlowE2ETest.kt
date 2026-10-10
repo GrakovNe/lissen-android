@@ -1,11 +1,8 @@
 package org.grakovne.lissen.minifiedtest
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiAutomatorTestScope
-import androidx.test.uiautomator.boundsInScreen
-import androidx.test.uiautomator.UiObject2
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -23,7 +20,7 @@ class LoginFlowE2ETest {
 
   @Test
   fun loginWithValidCredentials_navigatesToLibrary() = withFreshApp {
-    login(password = e2eArgument("e2ePassword", "demo"))
+    login(password = E2E_PASSWORD)
     onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
   }
 
@@ -51,7 +48,7 @@ class LoginFlowE2ETest {
 
   @Test
   fun sessionSurvivesAppRestart() = withFreshApp {
-    login(password = e2eArgument("e2ePassword", "demo"))
+    login(password = E2E_PASSWORD)
     onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
     // The session check right after a cold start can outrun the demo server
     // when the whole suite logs in back to back; allow one more restart
@@ -69,7 +66,7 @@ class LoginFlowE2ETest {
 
   @Test
   fun disconnectFromServer_returnsToLoginScreen() = withFreshApp {
-    login(password = e2eArgument("e2ePassword", "demo"))
+    login(password = E2E_PASSWORD)
     onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
     clickUntil(By.desc("Menu"), By.text("Application settings"))
     clickElement(By.text("Application settings"))
@@ -85,16 +82,12 @@ class LoginFlowE2ETest {
 
   private fun UiAutomatorTestScope.login(password: String) {
     onElement { viewIdResourceName == "hostInput" }
-      .setText(e2eArgument("e2eHost", "https://demo.lissenapp.org"))
+      .setText(E2E_HOST)
     onElement { viewIdResourceName == "usernameInput" }
-      .setText(e2eArgument("e2eUsername", "demo"))
+      .setText(E2E_USERNAME)
     onElement { viewIdResourceName == "passwordInput" }.setText(password)
     onElement { viewIdResourceName == "loginButton" }.click()
   }
-
-
-  private fun e2eArgument(name: String, fallback: String): String =
-    InstrumentationRegistry.getArguments().getString(name) ?: fallback
 
   private companion object {
     const val TARGET_PACKAGE = "org.grakovne.lissen.minified"

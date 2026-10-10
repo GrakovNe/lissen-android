@@ -14,11 +14,15 @@ data class SyncState(
   val item: DetailedItem? = null,
   val chapterIndex: Int? = null,
   val session: PlaybackSession? = null,
+  val engaged: Boolean = false,
 ) {
   val localSession: PlaybackSession?
     get() = session?.takeIf { it.isLocal }
 
   fun start(item: DetailedItem): SyncState = SyncState(item = item)
+
+  /** The user has sought or means to play. */
+  fun engage(): SyncState = copy(engaged = true)
 
   fun cancel(): SyncState = SyncState()
 

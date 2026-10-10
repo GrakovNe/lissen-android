@@ -37,4 +37,5 @@ dependencies {
   implementation(libs.androidx.test.runner)
   implementation(libs.androidx.test.uiautomator)
   implementation(libs.androidx.test.uiautomator.shell)
+  implementation(libs.okhttp)
 }

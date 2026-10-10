@@ -53,6 +53,18 @@ class PlaybackSynchronizationService
               handleSyncEvent()
             }
           }
+
+          override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int,
+          ) {
+            // a queue swap and the prepare seek's adjustment carry other reasons
+            if (reason != Player.DISCONTINUITY_REASON_SEEK) return
+            syncState.update { it.engage() }
+            // a seek while buffering raises no other event
+            handleSyncEvent()
+          }
         },
       )
     }
@@ -122,9 +134,17 @@ class PlaybackSynchronizationService
 
       // before the return below: a pause that lands on the very start still ends the listening stretch
       listeningMark = accumulateListening(listeningMark, exoPlayer.isPlaying, SystemClock.elapsedRealtime())
+      // before the return below: an early pause after play from the start must still report
+      if (exoPlayer.playWhenReady) syncState.update { it.engage() }
 
       if (overallProgress.currentTotalTime == 0.0) {
         Timber.d("Skipping sync for ${currentItem.id} due to playing doesn't started ")
+        return
+      }
+
+      // the stored position, sent back truncated to ms, makes the server drop the finished mark
+      if (!syncState.value.engaged) {
+        Timber.d("Skipping sync for ${currentItem.id}: the queue is still where it was prepared")
         return
       }
 
