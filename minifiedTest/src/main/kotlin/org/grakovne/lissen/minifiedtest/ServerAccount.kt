@@ -22,7 +22,7 @@ class ServerAccount private constructor(
   private val token: String,
   private val defaultLibraryId: String,
 ) {
-  /** Every other test opens the first book of the grid, which sorts by title ascending, on parallel shards of the same account. */
+  /** Every other test opens the first book of the grid, which sorts by title ascending, on parallel shards of the same account; needs at least two books. */
   fun lastBookByTitle(): ServerBook {
     val item =
       JSONObject(get("/api/libraries/$defaultLibraryId/items?sort=media.metadata.title&desc=1&limit=1"))
@@ -74,9 +74,10 @@ class ServerAccount private constructor(
 
     fun login(): ServerAccount {
       val body = JSONObject().put("username", E2E_USERNAME).put("password", E2E_PASSWORD).toString()
-      val json = JSONObject(Request.Builder().url("$E2E_HOST/login").post(body.toRequestBody(JSON)).build().send())
+      val host = E2E_HOST.trimEnd('/')
+      val json = JSONObject(Request.Builder().url("$host/login").post(body.toRequestBody(JSON)).build().send())
       return ServerAccount(
-        host = E2E_HOST,
+        host = host,
         token = json.getJSONObject("user").getString("accessToken"),
         defaultLibraryId = json.getString("userDefaultLibraryId"),
       )

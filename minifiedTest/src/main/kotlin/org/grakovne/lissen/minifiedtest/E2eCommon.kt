@@ -174,6 +174,9 @@ fun UiAutomatorTestScope.scrollUntilVisible(
 
 const val TARGET_PACKAGE = "org.grakovne.lissen.minified"
 
+private fun e2eArgument(name: String, fallback: String): String =
+  androidx.test.platform.app.InstrumentationRegistry.getArguments().getString(name) ?: fallback
+
 val E2E_HOST: String
   get() = e2eArgument("e2eHost", "https://demo.lissenapp.org")
 
@@ -185,27 +188,26 @@ val E2E_PASSWORD: String
 
 const val LOGIN_SCREEN_WAIT_MS = 15_000L
 
-private fun e2eArgument(name: String, fallback: String): String =
-  androidx.test.platform.app.InstrumentationRegistry.getArguments().getString(name) ?: fallback
+/** Kills the instance a previous test left behind with its data; a paused one may still report once. */
+fun clearApp() {
+  // the uiautomator shell server occasionally fails to start on a busy emulator
+  repeat(3) {
+    try {
+      androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+      return
+    } catch (_: IllegalStateException) {
+      Thread.sleep(2_000)
+    }
+  }
+  androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+}
 
 fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
   androidx.test.uiautomator.uiAutomator {
     // the launcher ANRs on the CI emulator often enough that its system dialog covers the
     // app window and every selector lookup fails behind it
     device.executeShellCommand("settings put global hide_error_dialogs 1")
-    // the uiautomator shell server occasionally fails to start on a busy emulator
-    var cleared = false
-    repeat(3) {
-      if (!cleared) {
-        try {
-          androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
-          cleared = true
-        } catch (_: IllegalStateException) {
-          Thread.sleep(2_000)
-        }
-      }
-    }
-    if (!cleared) androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+    clearApp()
     waitForAppGone()
     watchFor(androidx.test.uiautomator.watcher.PermissionDialog) { clickAllow() }
     startApp(TARGET_PACKAGE)
@@ -351,10 +353,11 @@ val anyBook: BySelector = By.res(java.util.regex.Pattern.compile("bookItem_.*"))
 
 /** A swipe is a fling: the grid keeps moving after the item is first seen, and a tap lands where it was. */
 private fun UiAutomatorTestScope.awaitSettled(selector: BySelector) {
-  var bounds = device.findObject(selector)?.visibleBounds
+  val boundsOf = { runCatching { device.findObject(selector)?.visibleBounds }.getOrNull() }
+  var bounds = boundsOf()
   repeat(20) {
     Thread.sleep(300)
-    val now = device.findObject(selector)?.visibleBounds
+    val now = boundsOf()
     if (now != null && now == bounds) return
     bounds = now
   }

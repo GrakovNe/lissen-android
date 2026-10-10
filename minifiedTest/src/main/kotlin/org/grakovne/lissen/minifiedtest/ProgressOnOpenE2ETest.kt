@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 class ProgressOnOpenE2ETest {
   @Test
   fun progress_openReportsNothing() {
+    clearApp()
     val server = ServerAccount.login()
     val book = server.lastBookByTitle()
     server.finishAt(book.id, FINISHED_AT_SECONDS)
@@ -31,6 +32,7 @@ class ProgressOnOpenE2ETest {
 
   @Test
   fun progress_playStillReportsThePosition() {
+    clearApp()
     val server = ServerAccount.login()
     val book = server.lastBookByTitle()
     server.finishAt(book.id, FINISHED_AT_SECONDS)
@@ -39,11 +41,15 @@ class ProgressOnOpenE2ETest {
     loggedInApp {
       openSeededBook(book)
       listenUntilAdvanced()
-      Thread.sleep(SETTLE_MS)
     }
 
-    val after = server.progress(book.id)
-    assertTrue("playing must report a later position, got ${after.currentTime}", after.currentTime > before.currentTime)
+    val deadline = System.currentTimeMillis() + REPORT_TIMEOUT_MS
+    while (true) {
+      val after = server.progress(book.id)
+      if (after.currentTime > before.currentTime) return
+      if (System.currentTimeMillis() >= deadline) throw AssertionError("playing must report a later position, got ${after.currentTime}")
+      Thread.sleep(1_000)
+    }
   }
 
   private fun UiAutomatorTestScope.openSeededBook(book: ServerBook) {
@@ -54,6 +60,7 @@ class ProgressOnOpenE2ETest {
   /** The session dump holds the position of the last state push, and a pause pushes one. */
   private fun UiAutomatorTestScope.listenUntilAdvanced() {
     val start = mediaSessionPositionMs()
+    check(start >= 0) { "no position in the media session dump" }
     val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
     while (true) {
       clickElement(By.desc("Play"))
@@ -71,5 +78,6 @@ class ProgressOnOpenE2ETest {
     const val FINISHED_AT_SECONDS = 40.123456
     const val LISTEN_MS = 2_000L
     const val SETTLE_MS = 8_000L
+    const val REPORT_TIMEOUT_MS = 8_000L
   }
 }
