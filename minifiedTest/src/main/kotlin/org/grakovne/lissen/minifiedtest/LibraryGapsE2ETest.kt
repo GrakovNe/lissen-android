@@ -16,19 +16,19 @@ class LibraryGapsE2ETest {
   @Test
   fun library_searchWithoutResults_showsEmptyGridAndRestores() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
-    waitForElement(BOOK_ITEM, 60_000)
+    waitForElement(anyBook, 60_000)
     clickElement(By.desc("Search"))
     setTextOf(By.res("librarySearchField"), "zzqx${UUID.randomUUID().toString().take(6)}vv")
-    waitUntilAbsent(BOOK_ITEM, 30_000)
+    waitUntilAbsent(anyBook, 30_000)
     clickElement(By.desc("Clear"))
     clickElement(By.desc("Back"))
-    waitForElement(BOOK_ITEM, 90_000)
+    waitForElement(anyBook, 90_000)
   }
 
   @Test
   fun library_searchWithSpecialCharacters_doesNotCrash() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
-    waitForElement(BOOK_ITEM, 60_000)
+    waitForElement(anyBook, 60_000)
     clickElement(By.desc("Search"))
     setTextOf(By.res("librarySearchField"), "«%&\"()\\_")
     Thread.sleep(3_000)
@@ -51,7 +51,7 @@ class LibraryGapsE2ETest {
     clickElement(By.text("Sort by"))
     clickElement(By.text("Title"))
     pressBack()
-    waitForElement(BOOK_ITEM, 90_000)
+    waitForElement(anyBook, 90_000)
   }
 
   @Test
@@ -61,18 +61,18 @@ class LibraryGapsE2ETest {
     clickElement(By.text("Grouping"))
     clickElement(By.text("By Author"))
     pressBack()
-    waitForElement(AUTHOR_ITEM, 60_000)
+    waitForElement(anyAuthor, 60_000)
     openQuickSettings(By.text("Grouping"))
     clickElement(By.text("Grouping"))
     clickElement(By.text("Disabled"))
     pressBack()
-    waitForElement(BOOK_ITEM, 90_000)
+    waitForElement(anyBook, 90_000)
   }
 
   @Test
   fun library_hideFinishedToggle_roundTripsWithoutCrash() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
-    waitForElement(BOOK_ITEM, 60_000)
+    waitForElement(anyBook, 60_000)
     openQuickSettings(By.text("Hide finished"))
     clickElement(By.text("Hide finished"))
     pressBack()
@@ -80,7 +80,7 @@ class LibraryGapsE2ETest {
     openQuickSettings(By.text("Hide finished"))
     clickElement(By.text("Hide finished"))
     pressBack()
-    waitForElement(BOOK_ITEM, 90_000)
+    waitForElement(anyBook, 90_000)
     assertAppAlive()
   }
 
@@ -92,7 +92,7 @@ class LibraryGapsE2ETest {
     waitForElement(By.desc("Pause"))
     pressBack()
     waitForElement(By.res("libraryScreen"))
-    waitForElement(BOOK_ITEM, 60_000)
+    waitForElement(anyBook, 60_000)
     assertEquals(
       "the shelf on top of the library should be Continue listening",
       "Continue listening",
@@ -103,7 +103,6 @@ class LibraryGapsE2ETest {
   private fun UiAutomatorTestScope.openQuickSettings(expected: BySelector) = clickUntil(By.desc("Menu"), expected)
 
   private companion object {
-    val BOOK_ITEM = By.res(Pattern.compile("bookItem_.*"))
-    val AUTHOR_ITEM = By.res(Pattern.compile("authorItem_.*"))
+    val anyAuthor = By.res(Pattern.compile("authorItem_.*"))
   }
 }

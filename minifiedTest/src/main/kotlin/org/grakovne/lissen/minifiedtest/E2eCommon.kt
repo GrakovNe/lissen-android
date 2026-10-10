@@ -174,9 +174,18 @@ fun UiAutomatorTestScope.scrollUntilVisible(
 
 const val TARGET_PACKAGE = "org.grakovne.lissen.minified"
 
+val E2E_HOST: String
+  get() = e2eArgument("e2eHost", "https://demo.lissenapp.org")
+
+val E2E_USERNAME: String
+  get() = e2eArgument("e2eUsername", "demo")
+
+val E2E_PASSWORD: String
+  get() = e2eArgument("e2ePassword", "demo")
+
 const val LOGIN_SCREEN_WAIT_MS = 15_000L
 
-fun e2eArgument(name: String, fallback: String): String =
+private fun e2eArgument(name: String, fallback: String): String =
   androidx.test.platform.app.InstrumentationRegistry.getArguments().getString(name) ?: fallback
 
 fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
@@ -313,13 +322,13 @@ const val LOGIN_ATTEMPT_MS = 30_000L
  * again. A failed attempt only shows a toast and leaves the form in place, so a second
  * submit is always safe; what the device showed at that moment is recorded for the CI logs.
  */
-fun UiAutomatorTestScope.loginToLibrary(password: String = e2eArgument("e2ePassword", "demo")) {
+fun UiAutomatorTestScope.loginToLibrary(password: String = E2E_PASSWORD) {
   val deadline = System.currentTimeMillis() + LOGIN_TIMEOUT_MS
   var attempt = 0
   while (true) {
     attempt++
-    setTextOf(By.res("hostInput"), e2eArgument("e2eHost", "https://demo.lissenapp.org"))
-    setTextOf(By.res("usernameInput"), e2eArgument("e2eUsername", "demo"))
+    setTextOf(By.res("hostInput"), E2E_HOST)
+    setTextOf(By.res("usernameInput"), E2E_USERNAME)
     setTextOf(By.res("passwordInput"), password)
     clickElement(By.res("loginButton"))
     if (elementExists(By.res("libraryScreen"), LOGIN_ATTEMPT_MS)) return
@@ -338,9 +347,27 @@ fun loggedInApp(block: UiAutomatorTestScope.() -> Unit) = freshApp {
   block()
 }
 
-fun UiAutomatorTestScope.openFirstBook() {
-  clickElement(By.res(java.util.regex.Pattern.compile("bookItem_.*")), 60_000)
-  waitForElement(By.res("playerScreen"))
+val anyBook: BySelector = By.res(java.util.regex.Pattern.compile("bookItem_.*"))
+
+/** A swipe is a fling: the grid keeps moving after the item is first seen, and a tap lands where it was. */
+private fun UiAutomatorTestScope.awaitSettled(selector: BySelector) {
+  var bounds = device.findObject(selector)?.visibleBounds
+  repeat(20) {
+    Thread.sleep(300)
+    val now = device.findObject(selector)?.visibleBounds
+    if (now != null && now == bounds) return
+    bounds = now
+  }
+}
+
+fun UiAutomatorTestScope.openFirstBook() = openBook(anyBook)
+
+/** The grid fills after login; an empty grid would eat the swipes. */
+fun UiAutomatorTestScope.openBook(book: BySelector) {
+  waitForElement(anyBook, 60_000)
+  scrollUntilVisible(book)
+  awaitSettled(book)
+  clickUntil(book, By.res("playerScreen"))
   // the player draws a placeholder (same chapter-number tag, same tab labels, none of it
   // interactive) until playback is ready; the track controls are the first thing that only
   // the ready player has. The chapter list is the content of the "Chapters" tab and is not

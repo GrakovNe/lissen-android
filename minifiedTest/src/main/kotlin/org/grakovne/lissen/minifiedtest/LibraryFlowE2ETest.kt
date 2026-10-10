@@ -15,7 +15,7 @@ class LibraryFlowE2ETest {
   fun library_showsBookGridAfterLogin() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
     // the grid container renders before the first page of books arrives from the server
-    waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
+    waitForElement(anyBook, 60_000)
   }
 
   @Test
@@ -24,17 +24,17 @@ class LibraryFlowE2ETest {
     val query = firstBookTitle().take(6)
     clickElement(By.desc("Search"))
     setTextOf(By.res("librarySearchField"), query)
-    waitForElement(By.res(Pattern.compile("bookItem_.*")))
-    val results = device.findObjects(By.res(Pattern.compile("bookItem_.*")))
+    waitForElement(anyBook)
+    val results = device.findObjects(anyBook)
     assertTrue("search for '$query' should return results", results.isNotEmpty())
     clickElement(By.desc("Clear"))
     // the clear button empties the field but keeps the user in search mode, and a blank
     // query deliberately has no results, so the grid goes empty rather than showing everything
-    waitUntilAbsent(By.res(Pattern.compile("bookItem_.*")), 15_000)
+    waitUntilAbsent(anyBook, 15_000)
     clickElement(By.desc("Back"))
     // leaving search re-fetches the whole library; on a slow link this can exceed the
     // default timeout, so give the restore a wider budget
-    waitForElement(By.res(Pattern.compile("bookItem_.*")), 90_000)
+    waitForElement(anyBook, 90_000)
   }
 
   @Test
@@ -66,21 +66,20 @@ class LibraryFlowE2ETest {
     clickElement(By.text("Downloaded only"))
     pressBack()
     waitForElement(By.res("libraryGrid"))
-    waitForElement(By.res(Pattern.compile("bookItem_.*")), 90_000)
+    waitForElement(anyBook, 90_000)
   }
 
   @Test
   fun library_openingBook_showsPlayer() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
-    clickElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
-    waitForElement(By.res("playerScreen"))
+    clickUntil(anyBook, By.res("playerScreen"), 60_000)
   }
 
   // the quick settings sheet; [expected] is a row of it that proves the sheet is up
   private fun UiAutomatorTestScope.openQuickSettings(expected: BySelector) = clickUntil(By.desc("Menu"), expected)
 
   private fun UiAutomatorTestScope.firstBookTitle(): String {
-    val item = waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
+    val item = waitForElement(anyBook, 60_000)
     val deadline = System.currentTimeMillis() + 10_000
     while (System.currentTimeMillis() < deadline) {
       val title = item.findObjects(By.text(Pattern.compile(".+"))).firstOrNull()?.text
