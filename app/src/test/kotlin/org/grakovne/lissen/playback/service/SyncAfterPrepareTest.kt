@@ -33,10 +33,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/**
- * Preparing the queue at the stored position is not listening: the position goes to the server
- * only once the user seeks or means to play. The prepare seek itself lands before the start call.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SyncAfterPrepareTest {
   private val scheduler = TestCoroutineScheduler()
@@ -94,7 +90,6 @@ class SyncAfterPrepareTest {
 
   @Test
   fun `the prepared queue reports nothing on its own`() {
-    // the player raises several state events while preparing; none of them engages the item
     playerEvent()
     playerEvent()
 
@@ -120,7 +115,6 @@ class SyncAfterPrepareTest {
 
   @Test
   fun `the adjustment of the prepare seek does not count as a seek`() {
-    // it resolves after the start call; counting it would make every open report
     discontinuity(positionMs + 50L, Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT)
     playerEvent()
 

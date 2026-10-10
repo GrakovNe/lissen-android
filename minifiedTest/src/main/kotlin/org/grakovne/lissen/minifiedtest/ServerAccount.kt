@@ -22,7 +22,7 @@ class ServerAccount private constructor(
   private val token: String,
   private val defaultLibraryId: String,
 ) {
-  /** Every other test opens the first book of the grid, which sorts by title ascending, on parallel shards of the same account; needs at least two books. */
+  /** The other tests open the first book, on parallel shards of this account; needs two books. */
   fun lastBookByTitle(): ServerBook {
     val item =
       JSONObject(get("/api/libraries/$defaultLibraryId/items?sort=media.metadata.title&desc=1&limit=1"))
@@ -40,7 +40,7 @@ class ServerAccount private constructor(
     )
   }
 
-  /** The server unfinishes a progress whose position changes in the same request as the mark. */
+  /** A position change in the same request as the mark unfinishes it. */
   fun finishAt(
     itemId: String,
     currentTime: Double,

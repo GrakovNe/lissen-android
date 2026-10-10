@@ -21,7 +21,7 @@ data class SyncState(
 
   fun start(item: DetailedItem): SyncState = SyncState(item = item)
 
-  /** The user has sought or means to play: the position is theirs to report from now on. */
+  /** The user has sought or means to play. */
   fun engage(): SyncState = copy(engaged = true)
 
   fun cancel(): SyncState = SyncState()

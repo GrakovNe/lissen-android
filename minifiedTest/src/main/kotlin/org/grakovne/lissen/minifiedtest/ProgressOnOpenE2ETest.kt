@@ -57,7 +57,7 @@ class ProgressOnOpenE2ETest {
     waitForElement(By.text(book.title))
   }
 
-  /** The session dump holds the position of the last state push, and a pause pushes one. */
+  /** The session dump moves only on a state push; a pause is one. */
   private fun UiAutomatorTestScope.listenUntilAdvanced() {
     val start = mediaSessionPositionMs()
     check(start >= 0) { "no position in the media session dump" }
@@ -74,7 +74,7 @@ class ProgressOnOpenE2ETest {
   }
 
   companion object {
-    // sub-millisecond digits as the web player stores them, more than 10 s from the end (#296)
+    // sub-millisecond like the web player, more than 10 s before the end
     const val FINISHED_AT_SECONDS = 40.123456
     const val LISTEN_MS = 2_000L
     const val SETTLE_MS = 8_000L
