@@ -1,5 +1,6 @@
 package org.grakovne.lissen.minifiedtest
 
+import android.graphics.Rect
 import android.util.Log
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
@@ -7,6 +8,7 @@ import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiAutomatorTestScope
 import androidx.test.uiautomator.UiObject2
 import java.io.File
+import java.util.regex.Pattern
 
 const val DEFAULT_TIMEOUT_MS = 45_000L
 const val SHORT_MS = 5_000L
@@ -70,6 +72,25 @@ fun UiAutomatorTestScope.textOf(
   selector: BySelector,
   timeoutMs: Long = DEFAULT_TIMEOUT_MS,
 ): String = onFreshElement(selector, timeoutMs) { it.text.toString() }
+
+/** Texts of every visible node whose center falls inside [bounds], e.g. the lines of a row. */
+fun UiAutomatorTestScope.textNodesWithin(
+  bounds: Rect,
+  timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+): List<String> {
+  val deadline = System.currentTimeMillis() + timeoutMs
+  while (System.currentTimeMillis() < deadline) {
+    try {
+      return device
+        .findObjects(By.text(Pattern.compile(".+")))
+        .filter { bounds.contains(it.visibleBounds.centerX(), it.visibleBounds.centerY()) }
+        .map { it.text.toString() }
+    } catch (_: StaleObjectException) {
+      Thread.sleep(300)
+    }
+  }
+  throw AssertionError("the nodes inside $bounds kept changing for ${timeoutMs}ms")
+}
 
 fun UiAutomatorTestScope.setTextOf(
   selector: BySelector,
@@ -356,6 +377,28 @@ fun UiAutomatorTestScope.mediaSessionState(): String {
 fun UiAutomatorTestScope.mediaSessionPositionMs(): Long {
   val dump = device.executeShellCommand("dumpsys media_session")
   return Regex("position=(\\d+), buffered").find(dump)?.groupValues?.get(1)?.toLong() ?: -1L
+}
+
+/**
+ * The title the playback notification shows for the media item playing now, i.e. the title of
+ * the current chapter. Taken from the notification's own `android.title` extra, which holds
+ * the exact string; the media session dump joins the description fields with ", " and a
+ * chapter title may contain commas itself.
+ */
+fun UiAutomatorTestScope.playingMediaTitle(): String {
+  val dump = device.executeShellCommand("dumpsys notification --noredact")
+  val record =
+    dump
+      .split("NotificationRecord(")
+      .firstOrNull {
+        it.contains("pkg=$TARGET_PACKAGE") && it.contains("category=transport") && it.contains("android.title=")
+      }
+      ?: return ""
+  return Regex("android\\.title=String \\((.+)\\)\\s*$", RegexOption.MULTILINE)
+    .find(record)
+    ?.groupValues
+    ?.get(1)
+    ?: ""
 }
 
 fun UiAutomatorTestScope.assertAppAlive(

@@ -81,6 +81,9 @@ fun MiniPlayerComposable(
   val openLabel = stringResource(R.string.a11y_open)
   val closeLabel = stringResource(R.string.mini_player_action_close)
 
+  val currentChapterIndex by playerViewModel.currentChapterIndex.collectAsState()
+  val subtitle = provideMiniPlayerSubtitle(book, currentChapterIndex)
+
   var backgroundVisible by remember { mutableStateOf(true) }
 
   val dismissState =
@@ -195,7 +198,7 @@ fun MiniPlayerComposable(
             overflow = TextOverflow.Ellipsis,
           )
 
-          book.author?.let {
+          subtitle?.let {
             Text(
               text = it,
               style =
@@ -223,6 +226,21 @@ fun MiniPlayerComposable(
     }
   }
 }
+
+/**
+ * The second line of the mini player: the chapter (or podcast episode) that is playing now,
+ * falling back to the author while there is no playable chapter yet - an empty book, a stale
+ * index of a previous item, or a chapter without a title.
+ */
+internal fun provideMiniPlayerSubtitle(
+  book: DetailedItem,
+  chapterIndex: Int,
+): String? =
+  book.chapters
+    .getOrNull(chapterIndex)
+    ?.title
+    ?.takeIf { it.isNotBlank() }
+    ?: book.author
 
 @Composable
 private fun PlaybackProgressButton(
