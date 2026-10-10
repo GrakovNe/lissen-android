@@ -37,13 +37,23 @@ class SyncStateTest {
   private fun playing(
     session: PlaybackSession? = null,
     chapterIndex: Int = 1,
-  ) = SyncState().start(book).let { state -> session?.let { state.adopt(it, chapterIndex) } ?: state }
+  ) = SyncState().start(book).engage().let { state -> session?.let { state.adopt(it, chapterIndex) } ?: state }
 
   @Test
-  fun `start remembers the item and forgets the previous session and chapter`() {
+  fun `start remembers the item and forgets the previous session, chapter and engagement`() {
     val started = playing(PlaybackSession.local("book")).start(other)
 
     assertEquals(SyncState(item = other), started)
+  }
+
+  @Test
+  fun `engagement survives a session being adopted and released`() {
+    val engaged = SyncState().start(book).engage()
+    val adopted = engaged.adopt(PlaybackSession.local("book"), 1)
+
+    assertTrue(engaged.engaged)
+    assertTrue(adopted.engaged)
+    assertTrue(adopted.releaseLocal().engaged)
   }
 
   @Test

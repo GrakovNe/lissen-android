@@ -53,6 +53,16 @@ class PlaybackSynchronizationService
               handleSyncEvent()
             }
           }
+
+          override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int,
+          ) {
+            // only a seek: a queue set with a start position, as the media session applies one, reports
+            // a removal, and the adjustment of the prepare seek arrives after the start call
+            if (reason == Player.DISCONTINUITY_REASON_SEEK) syncState.update { it.engage() }
+          }
         },
       )
     }
@@ -120,11 +130,20 @@ class PlaybackSynchronizationService
 
       Timber.d("Trying to sync $overallProgress for ${currentItem.id}")
 
-      // before the return below: a pause that lands on the very start still ends the listening stretch
+      // before the start skip below: a pause that lands on the very start still ends the listening
+      // stretch, and a pause within the first seconds of play from there still reports
       listeningMark = accumulateListening(listeningMark, exoPlayer.isPlaying, SystemClock.elapsedRealtime())
+      if (exoPlayer.playWhenReady) syncState.update { it.engage() }
 
       if (overallProgress.currentTotalTime == 0.0) {
         Timber.d("Skipping sync for ${currentItem.id} due to playing doesn't started ")
+        return
+      }
+
+      // the stored position would go back truncated to milliseconds, which the server takes for
+      // new progress and drops the finished mark on
+      if (!syncState.value.engaged) {
+        Timber.d("Skipping sync for ${currentItem.id}: the queue is still where it was prepared")
         return
       }
 
