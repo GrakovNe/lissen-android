@@ -111,9 +111,9 @@ class SyncAfterPrepareTest {
   }
 
   @Test
-  fun `a seek while paused reports the position`() {
+  fun `a seek reports the position without any other player event`() {
     seek(5_000L)
-    playerEvent()
+    scheduler.runCurrent()
 
     coVerify(exactly = 1) { mediaProvider.syncProgress(session, item, 0, PlaybackProgress(5.0, 5.0), any()) }
   }

@@ -61,7 +61,10 @@ class PlaybackSynchronizationService
           ) {
             // only a seek: a queue set with a start position, as the media session applies one, reports
             // a removal, and the adjustment of the prepare seek arrives after the start call
-            if (reason == Player.DISCONTINUITY_REASON_SEEK) syncState.update { it.engage() }
+            if (reason != Player.DISCONTINUITY_REASON_SEEK) return
+            syncState.update { it.engage() }
+            // a seek on a player still buffering raises no other event
+            handleSyncEvent()
           }
         },
       )
