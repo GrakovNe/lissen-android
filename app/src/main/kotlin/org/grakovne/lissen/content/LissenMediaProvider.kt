@@ -194,7 +194,7 @@ class LissenMediaProvider
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-    ): OperationResult<PagedItems<LibraryEntry>> = fetchLibrary(libraryId, pageSize, pageNumber, preferences.getLibraryGrouping())
+    ): OperationResult<PagedItems<LibraryEntry>> = fetchLibrary(libraryId, pageSize, pageNumber, preferences.getLibraryGrouping(libraryId))
 
     suspend fun fetchLibrary(
       libraryId: String,

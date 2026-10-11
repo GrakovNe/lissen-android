@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
+import kotlinx.coroutines.delay
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
@@ -48,8 +50,12 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 private const val MAX_GROUP_COVERS = 3
 
+private const val PREFETCH_DWELL_MS = 200L
+
+/** [onPrefetch] loads the rows once the group has stayed on screen for a moment, so a tap on it opens at once. */
 @Composable
 fun <T> LibraryGroupComposable(
+  groupId: String,
   title: String,
   itemCount: Int,
   testTag: String,
@@ -59,10 +65,18 @@ fun <T> LibraryGroupComposable(
   onToggle: () -> Unit,
   subtitle: String? = null,
   @PluralsRes countPlurals: Int = R.plurals.series_books_count,
+  onPrefetch: (() -> Unit)? = null,
   cover: @Composable () -> Unit,
   itemRows: @Composable (List<T>) -> Unit,
 ) {
   val context = LocalContext.current
+
+  if (onPrefetch != null) {
+    LaunchedEffect(groupId) {
+      delay(PREFETCH_DWELL_MS)
+      onPrefetch()
+    }
+  }
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Row(

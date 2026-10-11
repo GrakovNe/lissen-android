@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -13,14 +12,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
-import kotlinx.coroutines.delay
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.seriesSequence
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-
-private const val SERIES_PREFETCH_DWELL_MS = 200L
 
 @Composable
 fun SeriesComposable(
@@ -33,12 +29,8 @@ fun SeriesComposable(
   onToggle: () -> Unit,
   onPrefetch: () -> Unit,
 ) {
-  LaunchedEffect(series.id) {
-    delay(SERIES_PREFETCH_DWELL_MS)
-    onPrefetch()
-  }
-
   LibraryGroupComposable(
+    groupId = series.id,
     title = series.title,
     subtitle = series.author?.takeIf { it.isNotBlank() },
     itemCount = series.bookCount,
@@ -47,6 +39,7 @@ fun SeriesComposable(
     loading = loading,
     items = books,
     onToggle = onToggle,
+    onPrefetch = onPrefetch,
     cover = { GroupCoverStack(groupId = series.id, coverItemIds = series.coverItemIds, imageLoader = imageLoader) },
     itemRows = {
       val sequences = it.mapIndexed { index, book -> book.seriesSequence() ?: "${index + 1}" }

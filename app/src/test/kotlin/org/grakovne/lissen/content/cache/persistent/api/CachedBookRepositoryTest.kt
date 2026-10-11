@@ -796,15 +796,29 @@ class CachedBookRepositoryTest {
       assertFalse(progressSlot.captured.isFinished)
     }
 
+  private fun member(
+    playlistId: String,
+    bookId: String,
+    episodeId: String? = null,
+    episodeTitle: String? = null,
+    position: Int,
+  ) = PlaylistMemberEntry(playlistId = playlistId, bookId = bookId, episodeId = episodeId, episodeTitle = episodeTitle, position = position)
+
   @Test
   fun `playlist grouping maps the cached rows into playlist entries`() =
     runBlocking {
       coEvery { bookDao.countRaw(any()) } returns 1
-      coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns
-        listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute", itemCount = 3, coverItemIds = "p1,b2"))
+      coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute", itemCount = 3))
+      coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns
+        listOf(
+          member("pl-1", "p1", episodeId = "e1", position = 0),
+          member("pl-1", "b2", position = 1),
+          member("pl-1", "p1", episodeId = "e2", position = 2),
+        )
 
       val playlists = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
 
+      // the covers follow the playlist order, one per item
       assertEquals(
         listOf(LibraryEntry.PlaylistEntry(id = "pl-1", name = "Commute", itemCount = 3, coverItemIds = listOf("p1", "b2"))),
         playlists.items,
@@ -842,9 +856,9 @@ class CachedBookRepositoryTest {
     runBlocking {
       coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns
         listOf(
-          PlaylistMemberEntry(bookId = "p1", episodeId = "e1", episodeTitle = "Monday", position = 0),
-          PlaylistMemberEntry(bookId = "b1", episodeId = null, episodeTitle = null, position = 1),
-          PlaylistMemberEntry(bookId = "p1", episodeId = "e2", episodeTitle = "Tuesday", position = 2),
+          member("pl-1", "p1", episodeId = "e1", episodeTitle = "Monday", position = 0),
+          member("pl-1", "b1", position = 1),
+          member("pl-1", "p1", episodeId = "e2", episodeTitle = "Tuesday", position = 2),
         )
       coEvery { bookDao.fetchBooksByIds(listOf("p1", "b1")) } returns listOf(entity("b1", author = "Andy Weir"), entity("p1"))
 

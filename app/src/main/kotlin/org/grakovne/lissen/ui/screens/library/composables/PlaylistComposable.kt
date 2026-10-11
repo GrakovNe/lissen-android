@@ -5,19 +5,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
-import kotlinx.coroutines.delay
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-
-private const val PLAYLIST_PREFETCH_DWELL_MS = 200L
 
 @Composable
 fun PlaylistComposable(
@@ -30,12 +26,8 @@ fun PlaylistComposable(
   onToggle: () -> Unit,
   onPrefetch: () -> Unit,
 ) {
-  LaunchedEffect(playlist.id) {
-    delay(PLAYLIST_PREFETCH_DWELL_MS)
-    onPrefetch()
-  }
-
   LibraryGroupComposable(
+    groupId = playlist.id,
     title = playlist.name,
     itemCount = playlist.itemCount,
     testTag = "playlistItem_${playlist.id}",
@@ -43,6 +35,7 @@ fun PlaylistComposable(
     loading = loading,
     items = items,
     onToggle = onToggle,
+    onPrefetch = onPrefetch,
     countPlurals = R.plurals.playlist_items_count,
     cover = { GroupCoverStack(groupId = playlist.id, coverItemIds = playlist.coverItemIds, imageLoader = imageLoader) },
     itemRows = { rows ->

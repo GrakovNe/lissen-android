@@ -35,7 +35,8 @@ class SettingsBackupManager
         audioFocusLossPolicy = playback.getAudioFocusLossPolicy().name,
         softwareCodecsEnabled = playback.getSoftwareCodecsEnabled(),
         hideCompleted = library.getHideCompleted(),
-        libraryGrouping = library.getLibraryGrouping().name,
+        libraryGrouping = library.getLibraryGrouping(library.activeLibraryId()).name,
+        libraryGroupings = library.getLibraryGroupings().mapValues { (_, grouping) -> grouping.name },
         libraryOrdering = library.getLibraryOrdering(),
         autoDownloadOptionId = download.getAutoDownloadOption().makeId(),
         autoDownloadNetworkType = download.getAutoDownloadNetworkType().name,
@@ -74,9 +75,16 @@ class SettingsBackupManager
       backup.softwareCodecsEnabled?.let { playback.saveSoftwareCodecsEnabled(it) }
       backup.hideCompleted?.let { library.saveHideCompleted(it) }
 
+      backup.libraryGroupings
+        ?.mapNotNull { (libraryId, name) -> runCatching { LibraryGrouping.valueOf(name) }.getOrNull()?.let { libraryId to it } }
+        ?.toMap()
+        ?.let { library.saveLibraryGroupings(it) }
+
+      // a backup made before groupings were kept per library applies to the active one
       backup.libraryGrouping
+        ?.takeIf { backup.libraryGroupings == null }
         ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }
-        ?.let { library.saveLibraryGrouping(it) }
+        ?.let { grouping -> library.activeLibraryId()?.let { library.saveLibraryGrouping(it, grouping) } }
 
       backup.libraryOrdering?.let { library.saveLibraryOrdering(it) }
       backup.autoDownloadOptionId?.let { download.saveAutoDownloadOption(it.makeDownloadOption()) }

@@ -75,13 +75,13 @@ class LibraryPlaylistsResponseConverterTest {
   private val response = LibraryPlaylistsResponse(results = listOf(books, episodes))
 
   @Test
-  fun `lists playlists by name with their item counts and the covers of their items`() {
+  fun `lists playlists by name, counting and covering only the rows that will show`() {
     val page = converter.apply(response, pageSize = 20, pageNumber = 0)
 
     assertEquals(
       listOf(
         LibraryEntry.PlaylistEntry(id = "pl-episodes", name = "Commute", itemCount = 3, coverItemIds = listOf("p1", "p2")),
-        LibraryEntry.PlaylistEntry(id = "pl-books", name = "Winter reads", itemCount = 3, coverItemIds = listOf("b2", "b1", "gone")),
+        LibraryEntry.PlaylistEntry(id = "pl-books", name = "Winter reads", itemCount = 2, coverItemIds = listOf("b2", "b1")),
       ),
       page.items,
     )

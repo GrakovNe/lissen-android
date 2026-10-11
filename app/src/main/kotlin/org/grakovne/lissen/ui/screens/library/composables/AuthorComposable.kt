@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -14,7 +13,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
-import kotlinx.coroutines.delay
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
@@ -22,8 +20,6 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.components.AuthorCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-
-private const val AUTHOR_PREFETCH_DWELL_MS = 200L
 
 @Composable
 fun AuthorComposable(
@@ -38,11 +34,6 @@ fun AuthorComposable(
 ) {
   val context = LocalContext.current
 
-  LaunchedEffect(author.id) {
-    delay(AUTHOR_PREFETCH_DWELL_MS)
-    onPrefetch()
-  }
-
   val imageRequest =
     remember(author.id) {
       ImageRequest
@@ -52,6 +43,7 @@ fun AuthorComposable(
     }
 
   LibraryGroupComposable(
+    groupId = author.id,
     title = author.name,
     itemCount = author.bookCount,
     testTag = "authorItem_${author.id}",
@@ -59,6 +51,7 @@ fun AuthorComposable(
     loading = loading,
     items = books,
     onToggle = onToggle,
+    onPrefetch = onPrefetch,
     cover = {
       AsyncShimmeringImage(
         imageRequest = imageRequest,

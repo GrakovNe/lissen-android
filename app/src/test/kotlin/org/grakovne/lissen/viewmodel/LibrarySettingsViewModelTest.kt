@@ -197,9 +197,20 @@ class LibrarySettingsViewModelTest {
   }
 
   @Test
-  fun `preferLibraryGrouping saves the grouping to preferences`() {
+  fun `preferLibraryGrouping saves the grouping for the active library`() {
+    every { libraryPreferences.activeLibraryId() } returns "l1"
+
     viewModel.preferLibraryGrouping(LibraryGrouping.SERIES)
 
-    verify { libraryPreferences.saveLibraryGrouping(LibraryGrouping.SERIES) }
+    verify { libraryPreferences.saveLibraryGrouping("l1", LibraryGrouping.SERIES) }
+  }
+
+  @Test
+  fun `preferLibraryGrouping saves nothing without an active library`() {
+    every { libraryPreferences.activeLibraryId() } returns null
+
+    viewModel.preferLibraryGrouping(LibraryGrouping.SERIES)
+
+    verify(exactly = 0) { libraryPreferences.saveLibraryGrouping(any(), any()) }
   }
 }

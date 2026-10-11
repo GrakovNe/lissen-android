@@ -63,13 +63,17 @@ class LibraryPlaylistsResponseConverter
             }
         }
 
-    private fun PlaylistResponse.toEntry() =
-      LibraryEntry.PlaylistEntry(
+    // counted over the rows the list will show, so the header never promises more than the rows
+    private fun PlaylistResponse.toEntry(): LibraryEntry.PlaylistEntry {
+      val rows = items.mapNotNull { it.toPlaylistItem() }
+
+      return LibraryEntry.PlaylistEntry(
         id = id,
         name = name,
-        itemCount = items.size,
-        coverItemIds = items.map { it.libraryItemId }.distinct(),
+        itemCount = rows.size,
+        coverItemIds = rows.map { it.book.id }.distinct(),
       )
+    }
 
     private fun PlaylistItemResponse.toPlaylistItem(): PlaylistItem? {
       val metadata = libraryItem?.media?.metadata ?: return null

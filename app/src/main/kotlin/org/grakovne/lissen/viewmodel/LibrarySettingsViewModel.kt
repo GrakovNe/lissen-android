@@ -85,7 +85,8 @@ class LibrarySettingsViewModel
     }
 
     fun preferLibraryGrouping(grouping: LibraryGrouping) {
-      Timber.d("User action: preferLibraryGrouping $grouping")
-      library.saveLibraryGrouping(grouping)
+      val libraryId = library.activeLibraryId() ?: return
+      Timber.d("User action: preferLibraryGrouping $grouping for $libraryId")
+      library.saveLibraryGrouping(libraryId, grouping)
     }
   }

@@ -17,7 +17,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
-import org.grakovne.lissen.content.cache.persistent.entity.PlaylistGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistMemberEntry
 import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -363,8 +363,7 @@ class CachedBookRepository
 
       val pageSql =
         """
-        SELECT book_playlists.playlistId AS id, book_playlists.playlistName AS name, COUNT(*) AS itemCount,
-          GROUP_CONCAT(DISTINCT book_playlists.bookId) AS coverItemIds
+        SELECT book_playlists.playlistId AS id, book_playlists.playlistName AS name, COUNT(*) AS itemCount
         FROM $PLAYLIST_MEMBERS_FROM
         $join
         WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_CACHED $filter
@@ -373,10 +372,20 @@ class CachedBookRepository
         LIMIT ? OFFSET ?
         """.trimIndent()
 
+      val headers = bookDao.fetchPlaylistGroupEntries(SimpleSQLiteQuery(pageSql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize)))
+
+      // the covers follow the playlist order, as they do online
+      val members = fetchPlaylistMembers(libraryId, headers.map { it.id }, libraryType).groupBy { it.playlistId }
+
       val items =
-        bookDao
-          .fetchPlaylistGroupEntries(SimpleSQLiteQuery(pageSql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize)))
-          .map { it.toEntry() }
+        headers.map { header ->
+          LibraryEntry.PlaylistEntry(
+            id = header.id,
+            name = header.name,
+            itemCount = header.itemCount,
+            coverItemIds = members[header.id].orEmpty().map { it.bookId }.distinct(),
+          )
+        }
 
       return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
     }
@@ -387,19 +396,7 @@ class CachedBookRepository
       playlistId: String,
       libraryType: LibraryType?,
     ): List<PlaylistItem> {
-      val (join, filter) = hideCompletedClauses(libraryType)
-
-      val sql =
-        """
-        SELECT book_playlists.bookId AS bookId, book_playlists.episodeId AS episodeId,
-          book_chapters.title AS episodeTitle, book_playlists.position AS position
-        FROM $PLAYLIST_MEMBERS_FROM
-        $join
-        WHERE detailed_books.libraryId = ? AND book_playlists.playlistId = ? AND $PLAYLIST_MEMBER_CACHED $filter
-        ORDER BY book_playlists.position ASC
-        """.trimIndent()
-
-      val members = bookDao.fetchPlaylistMemberEntries(SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, playlistId)))
+      val members = fetchPlaylistMembers(libraryId, listOf(playlistId), libraryType)
 
       if (members.isEmpty()) {
         return emptyList()
@@ -415,13 +412,29 @@ class CachedBookRepository
       }
     }
 
-    private fun PlaylistGroupEntry.toEntry() =
-      LibraryEntry.PlaylistEntry(
-        id = id,
-        name = name,
-        itemCount = itemCount,
-        coverItemIds = coverItemIds.split(',').filter { it.isNotBlank() },
-      )
+    /** The cached rows of the given playlists, each playlist's rows in its own order. */
+    private suspend fun fetchPlaylistMembers(
+      libraryId: String,
+      playlistIds: List<String>,
+      libraryType: LibraryType?,
+    ): List<PlaylistMemberEntry> {
+      if (playlistIds.isEmpty()) return emptyList()
+
+      val (join, filter) = hideCompletedClauses(libraryType)
+      val placeholders = playlistIds.joinToString(", ") { "?" }
+
+      val sql =
+        """
+        SELECT book_playlists.playlistId AS playlistId, book_playlists.bookId AS bookId, book_playlists.episodeId AS episodeId,
+          book_chapters.title AS episodeTitle, book_playlists.position AS position
+        FROM $PLAYLIST_MEMBERS_FROM
+        $join
+        WHERE detailed_books.libraryId = ? AND book_playlists.playlistId IN ($placeholders) AND $PLAYLIST_MEMBER_CACHED $filter
+        ORDER BY book_playlists.playlistId ASC, book_playlists.position ASC
+        """.trimIndent()
+
+      return bookDao.fetchPlaylistMemberEntries(SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, *playlistIds.toTypedArray())))
+    }
 
     private suspend fun fetchNameGroups(
       grouping: NameGrouping,

@@ -19,6 +19,7 @@ fun NarratorComposable(
   onToggle: () -> Unit,
 ) {
   LibraryGroupComposable(
+    groupId = narrator.id,
     title = narrator.name,
     itemCount = narrator.bookCount,
     testTag = "narratorItem_${narrator.id}",

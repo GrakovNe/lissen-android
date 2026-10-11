@@ -162,7 +162,7 @@ class CachedBookGroupingTest {
       val commute = groups.items[1] as LibraryEntry.PlaylistEntry
       assertEquals("Commute", commute.name)
       assertEquals(2, commute.itemCount)
-      assertEquals(setOf("b1", "p1"), commute.coverItemIds.toSet())
+      assertEquals(listOf("b1", "p1"), commute.coverItemIds)
 
       val rows = repository.fetchPlaylistItems(LIBRARY, "pl-mix", libraryType = null)
       assertEquals(listOf("b1" to null, "p1" to "e1"), rows.map { it.book.id to it.episodeId })

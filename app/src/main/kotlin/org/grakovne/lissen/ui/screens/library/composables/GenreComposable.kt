@@ -19,6 +19,7 @@ fun GenreComposable(
   onToggle: () -> Unit,
 ) {
   LibraryGroupComposable(
+    groupId = genre.id,
     title = genre.name,
     itemCount = genre.bookCount,
     testTag = "genreItem_${genre.id}",

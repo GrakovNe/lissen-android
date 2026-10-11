@@ -115,6 +115,17 @@ class SettingsBackupManagerTest {
     }
 
     @Test
+    fun `maps the grouping of every library and names the active library's one`() {
+      every { sharedPreferences.getString("preferred_library_id", any()) } returns "l2"
+      every { sharedPreferences.getString("library_groupings", any()) } returns """{"l1":"SERIES","l2":"PLAYLIST"}"""
+
+      val backup = preferences.exportSettings()
+
+      assertEquals(mapOf("l1" to "SERIES", "l2" to "PLAYLIST"), backup.libraryGroupings)
+      assertEquals("PLAYLIST", backup.libraryGrouping)
+    }
+
+    @Test
     fun `maps auto download option id via DownloadOption encoding`() {
       every { sharedPreferences.getString("preferred_auto_download", null) } returns "current_item"
 
@@ -307,6 +318,23 @@ class SettingsBackupManagerTest {
     fun `ignores invalid library grouping string`() {
       preferences.importSettings(SettingsBackup(libraryGrouping = "NOT_A_GROUPING"))
       verify(exactly = 0) { editor.putString("library_grouping", any()) }
+      verify(exactly = 0) { editor.putString("library_groupings", any()) }
+    }
+
+    @Test
+    fun `restores the grouping of every library`() {
+      preferences.importSettings(SettingsBackup(libraryGroupings = mapOf("l1" to "SERIES", "l2" to "PLAYLIST", "l3" to "NOT_A_GROUPING")))
+
+      verify { editor.putString("library_groupings", """{"l1":"SERIES","l2":"PLAYLIST"}""") }
+    }
+
+    @Test
+    fun `an old backup's single grouping applies to the active library`() {
+      every { sharedPreferences.getString("preferred_library_id", any()) } returns "l1"
+
+      preferences.importSettings(SettingsBackup(libraryGrouping = "AUTHOR"))
+
+      verify { editor.putString("library_groupings", """{"l1":"AUTHOR"}""") }
     }
 
     @Test

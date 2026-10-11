@@ -164,7 +164,8 @@ fun AppNavHost(
         val bookTitle = navigationStack.arguments?.getString(ARG_BOOK_TITLE) ?: ""
         val bookSubtitle = navigationStack.arguments?.getString(ARG_BOOK_SUBTITLE)
         val startInstantly = navigationStack.arguments?.getBoolean(ARG_START_INSTANTLY) ?: false
-        val chapterId = navigationStack.arguments?.getString(ARG_CHAPTER_ID)
+        // a chapter is opened once: taken out of the entry's state so a return to the screen does not reopen it
+        val chapterId = remember(navigationStack) { navigationStack.savedStateHandle.remove<String>(ARG_CHAPTER_ID) }
 
         PlayerScreen(
           navController = navigationService,

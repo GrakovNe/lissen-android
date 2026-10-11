@@ -540,7 +540,7 @@ class LissenMediaProviderTest {
       runBlocking {
         val paged = PagedItems(items = listOf<LibraryEntry>(), currentPage = 0, totalItems = 0)
         every { preferences.isForceCache() } returns true
-        every { preferences.getLibraryGrouping() } returns LibraryGrouping.NONE
+        every { preferences.getLibraryGrouping("l1") } returns LibraryGrouping.NONE
         coEvery {
           localCacheRepository.fetchLibrary("l1", 10, 0, LibraryGrouping.NONE)
         } returns OperationResult.Success(paged)
@@ -556,7 +556,7 @@ class LissenMediaProviderTest {
       runBlocking {
         val paged = PagedItems(items = listOf<LibraryEntry>(), currentPage = 0, totalItems = 0)
         every { preferences.isForceCache() } returns false
-        every { preferences.getLibraryGrouping() } returns LibraryGrouping.NONE
+        every { preferences.getLibraryGrouping("l1") } returns LibraryGrouping.NONE
         coEvery {
           mediaChannel.fetchLibrary("l1", 10, 0, LibraryGrouping.NONE)
         } returns OperationResult.Success(paged)

@@ -25,6 +25,7 @@ data class SettingsBackup(
   val softwareCodecsEnabled: Boolean? = null,
   val hideCompleted: Boolean? = null,
   val libraryGrouping: String? = null,
+  val libraryGroupings: Map<String, String>? = null,
   val libraryOrdering: LibraryOrderingConfiguration? = null,
   val autoDownloadOptionId: String? = null,
   val autoDownloadNetworkType: String? = null,

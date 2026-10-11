@@ -4,6 +4,7 @@ import androidx.annotation.Keep
 
 @Keep
 data class PlaylistMemberEntry(
+  val playlistId: String,
   val bookId: String,
   val episodeId: String?,
   val episodeTitle: String?,
