@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -32,6 +34,7 @@ import org.grakovne.lissen.viewmodel.LibraryViewModel
 @Composable
 fun LibraryFallbackComposable(
   searchRequested: Boolean,
+  grouping: LibraryGrouping,
   contentCachingModelView: CachingModelView,
   libraryViewModel: LibraryViewModel,
   networkService: NetworkService,
@@ -51,11 +54,16 @@ fun LibraryFallbackComposable(
     ) {
       val hasNetwork = networkService.isNetworkAvailable()
       val isLocalCache = contentCachingModelView.localCacheUsing()
+      val playlists = grouping == LibraryGrouping.PLAYLIST
 
       val text =
         when {
           searchRequested -> {
             null
+          }
+
+          playlists && (isLocalCache || hasNetwork) -> {
+            stringResource(R.string.no_playlists_yet)
           }
 
           isLocalCache -> {
@@ -77,6 +85,7 @@ fun LibraryFallbackComposable(
       val icon =
         when {
           searchRequested -> null
+          playlists && (isLocalCache || hasNetwork) -> Icons.AutoMirrored.Filled.PlaylistPlay
           isLocalCache -> Icons.AutoMirrored.Filled.LibraryBooks
           hasNetwork.not() -> Icons.Filled.WifiOff
           else -> Icons.AutoMirrored.Filled.LibraryBooks
