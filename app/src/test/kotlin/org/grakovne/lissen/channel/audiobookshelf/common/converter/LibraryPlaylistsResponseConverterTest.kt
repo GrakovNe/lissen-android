@@ -74,17 +74,15 @@ class LibraryPlaylistsResponseConverterTest {
 
   private val response = LibraryPlaylistsResponse(results = listOf(books, episodes))
 
+  private fun entries() = converter.apply(response, pageSize = 20, pageNumber = 0).items.map { it as LibraryEntry.PlaylistEntry }
+
   @Test
   fun `lists playlists by name, counting and covering only the rows that will show`() {
-    val page = converter.apply(response, pageSize = 20, pageNumber = 0)
+    val page = entries()
 
-    assertEquals(
-      listOf(
-        LibraryEntry.PlaylistEntry(id = "pl-episodes", name = "Commute", itemCount = 3, coverItemIds = listOf("p1", "p2")),
-        LibraryEntry.PlaylistEntry(id = "pl-books", name = "Winter reads", itemCount = 2, coverItemIds = listOf("b2", "b1")),
-      ),
-      page.items,
-    )
+    assertEquals(listOf("Commute", "Winter reads"), page.map { it.name })
+    assertEquals(listOf(3, 2), page.map { it.itemCount })
+    assertEquals(listOf(listOf("p1", "p2"), listOf("b2", "b1")), page.map { it.coverItemIds })
   }
 
   @Test
@@ -103,7 +101,7 @@ class LibraryPlaylistsResponseConverterTest {
         PlaylistItem(Book(id = "b2", title = "Dune Messiah", subtitle = null, author = "Frank Herbert", series = "Dune #2")),
         PlaylistItem(Book(id = "b1", title = "Dune", subtitle = null, author = "Frank Herbert", series = "Dune #1")),
       ),
-      converter.items(response, "pl-books"),
+      entries().first { it.id == "pl-books" }.items,
     )
   }
 
@@ -113,13 +111,8 @@ class LibraryPlaylistsResponseConverterTest {
 
     assertEquals(
       PlaylistItem(book = podcast, episodeId = "e1", episodeTitle = "Monday"),
-      converter.items(response, "pl-episodes").first(),
+      entries().first { it.id == "pl-episodes" }.items.first(),
     )
-  }
-
-  @Test
-  fun `an unknown playlist has no items`() {
-    assertEquals(emptyList<PlaylistItem>(), converter.items(response, "missing"))
   }
 
   @Test

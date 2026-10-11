@@ -16,7 +16,8 @@ data class DetailedItem(
   val genres: List<String> = emptyList(),
   val publisher: String?,
   val series: List<BookSeries>,
-  val playlists: List<BookPlaylist> = emptyList(),
+  // null while the playlists are not known, which is not the same as none
+  val playlists: List<BookPlaylist>? = null,
   val year: String?,
   val abstract: String?,
   val files: List<BookFile>,
@@ -30,7 +31,7 @@ data class DetailedItem(
 ) : Serializable {
   companion object {
     fun DetailedItem.same(other: DetailedItem) =
-      this.copy(progress = null, libraryType = null) == other.copy(progress = null, libraryType = null)
+      this.copy(progress = null, libraryType = null, playlists = null) == other.copy(progress = null, libraryType = null, playlists = null)
   }
 }
 

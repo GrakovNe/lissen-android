@@ -90,8 +90,10 @@ interface CachedBookDao {
           )
         }
 
+    val cachedBook = fetchCachedBook(book.id)
+
     val cachedBookChapters =
-      fetchCachedBook(book.id)
+      cachedBook
         ?.chapters
         ?: emptyList()
 
@@ -131,10 +133,11 @@ interface CachedBookDao {
         .distinct()
         .map { BookGenreEntity(bookId = book.id, genre = it) }
 
+    // replacing the book row cascades into its playlists, so unknown playlists are the stored ones written again
     val bookPlaylists =
       book
         .playlists
-        .map {
+        ?.map {
           BookPlaylistEntity(
             bookId = book.id,
             playlistId = it.id,
@@ -143,6 +146,7 @@ interface CachedBookDao {
             position = it.position,
           )
         }
+        ?: cachedBook?.playlists?.map { it.copy(id = 0L) }.orEmpty()
 
     val mediaProgress =
       book

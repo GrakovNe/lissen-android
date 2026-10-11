@@ -808,20 +808,24 @@ class CachedBookRepositoryTest {
   fun `playlist grouping maps the cached rows into playlist entries`() =
     runBlocking {
       coEvery { bookDao.countRaw(any()) } returns 1
-      coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute", itemCount = 3))
+      coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute"))
       coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns
         listOf(
-          member("pl-1", "p1", episodeId = "e1", position = 0),
+          member("pl-1", "p1", episodeId = "e1", episodeTitle = "Monday", position = 0),
           member("pl-1", "b2", position = 1),
-          member("pl-1", "p1", episodeId = "e2", position = 2),
+          member("pl-1", "p1", episodeId = "e2", episodeTitle = "Tuesday", position = 2),
         )
+      coEvery { bookDao.fetchBooksByIds(listOf("p1", "b2")) } returns listOf(entity("b2", author = "Andy Weir"), entity("p1"))
 
       val playlists = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
+      val commute = playlists.items.single() as LibraryEntry.PlaylistEntry
 
-      assertEquals(
-        listOf(LibraryEntry.PlaylistEntry(id = "pl-1", name = "Commute", itemCount = 3, coverItemIds = listOf("p1", "b2"))),
-        playlists.items,
-      )
+      assertEquals("Commute", commute.name)
+      assertEquals(3, commute.itemCount)
+      assertEquals(listOf("p1", "b2"), commute.coverItemIds)
+      assertEquals(listOf("p1" to "Monday", "b2" to null, "p1" to "Tuesday"), commute.items.map { it.book.id to it.episodeTitle })
+      assertEquals(listOf("e1", null, "e2"), commute.items.map { it.episodeId })
+      assertEquals("Andy Weir", commute.items[1].book.author)
       assertEquals(1, playlists.totalItems)
     }
 
@@ -851,29 +855,15 @@ class CachedBookRepositoryTest {
     }
 
   @Test
-  fun `playlist items keep the playlist order and name the episode of a podcast row`() =
+  fun `playlist grouping without cached members skips the book lookup`() =
     runBlocking {
-      coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns
-        listOf(
-          member("pl-1", "p1", episodeId = "e1", episodeTitle = "Monday", position = 0),
-          member("pl-1", "b1", position = 1),
-          member("pl-1", "p1", episodeId = "e2", episodeTitle = "Tuesday", position = 2),
-        )
-      coEvery { bookDao.fetchBooksByIds(listOf("p1", "b1")) } returns listOf(entity("b1", author = "Andy Weir"), entity("p1"))
-
-      val items = repository.fetchPlaylistItems(LIBRARY_ID, "pl-1", libraryType = null)
-
-      assertEquals(listOf("p1" to "Monday", "b1" to null, "p1" to "Tuesday"), items.map { it.book.id to it.episodeTitle })
-      assertEquals(listOf("e1", null, "e2"), items.map { it.episodeId })
-      assertEquals("Andy Weir", items[1].book.author)
-    }
-
-  @Test
-  fun `playlist items of an empty playlist skip the book lookup`() =
-    runBlocking {
+      coEvery { bookDao.countRaw(any()) } returns 1
+      coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute"))
       coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns emptyList()
 
-      assertTrue(repository.fetchPlaylistItems(LIBRARY_ID, "pl-1", libraryType = null).isEmpty())
+      val commute = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null).items.single()
+
+      assertTrue((commute as LibraryEntry.PlaylistEntry).items.isEmpty())
       coVerify(exactly = 0) { bookDao.fetchBooksByIds(any()) }
     }
 

@@ -25,7 +25,6 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
-import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -271,19 +270,6 @@ class LissenMediaProvider
       return cacheOrChannel(
         local = { localCacheRepository.fetchNarratorItems(libraryId = libraryId, narrator = narrator) },
         remote = { providePreferredChannel().fetchNarratorBooks(libraryId = libraryId, narrator = narrator) },
-      )
-    }
-
-    suspend fun fetchPlaylistItems(
-      libraryId: String,
-      playlistId: String,
-      libraryType: LibraryType? = null,
-    ): OperationResult<List<PlaylistItem>> {
-      Timber.d("Fetching playlist items: libraryId=$libraryId, playlistId=$playlistId")
-
-      return cacheOrChannel(
-        local = { localCacheRepository.fetchPlaylistItems(libraryId = libraryId, playlistId = playlistId) },
-        remote = { provideChannelFor(libraryType).fetchPlaylistItems(libraryId = libraryId, playlistId = playlistId) },
       )
     }
 

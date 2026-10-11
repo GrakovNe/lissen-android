@@ -20,6 +20,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookGenreEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookPlaylistEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.domain.BookPlaylist
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
@@ -163,11 +164,22 @@ class CachedBookGroupingTest {
       assertEquals("Commute", commute.name)
       assertEquals(2, commute.itemCount)
       assertEquals(listOf("b1", "p1"), commute.coverItemIds)
+      assertEquals(listOf("b1" to null, "p1" to "e1"), commute.items.map { it.book.id to it.episodeId })
+      assertEquals("Monday", commute.items[1].episodeTitle)
+      assertEquals("Daily News", commute.items[1].book.title)
+    }
 
-      val rows = repository.fetchPlaylistItems(LIBRARY, "pl-mix", libraryType = null)
-      assertEquals(listOf("b1" to null, "p1" to "e1"), rows.map { it.book.id to it.episodeId })
-      assertEquals("Monday", rows[1].episodeTitle)
-      assertEquals("Daily News", rows[1].book.title)
+  @Test
+  fun upsertCachedBook_keepsThePlaylistsWhenTheyAreUnknown_andDropsThemWhenThereAreNone() =
+    runBlocking {
+      val listed = detailedItem(genres = emptyList()).copy(playlists = listOf(BookPlaylist(id = "pl-1", name = "Commute", position = 0)))
+      dao.upsertCachedBook(listed, emptyList(), emptyList())
+
+      dao.upsertCachedBook(listed.copy(playlists = null), emptyList(), emptyList())
+      assertEquals(listOf("pl-1"), dao.fetchCachedBook("b1")?.playlists?.map { it.playlistId })
+
+      dao.upsertCachedBook(listed.copy(playlists = emptyList()), emptyList(), emptyList())
+      assertEquals(emptyList<String>(), dao.fetchCachedBook("b1")?.playlists?.map { it.playlistId })
     }
 
   @Test

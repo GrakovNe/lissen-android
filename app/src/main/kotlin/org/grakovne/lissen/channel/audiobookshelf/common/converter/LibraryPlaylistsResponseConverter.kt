@@ -29,17 +29,6 @@ class LibraryPlaylistsResponseConverter
         .sortedBy { it.name.lowercase() }
         .page(pageSize, pageNumber)
 
-    fun items(
-      response: LibraryPlaylistsResponse,
-      playlistId: String,
-    ): List<PlaylistItem> =
-      response
-        .results
-        .firstOrNull { it.id == playlistId }
-        ?.items
-        .orEmpty()
-        .mapNotNull { it.toPlaylistItem() }
-
     fun memberships(
       response: LibraryPlaylistsResponse,
       itemId: String,
@@ -61,17 +50,12 @@ class LibraryPlaylistsResponseConverter
             }
         }
 
-    // the header counts the rows the list will show
-    private fun PlaylistResponse.toEntry(): LibraryEntry.PlaylistEntry {
-      val rows = items.mapNotNull { it.toPlaylistItem() }
-
-      return LibraryEntry.PlaylistEntry(
+    private fun PlaylistResponse.toEntry() =
+      LibraryEntry.PlaylistEntry(
         id = id,
         name = name,
-        itemCount = rows.size,
-        coverItemIds = rows.map { it.book.id }.distinct(),
+        items = items.mapNotNull { it.toPlaylistItem() },
       )
-    }
 
     private fun PlaylistItemResponse.toPlaylistItem(): PlaylistItem? {
       val metadata = libraryItem?.media?.metadata ?: return null

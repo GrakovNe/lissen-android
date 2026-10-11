@@ -18,7 +18,6 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.asLibraryEntries
 import java.io.File
@@ -200,17 +199,6 @@ class LocalCacheRepository
         }
       }
     }
-
-    suspend fun fetchPlaylistItems(
-      libraryId: String,
-      playlistId: String,
-    ): OperationResult<List<PlaylistItem>> =
-      cachedBookRepository
-        .fetchPlaylistItems(
-          libraryId = libraryId,
-          playlistId = playlistId,
-          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
-        ).let { OperationResult.Success(it) }
 
     suspend fun fetchSeriesItems(
       libraryId: String,

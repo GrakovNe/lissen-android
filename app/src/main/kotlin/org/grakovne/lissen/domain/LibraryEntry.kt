@@ -43,9 +43,14 @@ sealed interface LibraryEntry {
   data class PlaylistEntry(
     val id: String,
     val name: String,
-    val itemCount: Int,
-    val coverItemIds: List<String>,
-  ) : LibraryEntry
+    val items: List<PlaylistItem>,
+  ) : LibraryEntry {
+    val itemCount: Int
+      get() = items.size
+
+    val coverItemIds: List<String>
+      get() = items.map { it.book.id }.distinct()
+  }
 }
 
 fun List<LibraryEntry>.page(

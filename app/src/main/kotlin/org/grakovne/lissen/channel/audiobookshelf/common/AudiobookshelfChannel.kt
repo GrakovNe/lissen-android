@@ -35,7 +35,6 @@ import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import java.io.File
@@ -118,14 +117,6 @@ abstract class AudiobookshelfChannel(
       .fetchLibrary(libraryId)
       .map { libraryResponseConverter.apply(it) }
 
-  override suspend fun fetchPlaylistItems(
-    libraryId: String,
-    playlistId: String,
-  ): OperationResult<List<PlaylistItem>> =
-    dataRepository
-      .fetchLibraryPlaylists(libraryId)
-      .map { libraryPlaylistsResponseConverter.items(it, playlistId) }
-
   protected suspend fun fetchPlaylists(
     libraryId: String,
     pageSize: Int,
@@ -135,16 +126,16 @@ abstract class AudiobookshelfChannel(
       .fetchLibraryPlaylists(libraryId)
       .map { libraryPlaylistsResponseConverter.apply(it, pageSize, pageNumber) }
 
-  // an item response carries no playlists: they come from the library's list
+  // an item response carries no playlists: they come from the library's list, and stay unknown when it fails
   protected suspend fun fetchItemPlaylists(
     libraryId: String,
     itemId: String,
-  ): List<BookPlaylist> =
+  ): List<BookPlaylist>? =
     dataRepository
       .fetchLibraryPlaylists(libraryId)
       .fold(
         onSuccess = { libraryPlaylistsResponseConverter.memberships(it, itemId) },
-        onFailure = { emptyList() },
+        onFailure = { null },
       )
 
   override fun fetchConnectionHost(): OperationResult<Host> =

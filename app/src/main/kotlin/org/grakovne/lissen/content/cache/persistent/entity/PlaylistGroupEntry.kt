@@ -6,5 +6,4 @@ import androidx.annotation.Keep
 data class PlaylistGroupEntry(
   val id: String,
   val name: String,
-  val itemCount: Int,
 )

@@ -19,12 +19,9 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 fun PlaylistComposable(
   playlist: LibraryEntry.PlaylistEntry,
   expanded: Boolean,
-  loading: Boolean,
-  items: List<PlaylistItem>,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
   onToggle: () -> Unit,
-  onPrefetch: () -> Unit,
 ) {
   LibraryGroupComposable(
     groupId = playlist.id,
@@ -32,10 +29,9 @@ fun PlaylistComposable(
     itemCount = playlist.itemCount,
     testTag = "playlistItem_${playlist.id}",
     expanded = expanded,
-    loading = loading,
-    items = items,
+    loading = false,
+    items = playlist.items,
     onToggle = onToggle,
-    onPrefetch = onPrefetch,
     countPlurals = R.plurals.playlist_items_count,
     cover = { GroupCoverStack(groupId = playlist.id, coverItemIds = playlist.coverItemIds, imageLoader = imageLoader) },
     itemRows = { rows ->

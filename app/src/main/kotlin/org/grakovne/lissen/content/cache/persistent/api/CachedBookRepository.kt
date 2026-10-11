@@ -363,7 +363,7 @@ class CachedBookRepository
 
       val pageSql =
         """
-        SELECT book_playlists.playlistId AS id, book_playlists.playlistName AS name, COUNT(*) AS itemCount
+        SELECT book_playlists.playlistId AS id, book_playlists.playlistName AS name
         FROM $PLAYLIST_MEMBERS_FROM
         $join
         WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_CACHED $filter
@@ -374,41 +374,35 @@ class CachedBookRepository
 
       val headers = bookDao.fetchPlaylistGroupEntries(SimpleSQLiteQuery(pageSql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize)))
 
-      // the covers follow the playlist order, as they do online
-      val members = fetchPlaylistMembers(libraryId, headers.map { it.id }, libraryType).groupBy { it.playlistId }
+      val members = fetchPlaylistMembers(libraryId, headers.map { it.id }, libraryType)
+
+      val books =
+        members
+          .map { it.bookId }
+          .distinct()
+          .takeIf { it.isNotEmpty() }
+          ?.let { ids -> bookDao.fetchBooksByIds(ids).associate { it.id to cachedBookEntityConverter.apply(it) } }
+          .orEmpty()
+
+      val rows =
+        members
+          .groupBy { it.playlistId }
+          .mapValues { (_, playlistMembers) ->
+            playlistMembers.mapNotNull { member ->
+              books[member.bookId]?.let { PlaylistItem(book = it, episodeId = member.episodeId, episodeTitle = member.episodeTitle) }
+            }
+          }
 
       val items =
         headers.map { header ->
           LibraryEntry.PlaylistEntry(
             id = header.id,
             name = header.name,
-            itemCount = header.itemCount,
-            coverItemIds = members[header.id].orEmpty().map { it.bookId }.distinct(),
+            items = rows[header.id].orEmpty(),
           )
         }
 
       return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
-    }
-
-    suspend fun fetchPlaylistItems(
-      libraryId: String,
-      playlistId: String,
-      libraryType: LibraryType?,
-    ): List<PlaylistItem> {
-      val members = fetchPlaylistMembers(libraryId, listOf(playlistId), libraryType)
-
-      if (members.isEmpty()) {
-        return emptyList()
-      }
-
-      val books =
-        bookDao
-          .fetchBooksByIds(members.map { it.bookId }.distinct())
-          .associate { it.id to cachedBookEntityConverter.apply(it) }
-
-      return members.mapNotNull { member ->
-        books[member.bookId]?.let { PlaylistItem(book = it, episodeId = member.episodeId, episodeTitle = member.episodeTitle) }
-      }
     }
 
     private suspend fun fetchPlaylistMembers(

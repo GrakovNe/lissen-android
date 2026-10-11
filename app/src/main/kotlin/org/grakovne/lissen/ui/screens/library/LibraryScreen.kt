@@ -598,12 +598,9 @@ fun LibraryScreen(
                     PlaylistComposable(
                       playlist = entry,
                       expanded = entry.id in groups.expanded,
-                      loading = entry.id in groups.loading,
-                      items = groups.playlistItems[entry.id].orEmpty(),
                       imageLoader = imageLoader,
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },
-                      onPrefetch = { libraryViewModel.prefetchGroup(entry) },
                     )
                   }
                 }
