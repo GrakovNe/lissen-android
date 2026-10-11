@@ -16,7 +16,7 @@ import javax.inject.Singleton
 import kotlin.math.roundToInt
 
 @Singleton
-class SeriesCoverComposer
+class GroupCoverComposer
   @Inject
   constructor() {
     fun compose(covers: List<File>): Buffer? {

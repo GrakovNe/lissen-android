@@ -14,7 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.R
-import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
+import org.grakovne.lissen.content.cache.temporary.GroupCoverProvider
 import java.io.File
 
 @EntryPoint
@@ -25,24 +25,24 @@ interface LissenMediaProviderEntryPoint {
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
-interface SeriesCoverProviderEntryPoint {
-  fun getSeriesCoverProvider(): SeriesCoverProvider
+interface GroupCoverProviderEntryPoint {
+  fun getGroupCoverProvider(): GroupCoverProvider
 }
 
 class ExternalCoverProvider : FileProvider() {
   companion object {
     const val BOOK_PATH = "book"
-    const val SERIES_PATH = "series"
+    const val GROUP_PATH = "group"
 
     fun bookCoverUri(bookId: String) = "content://${BuildConfig.APPLICATION_ID}.cover/$BOOK_PATH/$bookId".toUri()
 
-    /** Builds content://<authority>/series/<seriesId>/<bookId1>,<bookId2>,... with at most 3 ids. */
-    fun seriesCoverUri(
-      seriesId: String,
+    /** Builds content://<authority>/group/<groupId>/<bookId1>,<bookId2>,... with at most 3 ids. */
+    fun groupCoverUri(
+      groupId: String,
       coverItemIds: List<String>,
     ): Uri {
       val encodedIds = coverItemIds.take(3).joinToString(",")
-      return "content://${BuildConfig.APPLICATION_ID}.cover/$SERIES_PATH/$seriesId/$encodedIds".toUri()
+      return "content://${BuildConfig.APPLICATION_ID}.cover/$GROUP_PATH/$groupId/$encodedIds".toUri()
     }
   }
 
@@ -54,12 +54,12 @@ class ExternalCoverProvider : FileProvider() {
         .getLissenMediaProvider()
     }
 
-  private val seriesCoverProvider: SeriesCoverProvider
+  private val groupCoverProvider: GroupCoverProvider
     get() {
       val appContext = requireNotNull(context).applicationContext
       return EntryPointAccessors
-        .fromApplication(appContext, SeriesCoverProviderEntryPoint::class.java)
-        .getSeriesCoverProvider()
+        .fromApplication(appContext, GroupCoverProviderEntryPoint::class.java)
+        .getGroupCoverProvider()
     }
 
   override fun openAssetFile(
@@ -71,7 +71,7 @@ class ExternalCoverProvider : FileProvider() {
 
     return when (segments[0]) {
       BOOK_PATH -> openBookCoverFile(uri)
-      SERIES_PATH -> openSeriesCoverFile(uri)
+      GROUP_PATH -> openGroupCoverFile(uri)
       else -> fallbackCover()
     }
   }
@@ -95,16 +95,16 @@ class ExternalCoverProvider : FileProvider() {
     }
   }
 
-  private fun openSeriesCoverFile(uri: Uri): AssetFileDescriptor? {
+  private fun openGroupCoverFile(uri: Uri): AssetFileDescriptor? {
     val segments = uri.pathSegments
     if (segments.size < 3) return fallbackCover()
 
-    val seriesId = segments[1]
+    val groupId = segments[1]
     val coverItemIds = segments[2].split(",").filter { it.isNotBlank() }
 
     return runBlocking(Dispatchers.IO) {
-      seriesCoverProvider
-        .provideSeriesCover(seriesId = seriesId, coverItemIds = coverItemIds)
+      groupCoverProvider
+        .provideGroupCover(groupId = groupId, coverItemIds = coverItemIds)
         .fold(
           onSuccess = { it.toAssetFileDescriptor() },
           onFailure = { fallbackCover() },

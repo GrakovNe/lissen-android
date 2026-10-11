@@ -11,19 +11,20 @@ import coil3.request.Options
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
+import org.grakovne.lissen.content.cache.temporary.GroupCoverProvider
 
-data class SeriesCoverKey(
-  val seriesId: String,
+/** The covers of up to a few items of a group (a series, a playlist) stacked into one tile. */
+data class GroupCoverKey(
+  val groupId: String,
   val coverItemIds: List<String>,
 )
 
-class SeriesCoverFetcher(
-  private val seriesCoverProvider: SeriesCoverProvider,
-  private val key: SeriesCoverKey,
+class GroupCoverFetcher(
+  private val groupCoverProvider: GroupCoverProvider,
+  private val key: GroupCoverKey,
 ) : Fetcher {
   override suspend fun fetch(): FetchResult? =
-    when (val response = seriesCoverProvider.provideSeriesCover(key.seriesId, key.coverItemIds)) {
+    when (val response = groupCoverProvider.provideGroupCover(key.groupId, key.coverItemIds)) {
       is OperationResult.Error -> {
         null
       }
@@ -42,19 +43,19 @@ class SeriesCoverFetcher(
     }
 }
 
-class SeriesCoverFetcherFactory(
-  private val seriesCoverProvider: SeriesCoverProvider,
-) : Fetcher.Factory<SeriesCoverKey> {
+class GroupCoverFetcherFactory(
+  private val groupCoverProvider: GroupCoverProvider,
+) : Fetcher.Factory<GroupCoverKey> {
   override fun create(
-    data: SeriesCoverKey,
+    data: GroupCoverKey,
     options: Options,
     imageLoader: ImageLoader,
-  ): SeriesCoverFetcher = SeriesCoverFetcher(seriesCoverProvider, data)
+  ): GroupCoverFetcher = GroupCoverFetcher(groupCoverProvider, data)
 }
 
-class SeriesCoverKeyer : Keyer<SeriesCoverKey> {
+class GroupCoverKeyer : Keyer<GroupCoverKey> {
   override fun key(
-    data: SeriesCoverKey,
+    data: GroupCoverKey,
     options: Options,
-  ): String = "series:${data.seriesId}:${data.coverItemIds.joinToString(",")}"
+  ): String = "group:${data.groupId}:${data.coverItemIds.joinToString(",")}"
 }

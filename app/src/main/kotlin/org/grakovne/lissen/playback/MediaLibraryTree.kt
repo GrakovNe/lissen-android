@@ -359,7 +359,7 @@ class MediaLibraryTree
         mediaType = MediaMetadata.MEDIA_TYPE_FOLDER_AUDIO_BOOKS,
         isPlayable = false,
         isBrowsable = true,
-        imageUri = ExternalCoverProvider.seriesCoverUri(seriesId, coverItemIds),
+        imageUri = ExternalCoverProvider.groupCoverUri(seriesId, coverItemIds),
       )
 
     private suspend fun collapsedSeriesNode(

@@ -43,7 +43,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
-import org.grakovne.lissen.ui.components.SeriesCoverKey
+import org.grakovne.lissen.ui.components.GroupCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 private const val MAX_GROUP_COVERS = 3
@@ -212,7 +212,7 @@ fun GroupCoverStack(
     remember(groupId, coverItemIds) {
       ImageRequest
         .Builder(context)
-        .data(SeriesCoverKey(groupId, coverItemIds.take(MAX_GROUP_COVERS)))
+        .data(GroupCoverKey(groupId, coverItemIds.take(MAX_GROUP_COVERS)))
         .build()
     }
 

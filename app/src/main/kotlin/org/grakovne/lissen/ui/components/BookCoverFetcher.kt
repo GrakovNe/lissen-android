@@ -13,7 +13,7 @@ import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
-import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
+import org.grakovne.lissen.content.cache.temporary.GroupCoverProvider
 import java.io.File
 import javax.inject.Singleton
 
@@ -71,8 +71,8 @@ object ImageLoaderModule {
 
   @Singleton
   @Provides
-  fun provideSeriesCoverFetcherFactory(seriesCoverProvider: SeriesCoverProvider): SeriesCoverFetcherFactory =
-    SeriesCoverFetcherFactory(seriesCoverProvider)
+  fun provideGroupCoverFetcherFactory(groupCoverProvider: GroupCoverProvider): GroupCoverFetcherFactory =
+    GroupCoverFetcherFactory(groupCoverProvider)
 
   @Singleton
   @Provides
@@ -80,16 +80,16 @@ object ImageLoaderModule {
     @ApplicationContext context: Context,
     bookCoverFetcherFactory: BookCoverFetcherFactory,
     authorCoverFetcherFactory: AuthorCoverFetcherFactory,
-    seriesCoverFetcherFactory: SeriesCoverFetcherFactory,
+    groupCoverFetcherFactory: GroupCoverFetcherFactory,
   ): ImageLoader =
     ImageLoader
       .Builder(context)
       .components {
         add(bookCoverFetcherFactory)
         add(authorCoverFetcherFactory)
-        add(seriesCoverFetcherFactory)
+        add(groupCoverFetcherFactory)
         add(BookCoverKeyer(), BookCoverKey::class)
         add(AuthorCoverKeyer(), AuthorCoverKey::class)
-        add(SeriesCoverKeyer(), SeriesCoverKey::class)
+        add(GroupCoverKeyer(), GroupCoverKey::class)
       }.build()
 }

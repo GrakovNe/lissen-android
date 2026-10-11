@@ -10,7 +10,7 @@ import okio.Buffer
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.content.cache.common.SeriesCoverComposer
+import org.grakovne.lissen.content.cache.common.GroupCoverComposer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -18,20 +18,20 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
-class SeriesCoverProviderTest {
+class GroupCoverProviderTest {
   private val mediaProvider = mockk<LissenMediaProvider>()
-  private val composer = mockk<SeriesCoverComposer>()
+  private val composer = mockk<GroupCoverComposer>()
   private val properties = mockk<ShortTermCacheStorageProperties>()
-  private val provider = SeriesCoverProvider(mediaProvider, composer, properties)
+  private val provider = GroupCoverProvider(mediaProvider, composer, properties)
 
   @Test
   fun `returns the cached composite without fetching or recomposing`(
     @TempDir dir: File,
   ) = runBlocking {
     val cached = File(dir, "cached").apply { writeText("png") }
-    every { properties.provideSeriesCoverPath(any()) } returns cached
+    every { properties.provideGroupCoverPath(any()) } returns cached
 
-    val result = provider.provideSeriesCover("ser-1", listOf("b1", "b2"))
+    val result = provider.provideGroupCover("ser-1", listOf("b1", "b2"))
 
     assertInstanceOf(OperationResult.Success::class.java, result)
     assertEquals(cached, (result as OperationResult.Success).data)
@@ -44,12 +44,12 @@ class SeriesCoverProviderTest {
     @TempDir dir: File,
   ) = runBlocking {
     val dest = File(dir, "composed")
-    every { properties.provideSeriesCoverPath(any()) } returns dest
+    every { properties.provideGroupCoverPath(any()) } returns dest
     coEvery { mediaProvider.fetchBookCover("b1") } returns OperationResult.Success(File(dir, "b1"))
     coEvery { mediaProvider.fetchBookCover("b2") } returns OperationResult.Success(File(dir, "b2"))
     every { composer.compose(any()) } returns Buffer().apply { writeUtf8("PNGBYTES") }
 
-    val result = provider.provideSeriesCover("ser-1", listOf("b1", "b2"))
+    val result = provider.provideGroupCover("ser-1", listOf("b1", "b2"))
 
     assertInstanceOf(OperationResult.Success::class.java, result)
     assertEquals(dest, (result as OperationResult.Success).data)
@@ -63,12 +63,12 @@ class SeriesCoverProviderTest {
     @TempDir dir: File,
   ) = runBlocking {
     val dest = File(dir, "composed")
-    every { properties.provideSeriesCoverPath(any()) } returns dest
+    every { properties.provideGroupCoverPath(any()) } returns dest
     coEvery { mediaProvider.fetchBookCover("b1") } returns OperationResult.Error(OperationError.NetworkError)
     coEvery { mediaProvider.fetchBookCover("b2") } returns OperationResult.Success(File(dir, "b2"))
     every { composer.compose(any()) } returns Buffer().apply { writeUtf8("PNG") }
 
-    val result = provider.provideSeriesCover("ser-1", listOf("b1", "b2"))
+    val result = provider.provideGroupCover("ser-1", listOf("b1", "b2"))
 
     assertInstanceOf(OperationResult.Success::class.java, result)
     verify(exactly = 1) { composer.compose(match { it.size == 1 }) }
@@ -78,11 +78,11 @@ class SeriesCoverProviderTest {
   fun `returns error when nothing can be composed`(
     @TempDir dir: File,
   ) = runBlocking {
-    every { properties.provideSeriesCoverPath(any()) } returns File(dir, "missing")
+    every { properties.provideGroupCoverPath(any()) } returns File(dir, "missing")
     coEvery { mediaProvider.fetchBookCover(any()) } returns OperationResult.Error(OperationError.NetworkError)
     every { composer.compose(any()) } returns null
 
-    val result = provider.provideSeriesCover("ser-1", listOf("b1"))
+    val result = provider.provideGroupCover("ser-1", listOf("b1"))
 
     assertInstanceOf(OperationResult.Error::class.java, result)
     assertEquals(OperationError.InternalError, (result as OperationResult.Error).code)
