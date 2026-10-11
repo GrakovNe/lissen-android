@@ -70,7 +70,6 @@ fun <T> LibraryGroupComposable(
 ) {
   val context = LocalContext.current
 
-  // prefetch after a short dwell
   LaunchedEffect(groupId) {
     onPrefetch?.let {
       delay(PREFETCH_DWELL_MS)
@@ -185,7 +184,6 @@ fun GroupBooks(
   }
 }
 
-// an invisible digit indents the book like a numbered book of a series
 @Composable
 fun GroupBookLeading() {
   Box(modifier = Modifier.padding(end = 10.dp)) {

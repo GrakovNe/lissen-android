@@ -197,7 +197,6 @@ fun PlayerScreen(
 
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
-  // the route's start and chapter apply on the first entry only, not after settings, recreation or restore
   var firstEntry by rememberSaveable { mutableStateOf(true) }
 
   LaunchedEffect(Unit) {
@@ -252,7 +251,6 @@ fun PlayerScreen(
               }
 
               else -> {
-                // no dimming while the item loads or its queue is rebuilt: a tap does nothing
                 Row {
                   if (queueControlsVisible) {
                     IconButton(
@@ -451,7 +449,6 @@ fun PlayerScreen(
   }
 
   if (settingsSelected) {
-    // the same condition the player checks, so a tap never fails silently
     val canReorder = remember(isPlaybackReady, playingBook, bookId) { playerViewModel.canReorderPlayingItem(bookId) }
 
     PlayerSettingsComposable(
@@ -699,10 +696,6 @@ fun InfoRow(
   }
 }
 
-/**
- * The placeholder guesses from the library the item is opened from; a loaded item knows its own
- * type. An item that can never be reordered gets no ordering row at all, instead of a dimmed one.
- */
 internal fun isSortable(
   requestedBook: DetailedItem?,
   preferredLibraryType: LibraryType?,

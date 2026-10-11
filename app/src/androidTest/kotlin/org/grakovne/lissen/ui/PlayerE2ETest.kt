@@ -121,7 +121,6 @@ class PlayerE2ETest {
     composeRule.onNodeWithTag("libraryScreen").assertIsDisplayed()
   }
 
-  // the scenario tracks the activity by its launch intent, which onNewIntent replaces
   private fun continuePlayback(block: () -> Unit) {
     val launchIntent = composeRule.activity.intent
 
@@ -161,7 +160,6 @@ class PlayerE2ETest {
       Espresso.pressBack()
       composeRule.waitUntilAtLeastOneExists(hasTestTag("playerScreen"), TIMEOUT_MS)
 
-      // controller callbacks arrive on the main looper, which waitForIdle drains
       composeRule.waitForIdle()
       assertFalse(mediaRepository.isPlaying.value)
 

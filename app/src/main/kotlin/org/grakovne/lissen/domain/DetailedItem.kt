@@ -16,7 +16,6 @@ data class DetailedItem(
   val genres: List<String> = emptyList(),
   val publisher: String?,
   val series: List<BookSeries>,
-  // null: not known; empty: none
   val playlists: List<BookPlaylist>? = null,
   val year: String?,
   val abstract: String?,
@@ -63,7 +62,6 @@ data class PlayingChapter(
   val end: Double,
   val title: String,
   val id: String,
-  /** The position the chapter came in with. The list order may differ once the user reorders. */
   val index: Int = 0,
   val publishedAt: Long? = null,
   val season: String? = null,
@@ -79,7 +77,6 @@ data class BookSeries(
   val id: String? = null,
 ) : Serializable
 
-/** The item's, or its episode's, place in a playlist. */
 @Keep
 @JsonClass(generateAdapter = true)
 data class BookPlaylist(

@@ -319,7 +319,6 @@ class AudioBookshelfRepository
           }
         }
 
-    /** Streamed to a temp file: the heap holds one chunk, and only disk space limits the body. */
     private fun writeBounded(
       body: ResponseBody,
       description: String,
@@ -330,7 +329,6 @@ class AudioBookshelfRepository
         return OperationResult.Error(OperationError.InternalError, "not enough disk space")
       }
 
-      // created inside the try, so a full cacheDir becomes an OperationResult error
       var dest: File? = null
 
       return try {

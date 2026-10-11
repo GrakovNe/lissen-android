@@ -61,7 +61,7 @@ class CachedBookEntityDetailedConverter
               title = chapterEntity.title,
               available = chapterEntity.isCached,
               id = chapterEntity.bookChapterId,
-              podcastEpisodeState = null, // the state is not available for a locally cached book yet
+              podcastEpisodeState = null,
               index = chapterEntity.chapterIndex,
               publishedAt = chapterEntity.publishedAt,
               season = chapterEntity.season,

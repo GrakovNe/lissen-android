@@ -36,7 +36,6 @@ class ExternalCoverProvider : FileProvider() {
 
     fun bookCoverUri(bookId: String) = "content://${BuildConfig.APPLICATION_ID}.cover/$BOOK_PATH/$bookId".toUri()
 
-    /** Builds content://<authority>/group/<groupId>/<bookId1>,<bookId2>,... with at most 3 ids. */
     fun groupCoverUri(
       groupId: String,
       coverItemIds: List<String>,

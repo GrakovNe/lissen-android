@@ -102,7 +102,6 @@ fun QuickSettingsComposable(
         onClick = onForceLocalToggled,
       )
 
-      // a row the library type does not support is hidden, not dimmed
       if (isLibrary) {
         SettingsToggleRow(
           title = stringResource(R.string.hide_completed_items),
@@ -143,7 +142,6 @@ fun QuickSettingsComposable(
         }
       }
 
-      // these groups are listed by name; a playlist also keeps its own order inside
       if (grouping !in NAME_SORTED_GROUPINGS) {
         SettingsPickerRow(
           label = stringResource(R.string.library_quick_settings_sort_title),

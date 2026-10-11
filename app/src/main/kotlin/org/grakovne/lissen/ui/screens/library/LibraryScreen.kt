@@ -198,8 +198,6 @@ fun LibraryScreen(
   }
 
   LaunchedEffect(preparingError) {
-    // in force-cache mode a failed preparation only means the book is not downloaded;
-    // it stays selected so playback recovers when the mode changes back
     if (preparingError && cachingModelView.localCacheUsing().not()) {
       playerViewModel.clearPlayingBook()
     }

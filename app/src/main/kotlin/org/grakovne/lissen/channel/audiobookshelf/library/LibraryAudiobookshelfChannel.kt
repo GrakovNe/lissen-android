@@ -212,7 +212,6 @@ class LibraryAudiobookshelfChannel
         fetchAllGroupBooks(libraryId = libraryId, groupFilter = encodeLibraryFilter("narrators", narrator))
       }
 
-    // the only filter abs accepts is taken by the group, so hide completed does not reach these books
     private suspend fun fetchAllGroupBooks(
       libraryId: String,
       groupFilter: String,

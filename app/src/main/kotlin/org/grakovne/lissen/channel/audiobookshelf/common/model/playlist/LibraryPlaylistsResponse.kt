@@ -39,7 +39,6 @@ data class PlaylistMediaResponse(
   val metadata: PlaylistMetadataResponse,
 )
 
-// a book item is expanded (authors, series), an episode's podcast minified (author)
 @Keep
 @JsonClass(generateAdapter = true)
 data class PlaylistMetadataResponse(

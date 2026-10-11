@@ -133,7 +133,6 @@ interface CachedBookDao {
         .distinct()
         .map { BookGenreEntity(bookId = book.id, genre = it) }
 
-    // INSERT OR REPLACE of the book cascades into book_playlists: unknown playlists are rewritten from the stored rows
     val bookPlaylists =
       book
         .playlists
@@ -205,8 +204,8 @@ interface CachedBookDao {
   @RewriteQueriesToDropUnusedColumns
   @Query(
     """
-        SELECT * FROM detailed_books 
-        INNER JOIN media_progress ON detailed_books.id = media_progress.bookId WHERE (libraryId IS NULL OR libraryId = :libraryId) 
+        SELECT * FROM detailed_books
+        INNER JOIN media_progress ON detailed_books.id = media_progress.bookId WHERE (libraryId IS NULL OR libraryId = :libraryId)
         ORDER BY media_progress.lastUpdate DESC
         LIMIT 10
     """,

@@ -31,7 +31,6 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** All state is confined to the main thread. */
 @UnstableApi
 @Singleton
 class MediaRepository
@@ -82,18 +81,15 @@ class MediaRepository
     private val _currentChapterDuration = MutableStateFlow(0.0)
     val currentChapterDuration: StateFlow<Double> = _currentChapterDuration.asStateFlow()
 
-    // the fetch and the bookmark reads switch to this dispatcher; a test replaces it before the first read, as LibraryViewModel does
     @VisibleForTesting
     internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     private val playingBookmarks by lazy { PlayingBookmarks(mediaChannel, playingBook, scope, ioDispatcher) }
     val bookmarks: StateFlow<List<Bookmark>> get() = playingBookmarks.bookmarks
 
-    // set by reorderPlayingItem, cleared when the service reports the rebuilt queue ready
     @Volatile
     private var queueRebuildInFlight = false
 
-    // the item whose queue the service is building; only the service can report it ready
     @Volatile
     private var queueBuildingItemId: String? = null
 
@@ -127,8 +123,7 @@ class MediaRepository
           if (queueRebuildInFlight) return
 
           updateProgressWhenReady()
-          // a seek moves the end of the episode, and the auto-skip end with it; running into the
-          // next chapter is the end the timer counts to, and the timer handles that itself
+
           if (byPlayback.not()) adjustTimer(totalPosition.value)
         }
 
@@ -166,9 +161,6 @@ class MediaRepository
           pause()
         }
 
-        // emitted by PlaybackTimer on any stop: manual cancel, replacement, or expiry.
-        // The canceling paths already cleared the timer state, and a replacement sets it
-        // again right after, so there is nothing to reconcile here.
         is PlaybackEvent.TimerCancelled -> {}
 
         is PlaybackEvent.TimerTick -> {
@@ -181,8 +173,6 @@ class MediaRepository
       if (queueBuildingItemId == bookId) queueBuildingItemId = null
       val book = _playingBook.value?.takeIf { it.id == bookId } ?: return
 
-      // after an in-place rebuild the seeded position is the truth; the controller
-      // may still describe the previous queue for one more switch
       val rebuilt = queueRebuildInFlight
       queueRebuildInFlight = false
 
@@ -320,7 +310,6 @@ class MediaRepository
     ): Boolean {
       val result = withContext(ioDispatcher) { mediaChannel.fetchBook(bookId, libraryType) }
 
-      // only the fetch leaves the main thread: the controller answers only there
       return withContext(Dispatchers.Main.immediate) {
         result.fold(
           onSuccess = {
@@ -336,7 +325,6 @@ class MediaRepository
       }
     }
 
-    // the queue starts at the progress, so the chapter start becomes the progress
     private fun DetailedItem.openedAt(chapterId: String): DetailedItem {
       val chapter = chapters.firstOrNull { it.id == chapterId } ?: return this
 
@@ -350,10 +338,6 @@ class MediaRepository
       )
     }
 
-    /**
-     * Whether [reorderPlayingItem] would act right now. Otherwise the UI keeps the ordering
-     * sheet disabled, so a tap never fails silently.
-     */
     fun canReorderPlayingItem(itemId: String): Boolean =
       ReorderPlanner.canReorder(
         book = playingBook.value,
@@ -361,12 +345,6 @@ class MediaRepository
         playbackReady = isPlaybackReady.value,
       )
 
-    /**
-     * Applies a new chapter order to the item already in memory and rebuilds the queue at the
-     * same chapter and offset the user was at. No network is involved: the order is a pure
-     * function of the chapter keys the item carries. Playback pauses for the rebuild and
-     * resumes afterwards if it was running. Returns whether the order is now the requested one.
-     */
     fun reorderPlayingItem(
       itemId: String,
       configuration: EpisodeOrderingConfiguration?,
@@ -396,7 +374,7 @@ class MediaRepository
       playWhenReady = wasPlaying
       startPreparingPlayback(plan.item)
       playingBookmarks.followReorder(from = book, to = plan.item)
-      // set after startPreparingPlayback, which resets the flag for every fresh preparation
+
       queueRebuildInFlight = true
 
       plan.item.progress?.let { _totalPosition.value = it.currentTime }
@@ -438,8 +416,6 @@ class MediaRepository
       val current = _playingBook.value
       val sameBook = current?.same(book) ?: false
 
-      // the same item in another order while its queue is being rebuilt in place: the session
-      // fetched it before the new order was stored; the rebuild in progress is the truth
       if (sameBook.not() && queueRebuildInFlight && current?.id == book.id) {
         Timber.w("Ignoring registration of ${book.id} in another order: a rebuild is in flight")
         return
@@ -450,7 +426,7 @@ class MediaRepository
 
         _totalPosition.value = book.progress?.currentTime ?: 0.0
         _playingBook.value = book
-        // readiness arrived outside the service: whatever rebuild was in progress is over
+
         queueRebuildInFlight = false
         queueBuildingItemId = null
         _isPlaybackReady.value = true
@@ -458,7 +434,6 @@ class MediaRepository
       }
     }
 
-    /** Callers may come from any dispatcher. The position may only be read on the main thread, so the work switches there first. */
     suspend fun createBookmark(title: String? = null): Bookmark? =
       withContext(Dispatchers.Main.immediate) {
         val book = _playingBook.value ?: return@withContext null
@@ -469,11 +444,6 @@ class MediaRepository
 
     suspend fun updateBookmarks() = playingBookmarks.refreshFromServer()
 
-    /**
-     * Drops the session binding. The service stays alive as long as any controller is bound to
-     * it, so a repository discarded without this call keeps it alive until it is garbage
-     * collected. Only test graphs discard repositories; the app has one for its whole lifetime.
-     */
     @VisibleForTesting
     fun release() {
       progressPoller.stop()
@@ -496,7 +466,6 @@ class MediaRepository
       queueRebuildInFlight = false
 
       when (sameBook) {
-        // the service already holds its queue, unless it is still building it and will report later
         true -> {
           if (queueBuildingItemId != book.id) completePlaybackPreparation()
         }
@@ -514,19 +483,12 @@ class MediaRepository
       }
     }
 
-    /**
-     * While an in-place queue rebuild is in progress, the controller still describes the
-     * previous queue, so a position computed from it against the reordered item would be
-     * meaningless. Only that window is skipped: playback that continues with the previous item
-     * while a new one fails to load, or while the screen waits to resume, keeps its progress live.
-     */
     private fun updateProgressWhenReady() {
       if (queueRebuildInFlight) return
       _playingBook.value?.let { updateProgress(it) }
     }
 
     private fun updateProgress(book: DetailedItem) {
-      // an unbound session has no queue to read a position from
       if (player.isConnected.not()) return
 
       _totalPosition.value =
@@ -562,8 +524,6 @@ class MediaRepository
     ) {
       val book = playingBook.value ?: return
 
-      // the controller still holds the previous queue: a seek computed for the new order would
-      // land in the wrong episode, and the position read back would be meaningless
       if (queueRebuildInFlight) {
         Timber.d("Ignoring seek to ${position.toInt()}s: the queue is being rebuilt")
         return

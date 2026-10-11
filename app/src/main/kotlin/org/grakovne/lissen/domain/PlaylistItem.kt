@@ -2,7 +2,6 @@ package org.grakovne.lissen.domain
 
 import androidx.annotation.Keep
 
-/** [book] is the row's library item; for an episode, its podcast. */
 @Keep
 sealed interface PlaylistItem {
   val book: Book

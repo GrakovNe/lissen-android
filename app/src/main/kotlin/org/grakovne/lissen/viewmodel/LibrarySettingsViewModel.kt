@@ -43,7 +43,6 @@ class LibrarySettingsViewModel
 
     val hideCompleted = library.hideCompletedFlow
 
-    // the grouping the active library can show
     val libraryGrouping: Flow<LibraryGrouping> =
       combine(library.libraryGroupingFlow, library.preferredLibraryTypeFlow) { grouping, type -> grouping.effectiveIn(type) }
 

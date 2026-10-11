@@ -60,9 +60,9 @@ data class BookEntity(
   val publisher: String?,
   val duration: Int,
   val libraryId: String?,
-  val seriesJson: String?, // JSON of List<BookSeriesDto>
+  val seriesJson: String?,
   val seriesNames: String?,
-  val seriesId: String?, // the primary series id, used to group the library by series
+  val seriesId: String?,
   val authorsJson: String? = null,
   val createdAt: Long,
   val updatedAt: Long,
@@ -142,7 +142,6 @@ data class BookGenreEntity(
   val genre: String,
 )
 
-// one row per listed episode of a podcast
 @Keep
 @Entity(
   tableName = "book_playlists",

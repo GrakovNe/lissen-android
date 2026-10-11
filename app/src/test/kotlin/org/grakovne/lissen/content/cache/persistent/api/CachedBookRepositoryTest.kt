@@ -396,7 +396,6 @@ class CachedBookRepositoryTest {
   @Test
   fun `cacheBook stores the item in the canonical order with the progress translated`() =
     runBlocking {
-      // playing order c1, c0 (descending by date), the user is 5s into c0 = 15s
       val playing =
         orderedItem(
           listOf(
@@ -413,7 +412,7 @@ class CachedBookRepositoryTest {
       assertEquals(listOf("c0", "c1"), bookSlot.captured.chapters.map { it.id })
       assertEquals(listOf("f-c0", "f-c1"), bookSlot.captured.files.map { it.id })
       assertEquals(listOf(0.0, 10.0), bookSlot.captured.chapters.map { it.start })
-      // 5s into c0, which starts at 0s in the canonical order
+
       assertEquals(5.0, bookSlot.captured.progress?.currentTime)
     }
 
@@ -431,17 +430,14 @@ class CachedBookRepositoryTest {
       val progressSlot = slot<MediaProgressEntity>()
       coEvery { bookDao.upsertMediaProgress(capture(progressSlot)) } returns Unit
 
-      // 5s into c1 in playing order; c1 starts at 10s canonically
       repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 5.0, currentTotalTime = 5.0))
       assertEquals(15.0, progressSlot.captured.currentTime)
       assertFalse(progressSlot.captured.isFinished)
 
-      // 300ms past the declared duration: the end of the item and finished, so it starts over next time
       repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 10.3, currentTotalTime = 20.3))
       assertEquals(20.0, progressSlot.captured.currentTime)
       assertTrue(progressSlot.captured.isFinished)
 
-      // almost through the canonically newest episode, the first thing played in this order: not finished
       repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 9.9, currentTotalTime = 9.9))
       assertEquals(19.9, progressSlot.captured.currentTime, 1e-9)
       assertFalse(progressSlot.captured.isFinished)

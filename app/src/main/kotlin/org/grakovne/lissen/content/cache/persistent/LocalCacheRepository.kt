@@ -41,7 +41,6 @@ class LocalCacheRepository
         .provideFileUri(libraryItemId, fileId)
         .takeIf { it.toFile().exists() }
 
-    /** The book id is also the session key, because the cache has no session entity. */
     suspend fun syncProgress(
       detailedItem: DetailedItem,
       progress: PlaybackProgress,
@@ -264,7 +263,6 @@ class LocalCacheRepository
 
     suspend fun fetchLatestUpdate(libraryId: String) = cachedBookRepository.fetchLatestUpdate(libraryId)
 
-    /** Returns the book in canonical order. Moving the progress onto an available chapter is the provider's job. */
     suspend fun fetchBook(bookId: String): DetailedItem? = cachedBookRepository.fetchBook(bookId)
 
     suspend fun fetchBookmarks(libraryItemId: String) =

@@ -46,7 +46,6 @@ class PlayerViewModel
       libraryPreferences.preferredLibraryTypeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), libraryPreferences.getPreferredLibraryType())
 
-    /** The stored ordering of the item the screen shows, which is not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
 
     fun autoSkip(itemId: String): Flow<AutoSkipConfiguration> = autoSkipPreferences.flow(itemId)
@@ -112,8 +111,6 @@ class PlayerViewModel
         return
       }
 
-      // this is the item the resume paths would start, so restoring it keeps the last playing pointer where it is;
-      // nothing is loaded yet, and clearing here would drop the stored item of the active library
       val playingItem = preferences.getLastPlayingItem() ?: return
 
       viewModelScope.launch {
@@ -193,7 +190,7 @@ class PlayerViewModel
           chapterId
             ?.let { id -> currentBook?.chapters?.firstOrNull { it.id == id } }
             ?.let { chapter ->
-              // the queue may still be building; the service seeks to the saved position when done
+
               mediaRepository.isPlaybackReady.first { it }
               setChapter(chapter)
             }
@@ -268,8 +265,6 @@ class PlayerViewModel
     ) {
       Timber.d("User action: setEpisodeOrdering $configuration for $itemId")
 
-      // stored first, so the media session and Android Auto already see the new order;
-      // rolled back if the player refuses
       val previous = libraryPreferences.getEpisodeOrdering(itemId)
       libraryPreferences.saveEpisodeOrdering(itemId, configuration)
 

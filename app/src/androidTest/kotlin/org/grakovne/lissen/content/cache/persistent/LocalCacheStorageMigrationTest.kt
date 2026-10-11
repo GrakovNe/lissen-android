@@ -237,7 +237,7 @@ class LocalCacheStorageMigrationTest {
         VALUES ('book-1', 'Dune', 0, 0, 0)
         """.trimIndent(),
       )
-      // two re-caches of the same item in list order; the second marks c1 as downloaded
+
       db.execSQL(
         """
         INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)
@@ -296,7 +296,7 @@ class LocalCacheStorageMigrationTest {
         VALUES ('book-1', 'One', 0, 0, 0), ('book-2', 'Two', 0, 0, 0)
         """.trimIndent(),
       )
-      // rows of the two books interleaved by rowid
+
       db.execSQL(
         """
         INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)
