@@ -45,6 +45,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -196,6 +197,10 @@ fun PlayerScreen(
 
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
+  // the route asks to start playing and to open a chapter once, when the screen is entered; a return to it
+  // from settings, a recreated activity or a restored process must not do either again
+  var opening by rememberSaveable { mutableStateOf(true) }
+
   LaunchedEffect(Unit) {
     val useLocalCache = cachingModelView.localCacheUsing()
     val needsPreparation = playerViewModel.requiresBookPreparation(bookId, useLocalCache)
@@ -213,9 +218,10 @@ fun PlayerScreen(
       bookId = bookId,
       libraryType = playingBook?.takeIf { it.id == bookId }?.libraryType ?: preferredLibraryType,
       useLocalCache = useLocalCache,
-      playInstantly = playInstantly,
-      chapterId = chapterId,
+      playInstantly = playInstantly && opening,
+      chapterId = chapterId.takeIf { opening },
     )
+    opening = false
   }
 
   LaunchedEffect(playingQueueExpanded) {
