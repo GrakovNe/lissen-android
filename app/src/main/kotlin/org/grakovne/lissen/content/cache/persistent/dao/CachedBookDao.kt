@@ -133,7 +133,7 @@ interface CachedBookDao {
         .distinct()
         .map { BookGenreEntity(bookId = book.id, genre = it) }
 
-    // replacing the book row cascades into its playlists, so unknown playlists are the stored ones written again
+    // INSERT OR REPLACE of the book cascades into book_playlists: unknown playlists are rewritten from the stored rows
     val bookPlaylists =
       book
         .playlists

@@ -142,7 +142,7 @@ data class BookGenreEntity(
   val genre: String,
 )
 
-// a podcast holds one row per listed episode
+// one row per listed episode of a podcast
 @Keep
 @Entity(
   tableName = "book_playlists",

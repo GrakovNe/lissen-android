@@ -41,7 +41,7 @@ class ShortTermCacheStorageProperties
       const val SHORT_TERM_CACHE_FOLDER = "short_term_cache"
       const val COVER_CACHE_FOLDER_NAME = "cover_cache"
 
-      // the folder keeps the name it got when only series had stacked covers
+      // kept from the time only series had stacked covers
       const val GROUP_COVER_CACHE_FOLDER_NAME = "series_cover_cache"
     }
   }

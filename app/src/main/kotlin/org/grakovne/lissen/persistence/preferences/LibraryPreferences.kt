@@ -95,7 +95,7 @@ class LibraryPreferences
     fun saveLibraryGroupings(groupings: Map<String, LibraryGrouping>) =
       store.putPerItem(KEY_LIBRARY_GROUPINGS, groupings, libraryGroupingAdapter)
 
-    // a library without a choice of its own keeps the grouping picked before it was stored per library
+    // no choice of its own: the grouping stored before groupings were per library
     private fun Map<String, LibraryGrouping>.groupingOf(libraryId: String?): LibraryGrouping =
       libraryId?.let { this[it] }
         ?: store

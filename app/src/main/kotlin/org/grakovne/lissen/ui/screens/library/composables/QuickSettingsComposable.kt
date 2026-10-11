@@ -143,8 +143,7 @@ fun QuickSettingsComposable(
         }
       }
 
-      // these groups are always listed by name; the books inside an author, genre or narrator keep the
-      // last picked sorting, a playlist keeps its own order
+      // these groups are listed by name; a playlist also keeps its own order inside
       if (grouping !in NAME_SORTED_GROUPINGS) {
         SettingsPickerRow(
           label = stringResource(R.string.library_quick_settings_sort_title),

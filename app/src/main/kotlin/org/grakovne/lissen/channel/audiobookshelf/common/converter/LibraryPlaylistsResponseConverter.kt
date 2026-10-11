@@ -18,7 +18,7 @@ import javax.inject.Singleton
 class LibraryPlaylistsResponseConverter
   @Inject
   constructor() {
-    // abs returns every playlist of the library with its items in one response, so the list is paged here
+    // abs returns every playlist in one response, so the list is paged here
     fun apply(
       response: LibraryPlaylistsResponse,
       pageSize: Int,

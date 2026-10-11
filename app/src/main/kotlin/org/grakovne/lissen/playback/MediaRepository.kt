@@ -336,7 +336,7 @@ class MediaRepository
       }
     }
 
-    // the queue starts where the progress points, so opening a chapter means pointing the progress at its start
+    // the queue starts at the progress, so the chapter start becomes the progress
     private fun DetailedItem.openedAt(chapterId: String): DetailedItem {
       val chapter = chapters.firstOrNull { it.id == chapterId } ?: return this
 

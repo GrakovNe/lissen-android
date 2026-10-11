@@ -11,10 +11,9 @@ enum class LibraryGrouping {
   PLAYLIST,
 }
 
-// a podcast library, or one whose type is not known, has only playlists to group by
+// podcasts and libraries of unknown type group only by playlists
 fun LibraryGrouping.isAvailableIn(libraryType: LibraryType?): Boolean =
   libraryType == LibraryType.LIBRARY || this == LibraryGrouping.NONE || this == LibraryGrouping.PLAYLIST
 
-/** The grouping a library of [libraryType] shows for this choice: the choice itself, or a plain list. */
 fun LibraryGrouping.effectiveIn(libraryType: LibraryType?): LibraryGrouping =
   takeIf { it.isAvailableIn(libraryType) } ?: LibraryGrouping.NONE

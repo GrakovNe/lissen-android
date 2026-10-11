@@ -197,8 +197,7 @@ fun PlayerScreen(
 
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
-  // the start and the chapter the route asks for are applied on entry only: a return from settings, a recreated
-  // activity or a restored process must not repeat them
+  // the route's start and chapter apply on the first entry only, not after settings, recreation or restore
   var firstEntry by rememberSaveable { mutableStateOf(true) }
 
   LaunchedEffect(Unit) {

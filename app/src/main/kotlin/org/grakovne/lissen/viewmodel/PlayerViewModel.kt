@@ -193,7 +193,7 @@ class PlayerViewModel
           chapterId
             ?.let { id -> currentBook?.chapters?.firstOrNull { it.id == id } }
             ?.let { chapter ->
-              // the loaded item's queue may still be building, and the service seeks to the saved position when it is done
+              // the queue may still be building; the service seeks to the saved position when done
               mediaRepository.isPlaybackReady.first { it }
               setChapter(chapter)
             }

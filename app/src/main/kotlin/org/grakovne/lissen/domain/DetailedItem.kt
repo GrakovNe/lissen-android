@@ -16,7 +16,7 @@ data class DetailedItem(
   val genres: List<String> = emptyList(),
   val publisher: String?,
   val series: List<BookSeries>,
-  // null while the playlists are not known, which is not the same as none
+  // null: not known; empty: none
   val playlists: List<BookPlaylist>? = null,
   val year: String?,
   val abstract: String?,
@@ -79,7 +79,7 @@ data class BookSeries(
   val id: String? = null,
 ) : Serializable
 
-/** A place of this item, or of its episode [episodeId], in a playlist of the user. */
+/** The item's, or its episode's, place in a playlist. */
 @Keep
 @JsonClass(generateAdapter = true)
 data class BookPlaylist(

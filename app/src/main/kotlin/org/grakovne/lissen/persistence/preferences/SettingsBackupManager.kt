@@ -82,7 +82,7 @@ class SettingsBackupManager
 
       restoredGroupings?.let { library.saveLibraryGroupings(it) }
 
-      // the single grouping is the active library's, from before groupings were kept per library or as its fallback
+      // the single grouping belongs to the active library
       val activeLibraryId = library.activeLibraryId()
 
       if (activeLibraryId != null && activeLibraryId !in restoredGroupings.orEmpty()) {

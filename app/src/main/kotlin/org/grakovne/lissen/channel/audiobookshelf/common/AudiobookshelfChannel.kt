@@ -126,7 +126,7 @@ abstract class AudiobookshelfChannel(
       .fetchLibraryPlaylists(libraryId)
       .map { libraryPlaylistsResponseConverter.apply(it, pageSize, pageNumber) }
 
-  // an item response carries no playlists: they come from the library's list, and stay unknown when it fails
+  // playlists are not in the item response; null when the list could not be fetched
   protected suspend fun fetchItemPlaylists(
     libraryId: String,
     itemId: String,
