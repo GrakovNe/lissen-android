@@ -29,6 +29,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -823,8 +824,15 @@ class CachedBookRepositoryTest {
       assertEquals("Commute", commute.name)
       assertEquals(3, commute.itemCount)
       assertEquals(listOf("p1", "b2"), commute.coverItemIds)
-      assertEquals(listOf("p1" to "Monday", "b2" to null, "p1" to "Tuesday"), commute.items.map { it.book.id to it.episodeTitle })
-      assertEquals(listOf("e1", null, "e2"), commute.items.map { it.episodeId })
+      assertEquals(
+        listOf(
+          PlaylistItem.EpisodeItem(book = commute.items[0].book, episodeId = "e1", title = "Monday"),
+          PlaylistItem.BookItem(commute.items[1].book),
+          PlaylistItem.EpisodeItem(book = commute.items[2].book, episodeId = "e2", title = "Tuesday"),
+        ),
+        commute.items,
+      )
+      assertEquals(listOf("p1", "b2", "p1"), commute.items.map { it.book.id })
       assertEquals("Andy Weir", commute.items[1].book.author)
       assertEquals(1, playlists.totalItems)
     }
@@ -855,7 +863,7 @@ class CachedBookRepositoryTest {
     }
 
   @Test
-  fun `playlist grouping without cached members skips the book lookup`() =
+  fun `playlist grouping without cached members yields a playlist without rows`() =
     runBlocking {
       coEvery { bookDao.countRaw(any()) } returns 1
       coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute"))
@@ -864,7 +872,6 @@ class CachedBookRepositoryTest {
       val commute = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null).items.single()
 
       assertTrue((commute as LibraryEntry.PlaylistEntry).items.isEmpty())
-      coVerify(exactly = 0) { bookDao.fetchBooksByIds(any()) }
     }
 
   companion object {

@@ -366,14 +366,10 @@ class LibraryAudiobookshelfChannel
 
         book.await().foldAsync(
           onSuccess = { item ->
+            val progress = bookProgress.await().fold(onSuccess = { it }, onFailure = { null })
             val playlists = fetchItemPlaylists(libraryId = item.libraryId, itemId = item.id)
 
-            bookProgress
-              .await()
-              .fold(
-                onSuccess = { Success(bookResponseConverter.apply(item, it).copy(playlists = playlists)) },
-                onFailure = { Success(bookResponseConverter.apply(item, null).copy(playlists = playlists)) },
-              )
+            Success(bookResponseConverter.apply(item, progress).copy(playlists = playlists))
           },
           onFailure = { OperationResult.Error(it.code) },
         )

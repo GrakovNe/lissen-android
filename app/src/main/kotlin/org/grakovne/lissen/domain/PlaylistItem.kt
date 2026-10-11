@@ -2,10 +2,20 @@ package org.grakovne.lissen.domain
 
 import androidx.annotation.Keep
 
-/** A row of a playlist: a book, or the episode [episodeId] of the podcast [book]. */
+/** A row of a playlist. [book] is the library item the row belongs to, for an episode its podcast. */
 @Keep
-data class PlaylistItem(
-  val book: Book,
-  val episodeId: String? = null,
-  val episodeTitle: String? = null,
-)
+sealed interface PlaylistItem {
+  val book: Book
+
+  @Keep
+  data class BookItem(
+    override val book: Book,
+  ) : PlaylistItem
+
+  @Keep
+  data class EpisodeItem(
+    override val book: Book,
+    val episodeId: String,
+    val title: String,
+  ) : PlaylistItem
+}

@@ -24,6 +24,7 @@ import org.grakovne.lissen.domain.BookPlaylist
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -164,9 +165,11 @@ class CachedBookGroupingTest {
       assertEquals("Commute", commute.name)
       assertEquals(2, commute.itemCount)
       assertEquals(listOf("b1", "p1"), commute.coverItemIds)
-      assertEquals(listOf("b1" to null, "p1" to "e1"), commute.items.map { it.book.id to it.episodeId })
-      assertEquals("Monday", commute.items[1].episodeTitle)
-      assertEquals("Daily News", commute.items[1].book.title)
+      assertEquals(listOf("b1", "p1"), commute.items.map { it.book.id })
+      val episode = commute.items[1] as PlaylistItem.EpisodeItem
+      assertEquals("e1", episode.episodeId)
+      assertEquals("Monday", episode.title)
+      assertEquals("Daily News", episode.book.title)
     }
 
   @Test

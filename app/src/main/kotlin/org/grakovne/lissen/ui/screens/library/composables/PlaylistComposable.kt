@@ -36,8 +36,8 @@ fun PlaylistComposable(
     cover = { GroupCoverStack(groupId = playlist.id, coverItemIds = playlist.coverItemIds, imageLoader = imageLoader) },
     itemRows = { rows ->
       rows.forEach { item ->
-        when (item.episodeId) {
-          null -> {
+        when (item) {
+          is PlaylistItem.BookItem -> {
             BookComposable(
               book = item.book,
               imageLoader = imageLoader,
@@ -47,10 +47,9 @@ fun PlaylistComposable(
             )
           }
 
-          else -> {
+          is PlaylistItem.EpisodeItem -> {
             PlaylistEpisodeComposable(
               item = item,
-              episodeId = item.episodeId,
               imageLoader = imageLoader,
               navController = navController,
             )
@@ -63,8 +62,7 @@ fun PlaylistComposable(
 
 @Composable
 private fun PlaylistEpisodeComposable(
-  item: PlaylistItem,
-  episodeId: String,
+  item: PlaylistItem.EpisodeItem,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
 ) {
@@ -72,10 +70,10 @@ private fun PlaylistEpisodeComposable(
 
   LibraryItemRowComposable(
     coverItemId = podcast.id,
-    title = item.episodeTitle ?: podcast.title,
-    testTag = "playlistEpisodeItem_${podcast.id}_$episodeId",
+    title = item.title,
+    testTag = "playlistEpisodeItem_${podcast.id}_${item.episodeId}",
     imageLoader = imageLoader,
-    onClick = { navController.showPlayer(podcast.id, podcast.title, podcast.subtitle, chapterId = episodeId) },
+    onClick = { navController.showPlayer(podcast.id, podcast.title, podcast.subtitle, chapterId = item.episodeId) },
     leading = { GroupBookLeading() },
     metadata = {
       Spacer(modifier = Modifier.height(2.dp))

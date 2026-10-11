@@ -5,7 +5,7 @@ import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
-import org.grakovne.lissen.common.supportedBy
+import org.grakovne.lissen.common.effectiveIn
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
@@ -142,7 +142,7 @@ class LocalCacheRepository
     ): OperationResult<PagedItems<LibraryEntry>> {
       val libraryType = cachedLibraryRepository.fetchLibraryType(libraryId)
 
-      return when (libraryGrouping.supportedBy(libraryType)) {
+      return when (libraryGrouping.effectiveIn(libraryType)) {
         LibraryGrouping.NONE -> {
           fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
             .map { it.asLibraryEntries() }

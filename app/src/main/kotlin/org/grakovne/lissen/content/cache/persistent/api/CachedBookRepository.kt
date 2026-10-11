@@ -43,7 +43,7 @@ private const val PLAYLIST_MEMBERS_FROM =
         LEFT JOIN book_chapters ON book_chapters.bookId = book_playlists.bookId AND book_chapters.bookChapterId = book_playlists.episodeId"""
 
 // a book row stands for the book however much of it is downloaded, like a book of a series does
-private const val PLAYLIST_MEMBER_CACHED = "(book_playlists.episodeId IS NULL OR book_chapters.isCached = 1)"
+private const val PLAYLIST_MEMBER_IS_DOWNLOADED = "(book_playlists.episodeId IS NULL OR book_chapters.isCached = 1)"
 
 // authors and narrators are cached as one comma-joined string, so a book is grouped under the first of them
 private fun firstOfJoined(column: String) =
@@ -352,7 +352,7 @@ class CachedBookRepository
         SELECT COUNT(DISTINCT book_playlists.playlistId)
         FROM $PLAYLIST_MEMBERS_FROM
         $join
-        WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_CACHED $filter
+        WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_IS_DOWNLOADED $filter
         """.trimIndent()
 
       val total = bookDao.countRaw(SimpleSQLiteQuery(countSql, arrayOf<Any>(libraryId)))
@@ -366,7 +366,7 @@ class CachedBookRepository
         SELECT book_playlists.playlistId AS id, book_playlists.playlistName AS name
         FROM $PLAYLIST_MEMBERS_FROM
         $join
-        WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_CACHED $filter
+        WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_IS_DOWNLOADED $filter
         GROUP BY book_playlists.playlistId
         ORDER BY LOWER(book_playlists.playlistName) ASC
         LIMIT ? OFFSET ?
@@ -377,21 +377,14 @@ class CachedBookRepository
       val members = fetchPlaylistMembers(libraryId, headers.map { it.id }, libraryType)
 
       val books =
-        members
-          .map { it.bookId }
-          .distinct()
-          .takeIf { it.isNotEmpty() }
-          ?.let { ids -> bookDao.fetchBooksByIds(ids).associate { it.id to cachedBookEntityConverter.apply(it) } }
-          .orEmpty()
+        bookDao
+          .fetchBooksByIds(members.map { it.bookId }.distinct())
+          .associate { it.id to cachedBookEntityConverter.apply(it) }
 
       val rows =
         members
           .groupBy { it.playlistId }
-          .mapValues { (_, playlistMembers) ->
-            playlistMembers.mapNotNull { member ->
-              books[member.bookId]?.let { PlaylistItem(book = it, episodeId = member.episodeId, episodeTitle = member.episodeTitle) }
-            }
-          }
+          .mapValues { (_, playlistMembers) -> playlistMembers.mapNotNull { it.toPlaylistItem(books) } }
 
       val items =
         headers.map { header ->
@@ -403,6 +396,15 @@ class CachedBookRepository
         }
 
       return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
+    }
+
+    private fun PlaylistMemberEntry.toPlaylistItem(books: Map<String, Book>): PlaylistItem? {
+      val book = books[bookId] ?: return null
+
+      return when (episodeId) {
+        null -> PlaylistItem.BookItem(book)
+        else -> episodeTitle?.let { PlaylistItem.EpisodeItem(book = book, episodeId = episodeId, title = it) }
+      }
     }
 
     private suspend fun fetchPlaylistMembers(
@@ -421,7 +423,7 @@ class CachedBookRepository
           book_chapters.title AS episodeTitle, book_playlists.position AS position
         FROM $PLAYLIST_MEMBERS_FROM
         $join
-        WHERE detailed_books.libraryId = ? AND book_playlists.playlistId IN ($placeholders) AND $PLAYLIST_MEMBER_CACHED $filter
+        WHERE detailed_books.libraryId = ? AND book_playlists.playlistId IN ($placeholders) AND $PLAYLIST_MEMBER_IS_DOWNLOADED $filter
         ORDER BY book_playlists.playlistId ASC, book_playlists.position ASC
         """.trimIndent()
 

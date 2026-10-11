@@ -29,7 +29,7 @@ class LibraryPlaylistsResponseConverter
         .sortedBy { it.name.lowercase() }
         .page(pageSize, pageNumber)
 
-    fun memberships(
+    fun playlistsOf(
       response: LibraryPlaylistsResponse,
       itemId: String,
     ): List<BookPlaylist> =
@@ -70,11 +70,10 @@ class LibraryPlaylistsResponseConverter
           series = metadata.seriesLine(),
         )
 
-      return PlaylistItem(
-        book = book,
-        episodeId = episodeId,
-        episodeTitle = episode?.title,
-      )
+      return when (episodeId) {
+        null -> PlaylistItem.BookItem(book)
+        else -> episode?.let { PlaylistItem.EpisodeItem(book = book, episodeId = episodeId, title = it.title) }
+      }
     }
 
     private fun PlaylistMetadataResponse.authorLine(): String? =

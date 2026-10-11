@@ -146,7 +146,7 @@ interface CachedBookDao {
             position = it.position,
           )
         }
-        ?: cachedBook?.playlists?.map { it.copy(id = 0L) }.orEmpty()
+        ?: cachedBook?.playlists.orEmpty()
 
     val mediaProgress =
       book

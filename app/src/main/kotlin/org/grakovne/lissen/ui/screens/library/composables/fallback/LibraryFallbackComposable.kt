@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -54,42 +55,36 @@ fun LibraryFallbackComposable(
     ) {
       val hasNetwork = networkService.isNetworkAvailable()
       val isLocalCache = contentCachingModelView.localCacheUsing()
-      val playlists = grouping == LibraryGrouping.PLAYLIST
+      val groupedByPlaylists = grouping == LibraryGrouping.PLAYLIST
 
-      val text =
+      val fallback: Pair<ImageVector, String>? =
         when {
           searchRequested -> {
             null
           }
 
-          playlists && (isLocalCache || hasNetwork) -> {
-            stringResource(R.string.no_playlists_yet)
+          groupedByPlaylists && (isLocalCache || hasNetwork) -> {
+            Icons.AutoMirrored.Filled.PlaylistPlay to stringResource(R.string.no_playlists_yet)
           }
 
           isLocalCache -> {
-            when (libraryViewModel.fetchPreferredLibraryType()) {
-              LibraryType.PODCAST -> stringResource(R.string.the_offline_podcasts_is_empty)
-              LibraryType.LIBRARY -> stringResource(R.string.the_offline_library_is_empty)
-            }
+            Icons.AutoMirrored.Filled.LibraryBooks to
+              when (libraryViewModel.fetchPreferredLibraryType()) {
+                LibraryType.PODCAST -> stringResource(R.string.the_offline_podcasts_is_empty)
+                LibraryType.LIBRARY -> stringResource(R.string.the_offline_library_is_empty)
+              }
           }
 
           hasNetwork.not() -> {
-            stringResource(R.string.no_internet_connection)
+            Icons.Filled.WifiOff to stringResource(R.string.no_internet_connection)
           }
 
           else -> {
-            stringResource(R.string.the_library_is_empty)
+            Icons.AutoMirrored.Filled.LibraryBooks to stringResource(R.string.the_library_is_empty)
           }
         }
 
-      val icon =
-        when {
-          searchRequested -> null
-          playlists && (isLocalCache || hasNetwork) -> Icons.AutoMirrored.Filled.PlaylistPlay
-          isLocalCache -> Icons.AutoMirrored.Filled.LibraryBooks
-          hasNetwork.not() -> Icons.Filled.WifiOff
-          else -> Icons.AutoMirrored.Filled.LibraryBooks
-        }
+      val (icon, text) = fallback ?: (null to null)
 
       icon?.let {
         Box(

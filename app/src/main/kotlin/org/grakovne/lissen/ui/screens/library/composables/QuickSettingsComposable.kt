@@ -44,7 +44,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingOption
-import org.grakovne.lissen.common.supportedBy
+import org.grakovne.lissen.common.isAvailableIn
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
@@ -78,8 +78,7 @@ fun QuickSettingsComposable(
   val libraryType = libraryViewModel.fetchPreferredLibraryType()
   val isLibrary = libraryType == LibraryType.LIBRARY
 
-  val groupingOptions = LibraryGrouping.entries.filter { it.supportedBy(libraryType) == it }
-  val effectiveGrouping = grouping.supportedBy(libraryType)
+  val groupingOptions = LibraryGrouping.entries.filter { it.isAvailableIn(libraryType) }
 
   var groupingExpanded by remember { mutableStateOf(false) }
   var sortExpanded by remember { mutableStateOf(false) }
@@ -125,7 +124,7 @@ fun QuickSettingsComposable(
       SettingsPickerRow(
         label = stringResource(R.string.library_quick_settings_grouping_title),
         icon = Icons.Outlined.Workspaces,
-        value = effectiveGrouping.toLocalizedName(context),
+        value = grouping.toLocalizedName(context),
         expanded = groupingExpanded,
         onClick = { groupingExpanded = !groupingExpanded },
       )
@@ -136,7 +135,7 @@ fun QuickSettingsComposable(
             SettingsOptionRow(
               title = option.toLocalizedName(context),
               icon = option.icon(),
-              selected = effectiveGrouping == option,
+              selected = grouping == option,
               trailing = Icons.Outlined.Check,
               onClick = { onGroupingSelected(option) },
             )
@@ -146,7 +145,7 @@ fun QuickSettingsComposable(
 
       // these groups are always listed by name; the books inside an author, genre or narrator keep the
       // last picked sorting, a playlist keeps its own order
-      if (effectiveGrouping !in NAME_SORTED_GROUPINGS) {
+      if (grouping !in NAME_SORTED_GROUPINGS) {
         SettingsPickerRow(
           label = stringResource(R.string.library_quick_settings_sort_title),
           icon = Icons.AutoMirrored.Outlined.Sort,

@@ -134,7 +134,7 @@ abstract class AudiobookshelfChannel(
     dataRepository
       .fetchLibraryPlaylists(libraryId)
       .fold(
-        onSuccess = { libraryPlaylistsResponseConverter.memberships(it, itemId) },
+        onSuccess = { libraryPlaylistsResponseConverter.playlistsOf(it, itemId) },
         onFailure = { null },
       )
 

@@ -25,7 +25,7 @@ class LibraryPreferences
       combine(
         store.asFlow(KEY_LIBRARY_GROUPINGS, ::getLibraryGroupings),
         store.asFlow(KEY_PREFERRED_LIBRARY_ID, ::activeLibraryId),
-      ) { groupings, libraryId -> groupings.resolve(libraryId) }
+      ) { groupings, libraryId -> groupings.groupingOf(libraryId) }
 
     val forceCacheFlow: Flow<Boolean> = store.asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
     val episodeOrderingFlow: Flow<Map<String, EpisodeOrderingConfiguration>> =
@@ -83,7 +83,7 @@ class LibraryPreferences
 
     fun saveHideCompleted(value: Boolean) = store.putBoolean(KEY_HIDE_COMPLETED, value)
 
-    fun getLibraryGrouping(libraryId: String?): LibraryGrouping = getLibraryGroupings().resolve(libraryId)
+    fun getLibraryGrouping(libraryId: String?): LibraryGrouping = getLibraryGroupings().groupingOf(libraryId)
 
     fun getLibraryGroupings(): Map<String, LibraryGrouping> = store.getPerItem(KEY_LIBRARY_GROUPINGS, libraryGroupingAdapter)
 
@@ -96,10 +96,10 @@ class LibraryPreferences
       store.putPerItem(KEY_LIBRARY_GROUPINGS, groupings, libraryGroupingAdapter)
 
     // a library without a choice of its own keeps the grouping picked before it was stored per library
-    private fun Map<String, LibraryGrouping>.resolve(libraryId: String?): LibraryGrouping =
+    private fun Map<String, LibraryGrouping>.groupingOf(libraryId: String?): LibraryGrouping =
       libraryId?.let { this[it] }
         ?: store
-          .getString(KEY_LIBRARY_GROUPING)
+          .getString(KEY_LEGACY_LIBRARY_GROUPING)
           ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }
         ?: LibraryGrouping.NONE
 
@@ -135,7 +135,7 @@ class LibraryPreferences
       private const val KEY_PREFERRED_LIBRARY_TYPE = "preferred_library_type"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
-      private const val KEY_LIBRARY_GROUPING = "library_grouping"
+      private const val KEY_LEGACY_LIBRARY_GROUPING = "library_grouping"
       private const val KEY_LIBRARY_GROUPINGS = "library_groupings"
       private const val KEY_EPISODE_ORDERING = "episode_ordering"
 

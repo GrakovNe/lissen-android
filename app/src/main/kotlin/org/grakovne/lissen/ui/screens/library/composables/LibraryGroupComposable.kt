@@ -71,10 +71,10 @@ fun <T> LibraryGroupComposable(
   val context = LocalContext.current
 
   // a group that stayed on screen for a moment gets its rows ahead of the tap
-  if (onPrefetch != null) {
-    LaunchedEffect(groupId) {
+  LaunchedEffect(groupId) {
+    onPrefetch?.let {
       delay(PREFETCH_DWELL_MS)
-      onPrefetch()
+      it()
     }
   }
 

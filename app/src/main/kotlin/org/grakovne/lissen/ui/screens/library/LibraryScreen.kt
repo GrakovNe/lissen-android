@@ -73,7 +73,6 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkService
-import org.grakovne.lissen.common.supportedBy
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
@@ -524,7 +523,7 @@ fun LibraryScreen(
               item(span = { GridItemSpan(maxLineSpan) }) {
                 LibraryFallbackComposable(
                   searchRequested = searchRequested,
-                  grouping = libraryGrouping.supportedBy(preferredLibrary?.type),
+                  grouping = libraryGrouping,
                   contentCachingModelView = cachingModelView,
                   networkService = networkService,
                   libraryViewModel = libraryViewModel,

@@ -98,8 +98,8 @@ class LibraryPlaylistsResponseConverterTest {
   fun `keeps the playlist order of books and reads author and series from either item form`() {
     assertEquals(
       listOf(
-        PlaylistItem(Book(id = "b2", title = "Dune Messiah", subtitle = null, author = "Frank Herbert", series = "Dune #2")),
-        PlaylistItem(Book(id = "b1", title = "Dune", subtitle = null, author = "Frank Herbert", series = "Dune #1")),
+        PlaylistItem.BookItem(Book(id = "b2", title = "Dune Messiah", subtitle = null, author = "Frank Herbert", series = "Dune #2")),
+        PlaylistItem.BookItem(Book(id = "b1", title = "Dune", subtitle = null, author = "Frank Herbert", series = "Dune #1")),
       ),
       entries().first { it.id == "pl-books" }.items,
     )
@@ -110,26 +110,26 @@ class LibraryPlaylistsResponseConverterTest {
     val podcast = Book(id = "p1", title = "Daily News", subtitle = null, author = "Newsroom", series = null)
 
     assertEquals(
-      PlaylistItem(book = podcast, episodeId = "e1", episodeTitle = "Monday"),
+      PlaylistItem.EpisodeItem(book = podcast, episodeId = "e1", title = "Monday"),
       entries().first { it.id == "pl-episodes" }.items.first(),
     )
   }
 
   @Test
-  fun `memberships list every place an item or its episodes hold`() {
+  fun `playlistsOf lists every place an item or its episodes hold`() {
     assertEquals(
       listOf(
         BookPlaylist(id = "pl-episodes", name = "Commute", position = 0, episodeId = "e1"),
         BookPlaylist(id = "pl-episodes", name = "Commute", position = 2, episodeId = "e2"),
       ),
-      converter.memberships(response, "p1"),
+      converter.playlistsOf(response, "p1"),
     )
 
     assertEquals(
       listOf(BookPlaylist(id = "pl-books", name = "Winter reads", position = 1, episodeId = null)),
-      converter.memberships(response, "b1"),
+      converter.playlistsOf(response, "b1"),
     )
 
-    assertEquals(emptyList<BookPlaylist>(), converter.memberships(response, "elsewhere"))
+    assertEquals(emptyList<BookPlaylist>(), converter.playlistsOf(response, "elsewhere"))
   }
 }

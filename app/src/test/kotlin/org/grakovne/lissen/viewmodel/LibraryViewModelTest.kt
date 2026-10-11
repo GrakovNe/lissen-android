@@ -302,7 +302,7 @@ class LibraryViewModelTest {
         LibraryEntry.PlaylistEntry(
           id = "pl-1",
           name = "Commute",
-          items = listOf(PlaylistItem(book("b2")), PlaylistItem(book("b1"))),
+          items = listOf(PlaylistItem.BookItem(book("b2")), PlaylistItem.BookItem(book("b1"))),
         )
 
       viewModel.toggleGroup(playlist)

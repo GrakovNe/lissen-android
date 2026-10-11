@@ -199,7 +199,7 @@ fun PlayerScreen(
 
   // the start and the chapter the route asks for are applied on entry only: a return from settings, a recreated
   // activity or a restored process must not repeat them
-  var opening by rememberSaveable { mutableStateOf(true) }
+  var firstEntry by rememberSaveable { mutableStateOf(true) }
 
   LaunchedEffect(Unit) {
     val useLocalCache = cachingModelView.localCacheUsing()
@@ -218,10 +218,10 @@ fun PlayerScreen(
       bookId = bookId,
       libraryType = playingBook?.takeIf { it.id == bookId }?.libraryType ?: preferredLibraryType,
       useLocalCache = useLocalCache,
-      playInstantly = playInstantly && opening,
-      chapterId = chapterId.takeIf { opening },
+      playInstantly = playInstantly && firstEntry,
+      chapterId = chapterId.takeIf { firstEntry },
     )
-    opening = false
+    firstEntry = false
   }
 
   LaunchedEffect(playingQueueExpanded) {
