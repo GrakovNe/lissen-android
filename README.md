@@ -101,13 +101,5 @@ Password: demo
 
 This instance is contains only Public Domain audiobooks from [LibriVox](https://librivox.org/)
 
-## Donate
-
-Lissen is free and ad-free. If it's useful to you, consider supporting its development.
-
-<a href="https://nowpayments.io/payment/?iid=5473716874&source=button" target="_blank" rel="noreferrer noopener">
-  <img src="https://nowpayments.io/images/embeds/payments-button-white.svg" alt="Cryptocurrency & Bitcoin payment button by NOWPayments" />
-</a>
-
 ## License
 Lissen is open-source and licensed under the MIT License. See the LICENSE file for more details.
