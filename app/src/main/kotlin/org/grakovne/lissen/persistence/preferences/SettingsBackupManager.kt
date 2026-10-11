@@ -80,7 +80,7 @@ class SettingsBackupManager
         ?.toMap()
         ?.let { library.saveLibraryGroupings(it) }
 
-      // a backup made before groupings were kept per library applies to the active one
+      // a backup from before per-library groupings applies to the active library
       backup.libraryGrouping
         ?.takeIf { backup.libraryGroupings == null }
         ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }

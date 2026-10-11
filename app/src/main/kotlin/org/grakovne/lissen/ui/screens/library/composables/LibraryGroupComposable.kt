@@ -52,7 +52,6 @@ private const val MAX_GROUP_COVERS = 3
 
 private const val PREFETCH_DWELL_MS = 200L
 
-/** [onPrefetch] loads the rows once the group has stayed on screen for a moment, so a tap on it opens at once. */
 @Composable
 fun <T> LibraryGroupComposable(
   groupId: String,
@@ -71,6 +70,7 @@ fun <T> LibraryGroupComposable(
 ) {
   val context = LocalContext.current
 
+  // a group that stayed on screen for a moment gets its rows ahead of the tap
   if (onPrefetch != null) {
     LaunchedEffect(groupId) {
       delay(PREFETCH_DWELL_MS)
@@ -213,7 +213,6 @@ fun GroupDrawableCover(
   )
 }
 
-/** Up to three covers of the group's items stacked into one tile. */
 @Composable
 fun GroupCoverStack(
   groupId: String,

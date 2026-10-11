@@ -313,7 +313,6 @@ class MediaRepository
       adjustTimer(totalPosition.value)
     }
 
-    /** [chapterId] opens the item on that chapter instead of its saved position. */
     suspend fun preparePlayback(
       bookId: String,
       libraryType: LibraryType? = null,
@@ -337,7 +336,7 @@ class MediaRepository
       }
     }
 
-    // the queue starts where the progress points, so a chapter is opened by pointing the progress at its start
+    // the queue starts where the progress points, so opening a chapter means pointing the progress at its start
     private fun DetailedItem.openedAt(chapterId: String): DetailedItem {
       val chapter = chapters.firstOrNull { it.id == chapterId } ?: return this
 

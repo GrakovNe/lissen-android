@@ -121,11 +121,8 @@ class PlayerE2ETest {
     composeRule.onNodeWithTag("libraryScreen").assertIsDisplayed()
   }
 
-  /**
-   * The "continue playback" shortcut's intent reaches the running activity, which is single-top, as a new intent.
-   * The activity adopts that intent, and the scenario only follows an activity whose intent is the one it launched,
-   * so the launch intent is put back before the scenario closes the activity.
-   */
+  // the scenario knows its activity by the launch intent, which onNewIntent replaces: the launch intent goes
+  // back before the scenario closes the activity
   private fun continuePlayback(block: () -> Unit) {
     val launchIntent = composeRule.activity.intent
 
@@ -165,12 +162,10 @@ class PlayerE2ETest {
       Espresso.pressBack()
       composeRule.waitUntilAtLeastOneExists(hasTestTag("playerScreen"), TIMEOUT_MS)
 
-      // the screen's entry effect has run and the controller's callbacks are delivered once the main looper is
-      // idle: a start requested again on the way back would already show as playing here
+      // the controller reports a start through the main looper, which waitForIdle drains
       composeRule.waitForIdle()
       assertFalse(mediaRepository.isPlaying.value)
 
-      // while back still leads to the library, as it does for a player opened by the shortcut
       Espresso.pressBack()
       composeRule.waitUntilAtLeastOneExists(hasTestTag("libraryScreen"), TIMEOUT_MS)
     }

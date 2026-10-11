@@ -17,7 +17,6 @@ data class PlaylistResponse(
   val items: List<PlaylistItemResponse>,
 )
 
-/** A book comes with its library item expanded, an episode with the item minified and the episode expanded. */
 @Keep
 @JsonClass(generateAdapter = true)
 data class PlaylistItemResponse(
@@ -40,7 +39,7 @@ data class PlaylistMediaResponse(
   val metadata: PlaylistMetadataResponse,
 )
 
-// the minified form carries authorName and seriesName, the expanded one authors and series, a podcast only author
+// a book item arrives expanded (authors, series), an episode's podcast minified (author): one model reads both
 @Keep
 @JsonClass(generateAdapter = true)
 data class PlaylistMetadataResponse(

@@ -197,8 +197,8 @@ fun PlayerScreen(
 
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
-  // the route asks to start playing and to open a chapter once, when the screen is entered; a return to it
-  // from settings, a recreated activity or a restored process must not do either again
+  // the start and the chapter the route asks for are applied on entry only: a return from settings, a recreated
+  // activity or a restored process must not repeat them
   var opening by rememberSaveable { mutableStateOf(true) }
 
   LaunchedEffect(Unit) {

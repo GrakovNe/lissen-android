@@ -2,7 +2,7 @@ package org.grakovne.lissen.domain
 
 import androidx.annotation.Keep
 
-/** One row of a playlist: the book itself, or the episode [episodeId] of the podcast [book]. */
+/** A row of a playlist: a book, or the episode [episodeId] of the podcast [book]. */
 @Keep
 data class PlaylistItem(
   val book: Book,

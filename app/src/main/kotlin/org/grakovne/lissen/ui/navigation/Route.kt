@@ -44,7 +44,7 @@ fun libraryRoute(linkedSearchToken: String? = null): String =
     else -> "$ROUTE_LIBRARY?$ARG_LINKED_SEARCH_TOKEN=${Uri.encode(linkedSearchToken)}"
   }
 
-/** [chapterId] opens the item on that chapter, the way a tap on it in the playing queue would. */
+/** [chapterId] opens the item on that chapter instead of its saved position, as a tap on it in the playing queue does. */
 fun playerRoute(
   bookId: String,
   bookTitle: String,

@@ -29,7 +29,6 @@ class LibraryPlaylistsResponseConverter
         .sortedBy { it.name.lowercase() }
         .page(pageSize, pageNumber)
 
-    /** The rows of one playlist in its own order. */
     fun items(
       response: LibraryPlaylistsResponse,
       playlistId: String,
@@ -41,7 +40,6 @@ class LibraryPlaylistsResponseConverter
         .orEmpty()
         .mapNotNull { it.toPlaylistItem() }
 
-    /** Every place the item, or one of its episodes, holds across the playlists of its library. */
     fun memberships(
       response: LibraryPlaylistsResponse,
       itemId: String,
@@ -63,7 +61,7 @@ class LibraryPlaylistsResponseConverter
             }
         }
 
-    // counted over the rows the list will show, so the header never promises more than the rows
+    // the header counts the rows the list will show
     private fun PlaylistResponse.toEntry(): LibraryEntry.PlaylistEntry {
       val rows = items.mapNotNull { it.toPlaylistItem() }
 

@@ -168,7 +168,6 @@ class PlayerViewModel
       return currentBook?.id != bookId || currentBook.localProvided != useLocalCache
     }
 
-    /** [chapterId] puts the item on that chapter, as a tap on it in the playing queue would. */
     suspend fun openBook(
       bookId: String,
       libraryType: LibraryType?,

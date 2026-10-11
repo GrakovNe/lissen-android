@@ -78,7 +78,7 @@ data class BookSeries(
   val id: String? = null,
 ) : Serializable
 
-/** A playlist of the user holding this item, or the episode [episodeId] of it, at [position] of its order. */
+/** A place of this item, or of its episode [episodeId], in a playlist of the user. */
 @Keep
 @JsonClass(generateAdapter = true)
 data class BookPlaylist(

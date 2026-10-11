@@ -58,7 +58,6 @@ fun BookComposable(
   )
 }
 
-/** A row of the library list: the cover of [coverItemId], a title and whatever [metadata] says under it. */
 @Composable
 fun LibraryItemRowComposable(
   coverItemId: String,

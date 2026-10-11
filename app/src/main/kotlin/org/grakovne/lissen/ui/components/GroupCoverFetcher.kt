@@ -13,7 +13,6 @@ import okio.Path.Companion.toOkioPath
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.temporary.GroupCoverProvider
 
-/** The covers of up to a few items of a group (a series, a playlist) stacked into one tile. */
 data class GroupCoverKey(
   val groupId: String,
   val coverItemIds: List<String>,

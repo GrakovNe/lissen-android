@@ -21,7 +21,6 @@ class LibraryPreferences
       store.asFlow(KEY_PREFERRED_LIBRARY_TYPE, ::getPreferredLibraryType)
     val hideCompletedFlow: Flow<Boolean> = store.asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
 
-    // the grouping of the active library: it changes with the choice and with the library
     val libraryGroupingFlow: Flow<LibraryGrouping> =
       combine(
         store.asFlow(KEY_LIBRARY_GROUPINGS, ::getLibraryGroupings),
@@ -96,7 +95,7 @@ class LibraryPreferences
     fun saveLibraryGroupings(groupings: Map<String, LibraryGrouping>) =
       store.putPerItem(KEY_LIBRARY_GROUPINGS, groupings, libraryGroupingAdapter)
 
-    // a library without a choice of its own shows the grouping picked before it was kept per library
+    // a library without a choice of its own keeps the grouping picked before it was stored per library
     private fun Map<String, LibraryGrouping>.resolve(libraryId: String?): LibraryGrouping =
       libraryId?.let { this[it] }
         ?: store

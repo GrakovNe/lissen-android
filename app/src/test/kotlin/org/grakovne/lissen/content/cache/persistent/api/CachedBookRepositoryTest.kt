@@ -818,7 +818,6 @@ class CachedBookRepositoryTest {
 
       val playlists = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
 
-      // the covers follow the playlist order, one per item
       assertEquals(
         listOf(LibraryEntry.PlaylistEntry(id = "pl-1", name = "Commute", itemCount = 3, coverItemIds = listOf("p1", "b2"))),
         playlists.items,

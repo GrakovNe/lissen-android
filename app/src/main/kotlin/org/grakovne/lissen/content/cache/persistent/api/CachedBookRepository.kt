@@ -36,7 +36,7 @@ import javax.inject.Singleton
 
 private const val FINISHED_POSITION_EPSILON = 1.0
 
-// an episode row needs its chapter to tell the title and whether the episode itself is downloaded
+// the chapter row gives an episode its title and tells whether that episode itself is downloaded
 private const val PLAYLIST_MEMBERS_FROM =
   """book_playlists
         JOIN detailed_books ON detailed_books.id = book_playlists.bookId
@@ -390,7 +390,6 @@ class CachedBookRepository
       return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
     }
 
-    /** The cached rows of a playlist in the playlist's own order. */
     suspend fun fetchPlaylistItems(
       libraryId: String,
       playlistId: String,
@@ -412,7 +411,6 @@ class CachedBookRepository
       }
     }
 
-    /** The cached rows of the given playlists, each playlist's rows in its own order. */
     private suspend fun fetchPlaylistMembers(
       libraryId: String,
       playlistIds: List<String>,

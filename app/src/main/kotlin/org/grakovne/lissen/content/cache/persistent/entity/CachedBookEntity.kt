@@ -142,7 +142,7 @@ data class BookGenreEntity(
   val genre: String,
 )
 
-/** One place of the book, or of its episode, in a playlist; a podcast holds one row per listed episode. */
+// a podcast holds one row per listed episode
 @Keep
 @Entity(
   tableName = "book_playlists",

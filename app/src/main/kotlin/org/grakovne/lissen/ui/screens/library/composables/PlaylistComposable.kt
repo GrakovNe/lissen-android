@@ -65,7 +65,6 @@ fun PlaylistComposable(
   )
 }
 
-// the row names the episode, the podcast stands where a book's author would; opening lands on that episode
 @Composable
 private fun PlaylistEpisodeComposable(
   item: PlaylistItem,

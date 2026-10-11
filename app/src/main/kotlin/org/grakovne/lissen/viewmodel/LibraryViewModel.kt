@@ -215,7 +215,7 @@ class LibraryViewModel
       )
     }
 
-    // a playlist keeps its own order, so nothing is sorted here
+    // unlike a series, a playlist arrives in its own order
     private suspend fun fetchPlaylistItems(
       libraryId: String,
       playlistId: String,

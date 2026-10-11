@@ -11,7 +11,7 @@ enum class LibraryGrouping {
   PLAYLIST,
 }
 
-// the grouping is picked once and kept for every library, but a podcast library has only playlists to group by
+// a podcast library has only playlists to group by: any other choice shows it as a plain list
 fun LibraryGrouping.supportedBy(libraryType: LibraryType?): LibraryGrouping =
   when (libraryType) {
     LibraryType.PODCAST -> takeIf { it == LibraryGrouping.PLAYLIST } ?: LibraryGrouping.NONE

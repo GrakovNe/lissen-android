@@ -72,7 +72,6 @@ class PodcastAudiobookshelfChannel
     ) {
     override fun getLibraryType() = LibraryType.PODCAST
 
-    // a podcast library has nothing else to group by, every other grouping shows the plain list
     override suspend fun fetchLibrary(
       libraryId: String,
       pageSize: Int,
