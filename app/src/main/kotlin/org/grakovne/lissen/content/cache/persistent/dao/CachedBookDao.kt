@@ -17,11 +17,14 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookGenreEntity
+import org.grakovne.lissen.content.cache.persistent.entity.BookPlaylistEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistMemberEntry
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 
@@ -128,6 +131,19 @@ interface CachedBookDao {
         .distinct()
         .map { BookGenreEntity(bookId = book.id, genre = it) }
 
+    val bookPlaylists =
+      book
+        .playlists
+        .map {
+          BookPlaylistEntity(
+            bookId = book.id,
+            playlistId = it.id,
+            playlistName = it.name,
+            episodeId = it.episodeId,
+            position = it.position,
+          )
+        }
+
     val mediaProgress =
       book
         .progress
@@ -147,6 +163,8 @@ interface CachedBookDao {
     upsertBookChapters(bookChapters)
     deleteBookGenres(book.id)
     upsertBookGenres(bookGenres)
+    deleteBookPlaylists(book.id)
+    upsertBookPlaylists(bookPlaylists)
     mediaProgress?.let { upsertMediaProgress(it) }
   }
 
@@ -159,6 +177,12 @@ interface CachedBookDao {
 
   @RawQuery
   suspend fun fetchNameGroupEntries(query: SupportSQLiteQuery): List<NameGroupEntry>
+
+  @RawQuery
+  suspend fun fetchPlaylistGroupEntries(query: SupportSQLiteQuery): List<PlaylistGroupEntry>
+
+  @RawQuery
+  suspend fun fetchPlaylistMemberEntries(query: SupportSQLiteQuery): List<PlaylistMemberEntry>
 
   @RawQuery
   suspend fun countRaw(query: SupportSQLiteQuery): Int
@@ -276,6 +300,12 @@ interface CachedBookDao {
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertBookGenres(genres: List<BookGenreEntity>)
+
+  @Query("DELETE FROM book_playlists WHERE bookId = :bookId")
+  suspend fun deleteBookPlaylists(bookId: String)
+
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  suspend fun upsertBookPlaylists(playlists: List<BookPlaylistEntity>)
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertMediaProgress(progress: MediaProgressEntity)

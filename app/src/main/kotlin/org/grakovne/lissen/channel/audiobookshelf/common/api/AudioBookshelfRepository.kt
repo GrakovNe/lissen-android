@@ -23,6 +23,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSes
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playlist.LibraryPlaylistsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
@@ -148,6 +149,9 @@ class AudioBookshelfRepository
 
     suspend fun fetchLibraryNarrators(libraryId: String): OperationResult<LibraryNarratorsResponse> =
       audioBookShelfApiService.makeRequest { it.fetchLibraryNarrators(libraryId = libraryId) }
+
+    suspend fun fetchLibraryPlaylists(libraryId: String): OperationResult<LibraryPlaylistsResponse> =
+      audioBookShelfApiService.makeRequest { it.fetchLibraryPlaylists(libraryId = libraryId) }
 
     suspend fun fetchAuthorImage(
       authorId: String,

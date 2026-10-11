@@ -20,13 +20,13 @@ fun NarratorComposable(
 ) {
   LibraryGroupComposable(
     title = narrator.name,
-    bookCount = narrator.bookCount,
+    itemCount = narrator.bookCount,
     testTag = "narratorItem_${narrator.id}",
     expanded = expanded,
     loading = loading,
-    books = books,
+    items = books,
     onToggle = onToggle,
     cover = { GroupDrawableCover(R.drawable.narrator_fallback) },
-    bookRows = { GroupBooks(it, imageLoader, navController) },
+    itemRows = { GroupBooks(it, imageLoader, navController) },
   )
 }

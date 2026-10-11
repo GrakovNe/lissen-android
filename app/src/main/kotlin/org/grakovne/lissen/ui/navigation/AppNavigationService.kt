@@ -34,8 +34,9 @@ class AppNavigationService(
     bookTitle: String,
     bookSubtitle: String?,
     startInstantly: Boolean = false,
+    chapterId: String? = null,
   ) {
-    host.navigate(playerRoute(bookId, bookTitle, bookSubtitle, startInstantly)) {
+    host.navigate(playerRoute(bookId, bookTitle, bookSubtitle, startInstantly, chapterId)) {
       launchSingleTop = true
     }
   }

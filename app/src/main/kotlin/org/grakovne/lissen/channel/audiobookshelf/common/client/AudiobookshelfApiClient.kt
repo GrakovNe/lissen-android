@@ -14,6 +14,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSes
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playlist.LibraryPlaylistsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
@@ -129,6 +130,12 @@ interface AudiobookshelfApiClient {
     @Path("libraryId") libraryId: String,
     @Tag cacheable: Cacheable = Cacheable(),
   ): Response<LibraryNarratorsResponse>
+
+  @GET("api/libraries/{libraryId}/playlists")
+  suspend fun fetchLibraryPlaylists(
+    @Path("libraryId") libraryId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
+  ): Response<LibraryPlaylistsResponse>
 
   @GET("api/libraries/{libraryId}/search")
   suspend fun searchLibraryItems(

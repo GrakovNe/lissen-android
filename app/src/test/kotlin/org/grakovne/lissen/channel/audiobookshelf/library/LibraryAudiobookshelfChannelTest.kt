@@ -52,6 +52,7 @@ class LibraryAudiobookshelfChannelTest {
       bookResponseConverter = mockk(relaxed = true),
       librarySearchItemsConverter = LibrarySearchItemsConverter(),
       libraryListResponseConverter = LibraryListResponseConverter(),
+      libraryPlaylistsResponseConverter = mockk(relaxed = true),
     )
 
   @Test

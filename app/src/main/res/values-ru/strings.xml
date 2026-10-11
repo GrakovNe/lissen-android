@@ -107,6 +107,13 @@
     <string name="library_grouping_author">По авторам</string>
     <string name="library_grouping_genre">По жанрам</string>
     <string name="library_grouping_narrator">По чтецам</string>
+    <string name="library_grouping_playlist">По плейлистам</string>
+    <plurals name="playlist_items_count">
+        <item quantity="one">%d элемент</item>
+        <item quantity="few">%d элемента</item>
+        <item quantity="many">%d элементов</item>
+        <item quantity="other">%d элементов</item>
+    </plurals>
     <string name="timer_option_disabled">Выключен</string>
     <string name="timer_option_disable_timer">Отключить таймер</string>
     <string name="timer_title">Таймер</string>

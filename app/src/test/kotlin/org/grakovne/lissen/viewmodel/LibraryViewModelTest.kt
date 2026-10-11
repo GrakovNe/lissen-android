@@ -23,6 +23,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.AfterEach
@@ -291,6 +292,35 @@ class LibraryViewModelTest {
         listOf("b1"),
         viewModel.groups.value.books["Jim Dale"]
           ?.map { it.id },
+      )
+    }
+
+    @Test
+    fun `toggleGroup expands a playlist and keeps its rows in playlist order`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchPlaylistItems("lib-1", "pl-1") } returns
+        OperationResult.Success(
+          listOf(
+            PlaylistItem(book("b2")),
+            PlaylistItem(book("p1"), episodeId = "e1", episodeTitle = "Monday"),
+            PlaylistItem(book("b1")),
+          ),
+        )
+
+      val playlist = LibraryEntry.PlaylistEntry(id = "pl-1", name = "Commute", itemCount = 3, coverItemIds = listOf("b2", "p1"))
+
+      viewModel.toggleGroup(playlist)
+
+      assertTrue("pl-1" in viewModel.groups.value.expanded)
+      assertEquals(
+        listOf("b2" to null, "p1" to "e1", "b1" to null),
+        viewModel.groups.value.playlistItems["pl-1"]
+          ?.map { it.book.id to it.episodeId },
+      )
+      assertNull(viewModel.groups.value.books["pl-1"])
+      assertTrue(
+        viewModel.groups.value.loading
+          .isEmpty(),
       )
     }
 

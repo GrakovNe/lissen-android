@@ -63,6 +63,11 @@
     <string name="library_grouping_author">By Author</string>
     <string name="library_grouping_genre">By Genre</string>
     <string name="library_grouping_narrator">By Narrator</string>
+    <string name="library_grouping_playlist">By Playlist</string>
+    <plurals name="playlist_items_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
     <plurals name="series_books_count">
         <item quantity="one">%d book</item>
         <item quantity="other">%d books</item>

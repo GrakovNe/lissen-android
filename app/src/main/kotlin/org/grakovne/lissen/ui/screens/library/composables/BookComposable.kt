@@ -47,15 +47,37 @@ fun BookComposable(
   grouping: LibraryGrouping = LibraryGrouping.NONE,
   leading: (@Composable () -> Unit)? = null,
 ) {
+  LibraryItemRowComposable(
+    coverItemId = book.id,
+    title = book.title,
+    testTag = "bookItem_${book.id}",
+    imageLoader = imageLoader,
+    onClick = { navController.showPlayer(book.id, book.title, book.subtitle) },
+    leading = leading,
+    metadata = { BookMetadataComposable(book, grouping) },
+  )
+}
+
+/** A row of the library list: the cover of [coverItemId], a title and whatever [metadata] says under it. */
+@Composable
+fun LibraryItemRowComposable(
+  coverItemId: String,
+  title: String,
+  testTag: String,
+  imageLoader: ImageLoader,
+  onClick: () -> Unit,
+  leading: (@Composable () -> Unit)? = null,
+  metadata: @Composable () -> Unit,
+) {
   val context = LocalContext.current
 
   val openLabel = stringResource(R.string.a11y_open)
 
   val imageRequest =
-    remember(book.id) {
+    remember(coverItemId) {
       ImageRequest
         .Builder(context)
-        .data(BookCoverKey(book.id))
+        .data(BookCoverKey(coverItemId))
         .build()
     }
 
@@ -64,9 +86,8 @@ fun BookComposable(
       Modifier
         .fillMaxWidth()
         .semantics(mergeDescendants = true) {}
-        .clickable(onClickLabel = openLabel, role = Role.Button) {
-          navController.showPlayer(book.id, book.title, book.subtitle)
-        }.testTag("bookItem_${book.id}")
+        .clickable(onClickLabel = openLabel, role = Role.Button, onClick = onClick)
+        .testTag(testTag)
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -93,7 +114,7 @@ fun BookComposable(
     ) {
       Column {
         Text(
-          text = book.title,
+          text = title,
           style =
             MaterialTheme.typography.bodyMedium.copy(
               fontWeight = FontWeight.SemiBold,
@@ -104,7 +125,7 @@ fun BookComposable(
         )
       }
 
-      BookMetadataComposable(book, grouping)
+      metadata()
     }
 
     Spacer(Modifier.width(16.dp))

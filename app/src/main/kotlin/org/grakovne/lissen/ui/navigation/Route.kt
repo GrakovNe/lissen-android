@@ -25,6 +25,7 @@ const val ARG_BOOK_ID = "bookId"
 const val ARG_BOOK_TITLE = "bookTitle"
 const val ARG_BOOK_SUBTITLE = "bookSubtitle"
 const val ARG_START_INSTANTLY = "startInstantly"
+const val ARG_CHAPTER_ID = "chapterId"
 
 const val ROUTE_LIBRARY_PATTERN =
   "$ROUTE_LIBRARY?$ARG_LINKED_SEARCH_TOKEN={$ARG_LINKED_SEARCH_TOKEN}"
@@ -33,7 +34,8 @@ const val ROUTE_PLAYER_PATTERN =
   "$ROUTE_PLAYER/{$ARG_BOOK_ID}" +
     "?$ARG_BOOK_TITLE={$ARG_BOOK_TITLE}" +
     "&$ARG_BOOK_SUBTITLE={$ARG_BOOK_SUBTITLE}" +
-    "&$ARG_START_INSTANTLY={$ARG_START_INSTANTLY}"
+    "&$ARG_START_INSTANTLY={$ARG_START_INSTANTLY}" +
+    "&$ARG_CHAPTER_ID={$ARG_CHAPTER_ID}"
 
 /** Arguments are URL-encoded here and decoded by Navigation. Destinations must not decode them again. */
 fun libraryRoute(linkedSearchToken: String? = null): String =
@@ -42,15 +44,18 @@ fun libraryRoute(linkedSearchToken: String? = null): String =
     else -> "$ROUTE_LIBRARY?$ARG_LINKED_SEARCH_TOKEN=${Uri.encode(linkedSearchToken)}"
   }
 
+/** [chapterId] opens the item on that chapter, the way a tap on it in the playing queue would. */
 fun playerRoute(
   bookId: String,
   bookTitle: String,
   bookSubtitle: String?,
   startInstantly: Boolean = false,
+  chapterId: String? = null,
 ): String =
   buildString {
     append("$ROUTE_PLAYER/${Uri.encode(bookId)}")
     append("?$ARG_BOOK_TITLE=${Uri.encode(bookTitle)}")
     append("&$ARG_BOOK_SUBTITLE=${Uri.encode(bookSubtitle ?: "")}")
     append("&$ARG_START_INSTANTLY=$startInstantly")
+    chapterId?.let { append("&$ARG_CHAPTER_ID=${Uri.encode(it)}") }
   }

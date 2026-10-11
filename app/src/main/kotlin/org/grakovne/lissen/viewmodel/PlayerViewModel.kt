@@ -168,11 +168,13 @@ class PlayerViewModel
       return currentBook?.id != bookId || currentBook.localProvided != useLocalCache
     }
 
+    /** [chapterId] puts the item on that chapter, as a tap on it in the playing queue would. */
     suspend fun openBook(
       bookId: String,
       libraryType: LibraryType?,
       useLocalCache: Boolean,
       playInstantly: Boolean,
+      chapterId: String? = null,
     ) {
       val currentBook = book.value
       val preparationRequired = requiresBookPreparation(bookId, useLocalCache)
@@ -185,8 +187,12 @@ class PlayerViewModel
           mediaRepository.preparePlayback(
             bookId = bookId,
             libraryType = currentBook?.takeIf { it.id == bookId }?.libraryType ?: storedBook?.libraryType ?: libraryType,
+            chapterId = chapterId,
           )
         } else {
+          chapterId
+            ?.let { id -> currentBook?.chapters?.firstOrNull { it.id == id } }
+            ?.let(::setChapter)
           true
         }
 

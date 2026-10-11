@@ -24,6 +24,7 @@ import org.grakovne.lissen.common.sortedBySeriesPosition
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
@@ -161,10 +162,12 @@ class LibraryViewModel
         is LibraryEntry.AuthorEntry -> id
         is LibraryEntry.GenreEntry -> id
         is LibraryEntry.NarratorEntry -> id
+        is LibraryEntry.PlaylistEntry -> id
         is LibraryEntry.BookEntry -> null
       }
 
-    private fun alreadyResolved(groupId: String): Boolean = groupId in _groups.value.books || groupId in _groups.value.loading
+    private fun alreadyResolved(groupId: String): Boolean =
+      groupId in _groups.value.books || groupId in _groups.value.playlistItems || groupId in _groups.value.loading
 
     private suspend fun fetchGroupBooks(entry: LibraryEntry) {
       val groupId = entry.groupId() ?: return
@@ -175,12 +178,27 @@ class LibraryViewModel
       val libraryId = preferences.getPreferredLibrary()?.id ?: return
 
       _groups.update { it.copy(loading = it.loading + groupId) }
+
+      when (entry) {
+        is LibraryEntry.PlaylistEntry -> fetchPlaylistItems(libraryId, groupId)
+        else -> fetchGroupedBooks(libraryId, groupId, entry)
+      }
+
+      _groups.update { it.copy(loading = it.loading - groupId) }
+    }
+
+    private suspend fun fetchGroupedBooks(
+      libraryId: String,
+      groupId: String,
+      entry: LibraryEntry,
+    ) {
       val result =
         when (entry) {
           is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
           is LibraryEntry.AuthorEntry -> mediaChannel.fetchAuthorBooks(libraryId = libraryId, authorId = entry.id)
           is LibraryEntry.GenreEntry -> mediaChannel.fetchGenreBooks(libraryId = libraryId, genre = entry.name)
           is LibraryEntry.NarratorEntry -> mediaChannel.fetchNarratorBooks(libraryId = libraryId, narrator = entry.name)
+          is LibraryEntry.PlaylistEntry -> null
           is LibraryEntry.BookEntry -> null
         }
 
@@ -195,7 +213,19 @@ class LibraryViewModel
         },
         onFailure = { },
       )
-      _groups.update { it.copy(loading = it.loading - groupId) }
+    }
+
+    // a playlist keeps its own order, so nothing is sorted here
+    private suspend fun fetchPlaylistItems(
+      libraryId: String,
+      playlistId: String,
+    ) {
+      mediaChannel
+        .fetchPlaylistItems(libraryId = libraryId, playlistId = playlistId)
+        .fold(
+          onSuccess = { items -> _groups.update { state -> state.copy(playlistItems = state.playlistItems + (playlistId to items)) } },
+          onFailure = { },
+        )
     }
 
     fun applyLinkedSearch(token: String) {
@@ -242,5 +272,6 @@ class LibraryViewModel
 data class LibraryGroupsState(
   val expanded: Set<String> = emptySet(),
   val books: Map<String, List<Book>> = emptyMap(),
+  val playlistItems: Map<String, List<PlaylistItem>> = emptyMap(),
   val loading: Set<String> = emptySet(),
 )

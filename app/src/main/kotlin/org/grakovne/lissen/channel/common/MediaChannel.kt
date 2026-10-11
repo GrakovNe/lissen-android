@@ -16,6 +16,7 @@ import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.asLibraryEntries
 import java.io.File
@@ -92,6 +93,11 @@ interface MediaChannel {
     libraryId: String,
     narrator: String,
   ): OperationResult<List<Book>> = OperationResult.Success(emptyList())
+
+  suspend fun fetchPlaylistItems(
+    libraryId: String,
+    playlistId: String,
+  ): OperationResult<List<PlaylistItem>> = OperationResult.Success(emptyList())
 
   suspend fun searchBooks(
     libraryId: String,

@@ -16,6 +16,7 @@ data class DetailedItem(
   val genres: List<String> = emptyList(),
   val publisher: String?,
   val series: List<BookSeries>,
+  val playlists: List<BookPlaylist> = emptyList(),
   val year: String?,
   val abstract: String?,
   val files: List<BookFile>,
@@ -75,6 +76,16 @@ data class BookSeries(
   val serialNumber: String?,
   val name: String,
   val id: String? = null,
+) : Serializable
+
+/** A playlist of the user holding this item, or the episode [episodeId] of it, at [position] of its order. */
+@Keep
+@JsonClass(generateAdapter = true)
+data class BookPlaylist(
+  val id: String,
+  val name: String,
+  val position: Int,
+  val episodeId: String? = null,
 ) : Serializable
 
 @Keep

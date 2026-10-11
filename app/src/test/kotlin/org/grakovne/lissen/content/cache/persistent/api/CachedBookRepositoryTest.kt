@@ -19,6 +19,8 @@ import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistMemberEntry
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
@@ -792,6 +794,74 @@ class CachedBookRepositoryTest {
       )
 
       assertFalse(progressSlot.captured.isFinished)
+    }
+
+  @Test
+  fun `playlist grouping maps the cached rows into playlist entries`() =
+    runBlocking {
+      coEvery { bookDao.countRaw(any()) } returns 1
+      coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns
+        listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute", itemCount = 3, coverItemIds = "p1,b2"))
+
+      val playlists = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
+
+      assertEquals(
+        listOf(LibraryEntry.PlaylistEntry(id = "pl-1", name = "Commute", itemCount = 3, coverItemIds = listOf("p1", "b2"))),
+        playlists.items,
+      )
+      assertEquals(1, playlists.totalItems)
+    }
+
+  @Test
+  fun `empty playlist grouping skips the page query`() =
+    runBlocking {
+      coEvery { bookDao.countRaw(any()) } returns 0
+
+      val playlists = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
+
+      assertTrue(playlists.items.isEmpty())
+      coVerify(exactly = 0) { bookDao.fetchPlaylistGroupEntries(any()) }
+    }
+
+  @Test
+  fun `playlist grouping hides completed books only for library type`() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      val queries = mutableListOf<SupportSQLiteQuery>()
+      coEvery { bookDao.countRaw(capture(queries)) } returns 0
+
+      repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = LibraryType.LIBRARY)
+      repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = LibraryType.PODCAST)
+
+      assertTrue(queries[0].sql.contains("isFinished"))
+      assertFalse(queries[1].sql.contains("isFinished"))
+    }
+
+  @Test
+  fun `playlist items keep the playlist order and name the episode of a podcast row`() =
+    runBlocking {
+      coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns
+        listOf(
+          PlaylistMemberEntry(bookId = "p1", episodeId = "e1", episodeTitle = "Monday", position = 0),
+          PlaylistMemberEntry(bookId = "b1", episodeId = null, episodeTitle = null, position = 1),
+          PlaylistMemberEntry(bookId = "p1", episodeId = "e2", episodeTitle = "Tuesday", position = 2),
+        )
+      coEvery { bookDao.fetchBooksByIds(listOf("p1", "b1")) } returns listOf(entity("b1", author = "Andy Weir"), entity("p1"))
+
+      val items = repository.fetchPlaylistItems(LIBRARY_ID, "pl-1", libraryType = null)
+
+      assertEquals(listOf("p1" to "Monday", "b1" to null, "p1" to "Tuesday"), items.map { it.book.id to it.episodeTitle })
+      assertEquals(listOf("e1", null, "e2"), items.map { it.episodeId })
+      assertEquals("Andy Weir", items[1].book.author)
+    }
+
+  @Test
+  fun `playlist items of an empty playlist skip the book lookup`() =
+    runBlocking {
+      coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns emptyList()
+
+      assertTrue(repository.fetchPlaylistItems(LIBRARY_ID, "pl-1", libraryType = null).isEmpty())
+      coVerify(exactly = 0) { bookDao.fetchBooksByIds(any()) }
     }
 
   companion object {

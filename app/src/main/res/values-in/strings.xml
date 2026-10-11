@@ -277,6 +277,10 @@
     <string name="a11y_rewind">Putar balik</string>
     <string name="library_grouping_genre">Berdasarkan Genre</string>
     <string name="library_grouping_narrator">Berdasarkan Narator</string>
+    <string name="library_grouping_playlist">Berdasarkan Daftar Putar</string>
+    <plurals name="playlist_items_count">
+        <item quantity="other">%d item</item>
+    </plurals>
     <string name="player_settings_auto_skip">Lewati otomatis</string>
     <string name="player_settings_skip_disabled">Nonaktif</string>
     <string name="player_settings_intro_value">Intro %1$s</string>

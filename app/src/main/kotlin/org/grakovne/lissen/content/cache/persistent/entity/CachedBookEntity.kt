@@ -36,6 +36,11 @@ data class CachedBookEntity(
     projection = ["genre"],
   )
   val genres: List<String>,
+  @Relation(
+    parentColumn = "id",
+    entityColumn = "bookId",
+  )
+  val playlists: List<BookPlaylistEntity> = emptyList(),
 )
 
 @Keep
@@ -136,6 +141,30 @@ data class BookGenreEntity(
   val bookId: String,
   val genre: String,
 )
+
+/** One place of the book, or of its episode, in a playlist; a podcast holds one row per listed episode. */
+@Keep
+@Entity(
+  tableName = "book_playlists",
+  foreignKeys = [
+    ForeignKey(
+      entity = BookEntity::class,
+      parentColumns = ["id"],
+      childColumns = ["bookId"],
+      onDelete = ForeignKey.CASCADE,
+    ),
+  ],
+  indices = [Index(value = ["bookId"]), Index(value = ["playlistId"])],
+)
+@JsonClass(generateAdapter = true)
+data class BookPlaylistEntity(
+  @PrimaryKey(autoGenerate = true) val id: Long = 0L,
+  val bookId: String,
+  val playlistId: String,
+  val playlistName: String,
+  val episodeId: String?,
+  val position: Int,
+) : Serializable
 
 @Keep
 @Entity(

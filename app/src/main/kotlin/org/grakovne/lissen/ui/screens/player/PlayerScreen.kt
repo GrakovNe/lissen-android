@@ -117,6 +117,7 @@ fun PlayerScreen(
   bookTitle: String,
   bookSubtitle: String?,
   playInstantly: Boolean,
+  chapterId: String? = null,
 ) {
   val context = LocalContext.current
 
@@ -213,6 +214,7 @@ fun PlayerScreen(
       libraryType = playingBook?.takeIf { it.id == bookId }?.libraryType ?: preferredLibraryType,
       useLocalCache = useLocalCache,
       playInstantly = playInstantly,
+      chapterId = chapterId,
     )
   }
 

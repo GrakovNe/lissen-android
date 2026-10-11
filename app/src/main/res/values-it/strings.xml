@@ -289,6 +289,12 @@
     <string name="player_settings_outro_value">Finale %1$s</string>
     <string name="library_grouping_genre">Per genere</string>
     <string name="library_grouping_narrator">Per narratore</string>
+    <string name="library_grouping_playlist">Per playlist</string>
+    <plurals name="playlist_items_count">
+        <item quantity="one">%d elemento</item>
+        <item quantity="many">%d elementi</item>
+        <item quantity="other">%d elementi</item>
+    </plurals>
     <string name="sleep_timer_fade_disabled">Disabilitato</string>
     <string name="rewind_on_pause_disabled">Disabilitato</string>
     <string name="rewind_on_pause_title">Riavvolgi sulla pausa</string>

@@ -20,13 +20,13 @@ fun GenreComposable(
 ) {
   LibraryGroupComposable(
     title = genre.name,
-    bookCount = genre.bookCount,
+    itemCount = genre.bookCount,
     testTag = "genreItem_${genre.id}",
     expanded = expanded,
     loading = loading,
-    books = books,
+    items = books,
     onToggle = onToggle,
     cover = { GroupDrawableCover(R.drawable.genre_fallback) },
-    bookRows = { GroupBooks(it, imageLoader, navController) },
+    itemRows = { GroupBooks(it, imageLoader, navController) },
   )
 }

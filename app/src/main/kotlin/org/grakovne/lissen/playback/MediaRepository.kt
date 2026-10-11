@@ -21,6 +21,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.autoskip.AutoSkipPreferences
@@ -312,9 +313,11 @@ class MediaRepository
       adjustTimer(totalPosition.value)
     }
 
+    /** [chapterId] opens the item on that chapter instead of its saved position. */
     suspend fun preparePlayback(
       bookId: String,
       libraryType: LibraryType? = null,
+      chapterId: String? = null,
     ): Boolean {
       val result = withContext(ioDispatcher) { mediaChannel.fetchBook(bookId, libraryType) }
 
@@ -322,7 +325,7 @@ class MediaRepository
       return withContext(Dispatchers.Main.immediate) {
         result.fold(
           onSuccess = {
-            startPreparingPlayback(it)
+            startPreparingPlayback(chapterId?.let { id -> it.openedAt(id) } ?: it)
             playingBookmarks.refreshFromServerAsync()
             true
           },
@@ -332,6 +335,20 @@ class MediaRepository
           },
         )
       }
+    }
+
+    // the queue starts where the progress points, so a chapter is opened by pointing the progress at its start
+    private fun DetailedItem.openedAt(chapterId: String): DetailedItem {
+      val chapter = chapters.firstOrNull { it.id == chapterId } ?: return this
+
+      return copy(
+        progress =
+          MediaProgress(
+            currentTime = chapter.start,
+            isFinished = false,
+            lastUpdate = progress?.lastUpdate ?: 0L,
+          ),
+      )
     }
 
     /**

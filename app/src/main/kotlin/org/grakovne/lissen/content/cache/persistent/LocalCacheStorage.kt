@@ -10,6 +10,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookGenreEntity
+import org.grakovne.lissen.content.cache.persistent.entity.BookPlaylistEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookmarkEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedLibraryEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
@@ -21,12 +22,13 @@ import org.grakovne.lissen.content.cache.persistent.entity.OfflineSessionEntity
     BookFileEntity::class,
     BookChapterEntity::class,
     BookGenreEntity::class,
+    BookPlaylistEntity::class,
     MediaProgressEntity::class,
     CachedLibraryEntity::class,
     CachedBookmarkEntity::class,
     OfflineSessionEntity::class,
   ],
-  version = 25,
+  version = 26,
   exportSchema = true,
 )
 abstract class LocalCacheStorage : RoomDatabase() {

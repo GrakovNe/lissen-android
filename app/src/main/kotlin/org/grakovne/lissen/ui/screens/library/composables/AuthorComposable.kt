@@ -53,11 +53,11 @@ fun AuthorComposable(
 
   LibraryGroupComposable(
     title = author.name,
-    bookCount = author.bookCount,
+    itemCount = author.bookCount,
     testTag = "authorItem_${author.id}",
     expanded = expanded,
     loading = loading,
-    books = books,
+    items = books,
     onToggle = onToggle,
     cover = {
       AsyncShimmeringImage(
@@ -73,6 +73,6 @@ fun AuthorComposable(
         error = painterResource(R.drawable.author_fallback),
       )
     },
-    bookRows = { GroupBooks(it, imageLoader, navController, LibraryGrouping.AUTHOR) },
+    itemRows = { GroupBooks(it, imageLoader, navController, LibraryGrouping.AUTHOR) },
   )
 }

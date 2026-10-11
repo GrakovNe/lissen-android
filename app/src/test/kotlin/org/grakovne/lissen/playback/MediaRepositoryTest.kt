@@ -330,6 +330,41 @@ class MediaRepositoryTest {
         assertTrue(repository.mediaPreparingError.value)
       }
 
+    private fun openedPosition() =
+      repository.playingBook.value
+        ?.progress
+        ?.currentTime
+
+    @Test
+    fun `a requested chapter opens the item at that chapter's start`() =
+      runTest {
+        coEvery { mediaChannel.fetchBook("podcast", null) } returns OperationResult.Success(podcast(progress = progress(100.0)))
+
+        assertTrue(repository.preparePlayback("podcast", chapterId = "c1"))
+
+        assertEquals(
+          30.0,
+          repository.playingBook.value
+            ?.progress
+            ?.currentTime,
+        )
+      }
+
+    @Test
+    fun `an unknown chapter leaves the saved position alone`() =
+      runTest {
+        coEvery { mediaChannel.fetchBook("podcast", null) } returns OperationResult.Success(podcast(progress = progress(100.0)))
+
+        assertTrue(repository.preparePlayback("podcast", chapterId = "gone"))
+
+        assertEquals(
+          100.0,
+          repository.playingBook.value
+            ?.progress
+            ?.currentTime,
+        )
+      }
+
     @Test
     fun `ready event applies to the book named by the service`() =
       runTest {

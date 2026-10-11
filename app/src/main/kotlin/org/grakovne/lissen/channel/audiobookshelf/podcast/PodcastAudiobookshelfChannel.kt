@@ -10,6 +10,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemR
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPlaylistsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LocalSessionSyncResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.OfflineSessionRequestConverter
@@ -20,8 +21,10 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageR
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackSession
@@ -50,6 +53,7 @@ class PodcastAudiobookshelfChannel
     private val podcastPageResponseConverter: PodcastPageResponseConverter,
     private val podcastResponseConverter: PodcastResponseConverter,
     private val podcastSearchItemsConverter: PodcastSearchItemsConverter,
+    libraryPlaylistsResponseConverter: LibraryPlaylistsResponseConverter,
   ) : AudiobookshelfChannel(
       hostProvider = hostProvider,
       dataRepository = dataRepository,
@@ -64,8 +68,21 @@ class PodcastAudiobookshelfChannel
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
       offlineSessionRequestConverter = offlineSessionRequestConverter,
       localSessionSyncResponseConverter = localSessionSyncResponseConverter,
+      libraryPlaylistsResponseConverter = libraryPlaylistsResponseConverter,
     ) {
     override fun getLibraryType() = LibraryType.PODCAST
+
+    // a podcast library has nothing else to group by, every other grouping shows the plain list
+    override suspend fun fetchLibrary(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryGrouping: LibraryGrouping,
+    ): OperationResult<PagedItems<LibraryEntry>> =
+      when (libraryGrouping) {
+        LibraryGrouping.PLAYLIST -> fetchPlaylists(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+        else -> super.fetchLibrary(libraryId, pageSize, pageNumber, libraryGrouping)
+      }
 
     override suspend fun fetchBooks(
       libraryId: String,
@@ -141,6 +158,10 @@ class PodcastAudiobookshelfChannel
 
         async { dataRepository.fetchPodcastItem(bookId) }
           .await()
-          .map { podcastResponseConverter.apply(it, mediaProgress.await() ?: emptyList()) }
+          .map { item ->
+            podcastResponseConverter
+              .apply(item, mediaProgress.await() ?: emptyList())
+              .copy(playlists = fetchItemPlaylists(libraryId = item.libraryId, itemId = item.id))
+          }
       }
   }

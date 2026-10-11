@@ -492,6 +492,41 @@ class PlayerViewModelTest {
       }
 
     @Test
+    fun `openBook hands the requested chapter to the preparation`() =
+      runTest {
+        playingBook.value = detailedItem(id = "book-1")
+        coEvery { mediaRepository.preparePlayback("book-2", LibraryType.PODCAST, "e2") } returns true
+
+        viewModel.openBook(
+          bookId = "book-2",
+          libraryType = LibraryType.PODCAST,
+          useLocalCache = false,
+          playInstantly = false,
+          chapterId = "e2",
+        )
+
+        coVerify { mediaRepository.preparePlayback("book-2", LibraryType.PODCAST, "e2") }
+        verify(exactly = 0) { mediaRepository.setChapter(any()) }
+      }
+
+    @Test
+    fun `openBook moves an already loaded item to the requested chapter`() =
+      runTest {
+        playingBook.value = detailedItem(id = "book-1", chapters = listOf(chapter("e1"), chapter("e2")))
+
+        viewModel.openBook(
+          bookId = "book-1",
+          libraryType = LibraryType.PODCAST,
+          useLocalCache = false,
+          playInstantly = false,
+          chapterId = "e2",
+        )
+
+        verify { mediaRepository.setChapter(1) }
+        coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any(), any()) }
+      }
+
+    @Test
     fun `openBook uses the last played item type before the preferred library type`() =
       runTest {
         every { preferences.getLastPlayingItem() } returns detailedItem(id = "book-2", libraryType = LibraryType.PODCAST)

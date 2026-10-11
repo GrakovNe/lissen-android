@@ -481,3 +481,25 @@ val MIGRATION_24_25 =
       db.execSQL("CREATE INDEX IF NOT EXISTS index_book_genres_genre ON book_genres (genre)")
     }
   }
+
+// no backfill: books cached before this version have no playlists until they are cached again
+val MIGRATION_25_26 =
+  object : Migration(25, 26) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        CREATE TABLE IF NOT EXISTS book_playlists (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            bookId TEXT NOT NULL,
+            playlistId TEXT NOT NULL,
+            playlistName TEXT NOT NULL,
+            episodeId TEXT,
+            position INTEGER NOT NULL,
+            FOREIGN KEY(bookId) REFERENCES detailed_books(id) ON UPDATE NO ACTION ON DELETE CASCADE
+        )
+        """.trimIndent(),
+      )
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_book_playlists_bookId ON book_playlists (bookId)")
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_book_playlists_playlistId ON book_playlists (playlistId)")
+    }
+  }

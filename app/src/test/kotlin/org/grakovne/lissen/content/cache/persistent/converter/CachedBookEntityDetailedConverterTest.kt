@@ -3,8 +3,10 @@ package org.grakovne.lissen.content.cache.persistent.converter
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
+import org.grakovne.lissen.content.cache.persistent.entity.BookPlaylistEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.domain.BookPlaylist
 import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -43,7 +45,38 @@ class CachedBookEntityDetailedConverterTest {
     chapters: List<BookChapterEntity> = emptyList(),
     progress: MediaProgressEntity? = null,
     genres: List<String> = emptyList(),
-  ) = CachedBookEntity(detailedBook = bookEntity, files = files, chapters = chapters, progress = progress, genres = genres)
+    playlists: List<BookPlaylistEntity> = emptyList(),
+  ) = CachedBookEntity(
+    detailedBook = bookEntity,
+    files = files,
+    chapters = chapters,
+    progress = progress,
+    genres = genres,
+    playlists = playlists,
+  )
+
+  @Test
+  fun `maps playlists in their stored positions`() {
+    val result =
+      converter.apply(
+        entity(
+          playlists =
+            listOf(
+              BookPlaylistEntity(bookId = "book-1", playlistId = "pl-1", playlistName = "Commute", episodeId = "e2", position = 2),
+              BookPlaylistEntity(bookId = "book-1", playlistId = "pl-1", playlistName = "Commute", episodeId = "e1", position = 0),
+            ),
+        ),
+        LibraryType.PODCAST,
+      )
+
+    assertEquals(
+      listOf(
+        BookPlaylist(id = "pl-1", name = "Commute", position = 0, episodeId = "e1"),
+        BookPlaylist(id = "pl-1", name = "Commute", position = 2, episodeId = "e2"),
+      ),
+      result.playlists,
+    )
+  }
 
   @Test
   fun `maps genres`() {

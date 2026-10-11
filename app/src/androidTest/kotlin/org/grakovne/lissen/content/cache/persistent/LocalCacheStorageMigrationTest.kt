@@ -429,6 +429,38 @@ class LocalCacheStorageMigrationTest {
     }
   }
 
+  @Test
+  fun migrate25To26_createsBookPlaylistsTable_cascadingOnBookDelete() {
+    helper.createDatabase(TEST_DB, 25).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 0, 0, 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 26, true, MIGRATION_25_26)
+    db.execSQL("PRAGMA foreign_keys = ON")
+
+    db.execSQL(
+      """
+      INSERT INTO book_playlists (bookId, playlistId, playlistName, episodeId, position)
+      VALUES ('book-1', 'pl-1', 'Winter reads', NULL, 0)
+      """.trimIndent(),
+    )
+    db.query("SELECT COUNT(*) FROM book_playlists").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(1, cursor.getInt(0))
+    }
+
+    db.execSQL("DELETE FROM detailed_books WHERE id = 'book-1'")
+    db.query("SELECT COUNT(*) FROM book_playlists").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(0, cursor.getInt(0))
+    }
+  }
+
   companion object {
     private const val TEST_DB = "local-cache-migration-test"
   }

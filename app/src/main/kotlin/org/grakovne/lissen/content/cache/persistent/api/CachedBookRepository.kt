@@ -17,6 +17,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistGroupEntry
 import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -25,6 +26,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import java.io.File
@@ -33,6 +35,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val FINISHED_POSITION_EPSILON = 1.0
+
+// an episode row needs its chapter to tell the title and whether the episode itself is downloaded
+private const val PLAYLIST_MEMBERS_FROM =
+  """book_playlists
+        JOIN detailed_books ON detailed_books.id = book_playlists.bookId
+        LEFT JOIN book_chapters ON book_chapters.bookId = book_playlists.bookId AND book_chapters.bookChapterId = book_playlists.episodeId"""
+
+// a book row stands for the book however much of it is downloaded, like a book of a series does
+private const val PLAYLIST_MEMBER_CACHED = "(book_playlists.episodeId IS NULL OR book_chapters.isCached = 1)"
 
 // authors and narrators are cached as one comma-joined string, so a book is grouped under the first of them
 private fun firstOfJoined(column: String) =
@@ -327,6 +338,90 @@ class CachedBookRepository
       genre: String,
       libraryType: LibraryType?,
     ): List<Book> = fetchNameGroupItems(NameGrouping.GENRE, libraryId, genre, libraryType)
+
+    suspend fun fetchPlaylistsGrouped(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryType: LibraryType?,
+    ): PagedItems<LibraryEntry> {
+      val (join, filter) = hideCompletedClauses(libraryType)
+
+      val countSql =
+        """
+        SELECT COUNT(DISTINCT book_playlists.playlistId)
+        FROM $PLAYLIST_MEMBERS_FROM
+        $join
+        WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_CACHED $filter
+        """.trimIndent()
+
+      val total = bookDao.countRaw(SimpleSQLiteQuery(countSql, arrayOf<Any>(libraryId)))
+
+      if (total == 0) {
+        return PagedItems(items = emptyList(), currentPage = pageNumber, totalItems = 0)
+      }
+
+      val pageSql =
+        """
+        SELECT book_playlists.playlistId AS id, book_playlists.playlistName AS name, COUNT(*) AS itemCount,
+          GROUP_CONCAT(DISTINCT book_playlists.bookId) AS coverItemIds
+        FROM $PLAYLIST_MEMBERS_FROM
+        $join
+        WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_CACHED $filter
+        GROUP BY book_playlists.playlistId
+        ORDER BY LOWER(book_playlists.playlistName) ASC
+        LIMIT ? OFFSET ?
+        """.trimIndent()
+
+      val items =
+        bookDao
+          .fetchPlaylistGroupEntries(SimpleSQLiteQuery(pageSql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize)))
+          .map { it.toEntry() }
+
+      return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
+    }
+
+    /** The cached rows of a playlist in the playlist's own order. */
+    suspend fun fetchPlaylistItems(
+      libraryId: String,
+      playlistId: String,
+      libraryType: LibraryType?,
+    ): List<PlaylistItem> {
+      val (join, filter) = hideCompletedClauses(libraryType)
+
+      val sql =
+        """
+        SELECT book_playlists.bookId AS bookId, book_playlists.episodeId AS episodeId,
+          book_chapters.title AS episodeTitle, book_playlists.position AS position
+        FROM $PLAYLIST_MEMBERS_FROM
+        $join
+        WHERE detailed_books.libraryId = ? AND book_playlists.playlistId = ? AND $PLAYLIST_MEMBER_CACHED $filter
+        ORDER BY book_playlists.position ASC
+        """.trimIndent()
+
+      val members = bookDao.fetchPlaylistMemberEntries(SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, playlistId)))
+
+      if (members.isEmpty()) {
+        return emptyList()
+      }
+
+      val books =
+        bookDao
+          .fetchBooksByIds(members.map { it.bookId }.distinct())
+          .associate { it.id to cachedBookEntityConverter.apply(it) }
+
+      return members.mapNotNull { member ->
+        books[member.bookId]?.let { PlaylistItem(book = it, episodeId = member.episodeId, episodeTitle = member.episodeTitle) }
+      }
+    }
+
+    private fun PlaylistGroupEntry.toEntry() =
+      LibraryEntry.PlaylistEntry(
+        id = id,
+        name = name,
+        itemCount = itemCount,
+        coverItemIds = coverItemIds.split(',').filter { it.isNotBlank() },
+      )
 
     private suspend fun fetchNameGroups(
       grouping: NameGrouping,

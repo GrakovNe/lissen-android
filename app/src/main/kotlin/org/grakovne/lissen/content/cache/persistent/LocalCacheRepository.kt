@@ -5,6 +5,7 @@ import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.supportedBy
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
@@ -17,6 +18,7 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.asLibraryEntries
 import java.io.File
@@ -141,14 +143,7 @@ class LocalCacheRepository
     ): OperationResult<PagedItems<LibraryEntry>> {
       val libraryType = cachedLibraryRepository.fetchLibraryType(libraryId)
 
-      // the grouping is picked in a book library but kept for every library, and podcasts have neither genres nor narrators
-      val grouping =
-        when (libraryType) {
-          LibraryType.LIBRARY -> libraryGrouping
-          else -> libraryGrouping.takeUnless { it == LibraryGrouping.GENRE || it == LibraryGrouping.NARRATOR } ?: LibraryGrouping.NONE
-        }
-
-      return when (grouping) {
+      return when (libraryGrouping.supportedBy(libraryType)) {
         LibraryGrouping.NONE -> {
           fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
             .map { it.asLibraryEntries() }
@@ -193,8 +188,29 @@ class LocalCacheRepository
               libraryType = libraryType,
             ).let { OperationResult.Success(it) }
         }
+
+        LibraryGrouping.PLAYLIST -> {
+          cachedBookRepository
+            .fetchPlaylistsGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = libraryType,
+            ).let { OperationResult.Success(it) }
+        }
       }
     }
+
+    suspend fun fetchPlaylistItems(
+      libraryId: String,
+      playlistId: String,
+    ): OperationResult<List<PlaylistItem>> =
+      cachedBookRepository
+        .fetchPlaylistItems(
+          libraryId = libraryId,
+          playlistId = playlistId,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
 
     suspend fun fetchSeriesItems(
       libraryId: String,

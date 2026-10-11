@@ -15,8 +15,10 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityDe
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRecentConverter
 import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
+import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookGenreEntity
+import org.grakovne.lissen.content.cache.persistent.entity.BookPlaylistEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
@@ -91,6 +93,21 @@ class CachedBookGroupingTest {
     ),
   )
 
+  private fun chapter(
+    bookId: String,
+    id: String,
+    title: String,
+    cached: Boolean,
+  ) = BookChapterEntity(
+    bookChapterId = id,
+    duration = 60.0,
+    start = 0.0,
+    end = 60.0,
+    title = title,
+    bookId = bookId,
+    isCached = cached,
+  )
+
   @Test
   fun grouping_collapsesSeries_andPaginatesByGroup() =
     runBlocking {
@@ -115,6 +132,42 @@ class CachedBookGroupingTest {
 
       val page1 = repository.fetchLibraryGrouped(LIBRARY, pageSize = 2, pageNumber = 1, libraryType = null)
       assertEquals(listOf("ser-other", "z1"), page1.items.map { it.keyOf() })
+    }
+
+  @Test
+  fun playlistGrouping_listsCachedMembers_inPlaylistOrder_withOnlyDownloadedEpisodes() =
+    runBlocking {
+      insert("b1", "Dune")
+      insert("p1", "Daily News")
+      insert("z1", "Zulu")
+      dao.upsertBookChapters(
+        listOf(
+          chapter("p1", "e1", "Monday", cached = true),
+          chapter("p1", "e2", "Tuesday", cached = false),
+        ),
+      )
+      dao.upsertBookPlaylists(
+        listOf(
+          BookPlaylistEntity(bookId = "p1", playlistId = "pl-mix", playlistName = "Commute", episodeId = "e2", position = 0),
+          BookPlaylistEntity(bookId = "b1", playlistId = "pl-mix", playlistName = "Commute", episodeId = null, position = 1),
+          BookPlaylistEntity(bookId = "p1", playlistId = "pl-mix", playlistName = "Commute", episodeId = "e1", position = 2),
+          BookPlaylistEntity(bookId = "z1", playlistId = "pl-z", playlistName = "Alone", episodeId = null, position = 0),
+        ),
+      )
+
+      val groups = repository.fetchPlaylistsGrouped(LIBRARY, pageSize = 20, pageNumber = 0, libraryType = null)
+      assertEquals(2, groups.totalItems)
+      assertEquals(listOf("pl-z", "pl-mix"), groups.items.map { it.keyOf() })
+
+      val commute = groups.items[1] as LibraryEntry.PlaylistEntry
+      assertEquals("Commute", commute.name)
+      assertEquals(2, commute.itemCount)
+      assertEquals(setOf("b1", "p1"), commute.coverItemIds.toSet())
+
+      val rows = repository.fetchPlaylistItems(LIBRARY, "pl-mix", libraryType = null)
+      assertEquals(listOf("b1" to null, "p1" to "e1"), rows.map { it.book.id to it.episodeId })
+      assertEquals("Monday", rows[1].episodeTitle)
+      assertEquals("Daily News", rows[1].book.title)
     }
 
   @Test
@@ -225,6 +278,7 @@ class CachedBookGroupingTest {
       is LibraryEntry.AuthorEntry -> id
       is LibraryEntry.GenreEntry -> id
       is LibraryEntry.NarratorEntry -> id
+      is LibraryEntry.PlaylistEntry -> id
     }
 
   companion object {

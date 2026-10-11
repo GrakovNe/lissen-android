@@ -38,6 +38,14 @@ sealed interface LibraryEntry {
     val name: String,
     val bookCount: Int,
   ) : LibraryEntry
+
+  @Keep
+  data class PlaylistEntry(
+    val id: String,
+    val name: String,
+    val itemCount: Int,
+    val coverItemIds: List<String>,
+  ) : LibraryEntry
 }
 
 fun List<LibraryEntry>.page(

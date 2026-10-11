@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.library.composables
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.PluralsRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -36,23 +38,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
+import coil3.request.ImageRequest
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.SeriesCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
+private const val MAX_GROUP_COVERS = 3
+
 @Composable
-fun LibraryGroupComposable(
+fun <T> LibraryGroupComposable(
   title: String,
-  bookCount: Int,
+  itemCount: Int,
   testTag: String,
   expanded: Boolean,
   loading: Boolean,
-  books: List<Book>,
+  items: List<T>,
   onToggle: () -> Unit,
   subtitle: String? = null,
+  @PluralsRes countPlurals: Int = R.plurals.series_books_count,
   cover: @Composable () -> Unit,
-  bookRows: @Composable (List<Book>) -> Unit,
+  itemRows: @Composable (List<T>) -> Unit,
 ) {
   val context = LocalContext.current
 
@@ -98,7 +106,7 @@ fun LibraryGroupComposable(
         }
 
         Text(
-          text = context.resources.getQuantityString(R.plurals.series_books_count, bookCount, bookCount),
+          text = context.resources.getQuantityString(countPlurals, itemCount, itemCount),
           style =
             MaterialTheme.typography.bodyMedium.copy(
               color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
@@ -120,7 +128,7 @@ fun LibraryGroupComposable(
     AnimatedVisibility(visible = expanded) {
       Column(modifier = Modifier.fillMaxWidth()) {
         when {
-          loading && books.isEmpty() -> {
+          loading && items.isEmpty() -> {
             Box(
               modifier =
                 Modifier
@@ -137,7 +145,7 @@ fun LibraryGroupComposable(
           }
 
           else -> {
-            bookRows(books)
+            itemRows(items)
           }
         }
       }
@@ -165,7 +173,7 @@ fun GroupBooks(
 
 // an invisible digit indents the book like a numbered book of a series
 @Composable
-private fun GroupBookLeading() {
+fun GroupBookLeading() {
   Box(modifier = Modifier.padding(end = 10.dp)) {
     Text(
       text = "0",
@@ -188,5 +196,35 @@ fun GroupDrawableCover(
       Modifier
         .size(LibraryItemCoverSize)
         .clip(RoundedCornerShape(4.dp)),
+  )
+}
+
+/** Up to three covers of the group's items stacked into one tile. */
+@Composable
+fun GroupCoverStack(
+  groupId: String,
+  coverItemIds: List<String>,
+  imageLoader: ImageLoader,
+) {
+  val context = LocalContext.current
+
+  val imageRequest =
+    remember(groupId, coverItemIds) {
+      ImageRequest
+        .Builder(context)
+        .data(SeriesCoverKey(groupId, coverItemIds.take(MAX_GROUP_COVERS)))
+        .build()
+    }
+
+  AsyncShimmeringImage(
+    imageRequest = imageRequest,
+    imageLoader = imageLoader,
+    contentDescription = null,
+    contentScale = ContentScale.Fit,
+    modifier =
+      Modifier
+        .size(LibraryItemCoverSize)
+        .clip(RoundedCornerShape(4.dp)),
+    error = painterResource(R.drawable.cover_fallback),
   )
 }

@@ -18,6 +18,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryAuthor
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryNarratorsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPlaylistsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryStatsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LocalSessionSyncResponseConverter
@@ -66,6 +67,7 @@ class LibraryAudiobookshelfChannel
     private val libraryNarratorsResponseConverter: LibraryNarratorsResponseConverter,
     private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
+    libraryPlaylistsResponseConverter: LibraryPlaylistsResponseConverter,
   ) : AudiobookshelfChannel(
       hostProvider = hostProvider,
       dataRepository = repository,
@@ -80,6 +82,7 @@ class LibraryAudiobookshelfChannel
       offlineSessionRequestConverter = offlineSessionRequestConverter,
       localSessionSyncResponseConverter = localSessionSyncResponseConverter,
       libraryResponseConverter = libraryResponseConverter,
+      libraryPlaylistsResponseConverter = libraryPlaylistsResponseConverter,
     ) {
     private val concurrentFetchSemaphore = Semaphore(MAX_CONCURRENT_FETCH)
 
@@ -141,6 +144,10 @@ class LibraryAudiobookshelfChannel
           dataRepository
             .fetchLibraryNarrators(libraryId)
             .map { libraryNarratorsResponseConverter.apply(it, pageSize, pageNumber) }
+        }
+
+        LibraryGrouping.PLAYLIST -> {
+          fetchPlaylists(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
         }
 
         else -> {
@@ -359,11 +366,13 @@ class LibraryAudiobookshelfChannel
 
         book.await().foldAsync(
           onSuccess = { item ->
+            val playlists = fetchItemPlaylists(libraryId = item.libraryId, itemId = item.id)
+
             bookProgress
               .await()
               .fold(
-                onSuccess = { Success(bookResponseConverter.apply(item, it)) },
-                onFailure = { Success(bookResponseConverter.apply(item, null)) },
+                onSuccess = { Success(bookResponseConverter.apply(item, it).copy(playlists = playlists)) },
+                onFailure = { Success(bookResponseConverter.apply(item, null).copy(playlists = playlists)) },
               )
           },
           onFailure = { OperationResult.Error(it.code) },

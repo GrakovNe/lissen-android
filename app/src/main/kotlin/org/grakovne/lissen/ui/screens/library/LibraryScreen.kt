@@ -90,6 +90,7 @@ import org.grakovne.lissen.ui.screens.library.composables.LibrarySearchActionCom
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySwitchComposable
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
 import org.grakovne.lissen.ui.screens.library.composables.NarratorComposable
+import org.grakovne.lissen.ui.screens.library.composables.PlaylistComposable
 import org.grakovne.lissen.ui.screens.library.composables.QuickSettingsComposable
 import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
 import org.grakovne.lissen.ui.screens.library.composables.SeriesComposable
@@ -588,6 +589,19 @@ fun LibraryScreen(
                       imageLoader = imageLoader,
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },
+                    )
+                  }
+
+                  is LibraryEntry.PlaylistEntry -> {
+                    PlaylistComposable(
+                      playlist = entry,
+                      expanded = entry.id in groups.expanded,
+                      loading = entry.id in groups.loading,
+                      items = groups.playlistItems[entry.id].orEmpty(),
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      onToggle = { libraryViewModel.toggleGroup(entry) },
+                      onPrefetch = { libraryViewModel.prefetchGroup(entry) },
                     )
                   }
                 }
