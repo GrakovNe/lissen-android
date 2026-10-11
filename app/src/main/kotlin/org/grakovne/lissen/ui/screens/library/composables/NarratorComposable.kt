@@ -7,7 +7,6 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
-// not prefetched like a series or an author: one narrator can hold a large part of the library
 @Composable
 fun NarratorComposable(
   narrator: LibraryEntry.NarratorEntry,
@@ -19,14 +18,15 @@ fun NarratorComposable(
   onToggle: () -> Unit,
 ) {
   LibraryGroupComposable(
+    groupId = narrator.id,
     title = narrator.name,
-    bookCount = narrator.bookCount,
+    itemCount = narrator.bookCount,
     testTag = "narratorItem_${narrator.id}",
     expanded = expanded,
     loading = loading,
-    books = books,
+    items = books,
     onToggle = onToggle,
     cover = { GroupDrawableCover(R.drawable.narrator_fallback) },
-    bookRows = { GroupBooks(it, imageLoader, navController) },
+    itemRows = { GroupBooks(it, imageLoader, navController) },
   )
 }

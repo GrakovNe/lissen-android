@@ -7,6 +7,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.domain.BookAuthor
 import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.BookPlaylist
 import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
@@ -60,7 +61,7 @@ class CachedBookEntityDetailedConverter
               title = chapterEntity.title,
               available = chapterEntity.isCached,
               id = chapterEntity.bookChapterId,
-              podcastEpisodeState = null, // the state is not available for a locally cached book yet
+              podcastEpisodeState = null,
               index = chapterEntity.chapterIndex,
               publishedAt = chapterEntity.publishedAt,
               season = chapterEntity.season,
@@ -85,6 +86,15 @@ class CachedBookEntityDetailedConverter
                 serialNumber = it.sequence,
               )
             } ?: emptyList(),
+        playlists =
+          entity.playlists.sortedBy { it.position }.map {
+            BookPlaylist(
+              id = it.playlistId,
+              name = it.playlistName,
+              position = it.position,
+              episodeId = it.episodeId,
+            )
+          },
         progress = entity.progress?.let { mediaProgressEntityConverter.apply(it) },
       )
 

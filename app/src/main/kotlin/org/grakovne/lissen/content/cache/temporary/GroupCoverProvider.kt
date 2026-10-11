@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.content.cache.common.SeriesCoverComposer
+import org.grakovne.lissen.content.cache.common.GroupCoverComposer
 import org.grakovne.lissen.content.cache.common.writeToFile
 import timber.log.Timber
 import java.io.File
@@ -19,39 +19,39 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SeriesCoverProvider
+class GroupCoverProvider
   @Inject
   constructor(
     private val mediaProvider: LissenMediaProvider,
-    private val composer: SeriesCoverComposer,
+    private val composer: GroupCoverComposer,
     private val properties: ShortTermCacheStorageProperties,
   ) {
     private val locks = ConcurrentHashMap<String, Mutex>()
 
-    suspend fun provideSeriesCover(
-      seriesId: String,
+    suspend fun provideGroupCover(
+      groupId: String,
       coverItemIds: List<String>,
     ): OperationResult<File> {
-      val key = cacheKey(seriesId, coverItemIds)
+      val key = cacheKey(groupId, coverItemIds)
       val lock = locks.computeIfAbsent(key) { Mutex() }
 
       return lock.withLock {
         when (val cover = fetchCached(key)) {
-          null -> cache(key, coverItemIds).also { Timber.d("Composing series cover $seriesId") }
-          else -> OperationResult.Success(cover).also { Timber.d("Fetched cached series cover $seriesId") }
+          null -> cache(key, coverItemIds).also { Timber.d("Composing group cover $groupId") }
+          else -> OperationResult.Success(cover).also { Timber.d("Fetched cached group cover $groupId") }
         }
       }
     }
 
     fun clearCache() =
       properties
-        .provideSeriesCoverCacheFolder()
+        .provideGroupCoverCacheFolder()
         .deleteRecursively()
-        .also { Timber.d("Clear series cover short-term cache") }
+        .also { Timber.d("Clear group cover short-term cache") }
 
     private suspend fun fetchCached(key: String): File? =
       withContext(Dispatchers.IO) {
-        properties.provideSeriesCoverPath(key).takeIf { it.exists() }
+        properties.provideGroupCoverPath(key).takeIf { it.exists() }
       }
 
     private suspend fun cache(
@@ -74,7 +74,7 @@ class SeriesCoverProvider
       val composed = composer.compose(covers) ?: return OperationResult.Error(OperationError.InternalError)
 
       return withContext(Dispatchers.IO) {
-        val dest = properties.provideSeriesCoverPath(key)
+        val dest = properties.provideGroupCoverPath(key)
         dest.parentFile?.mkdirs()
 
         when {
@@ -84,8 +84,8 @@ class SeriesCoverProvider
           }
 
           else -> {
-            Timber.w("Composed partial series cover for $key (${covers.size}/${coverItemIds.size}), skipping persistent cache")
-            val temp = File.createTempFile("series_cover_", null, dest.parentFile)
+            Timber.w("Composed partial group cover for $key (${covers.size}/${coverItemIds.size}), skipping persistent cache")
+            val temp = File.createTempFile("group_cover_", null, dest.parentFile)
             composed.writeToFile(temp)
             OperationResult.Success(temp)
           }
@@ -94,7 +94,7 @@ class SeriesCoverProvider
     }
 
     private fun cacheKey(
-      seriesId: String,
+      groupId: String,
       coverItemIds: List<String>,
-    ): String = seriesId + coverItemIds.joinToString(",")
+    ): String = groupId + coverItemIds.joinToString(",")
   }

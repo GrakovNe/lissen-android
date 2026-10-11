@@ -20,7 +20,7 @@ import org.grakovne.lissen.content.cache.persistent.ContentCachingManager
 import org.grakovne.lissen.content.cache.persistent.ContentCachingProgress
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
-import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
+import org.grakovne.lissen.content.cache.temporary.GroupCoverProvider
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.DetailedItem
@@ -46,7 +46,7 @@ class CachingModelViewTest {
   private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
   private val downloadPreferences = mockk<DownloadPreferences>(relaxed = true)
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)
-  private val seriesCoverProvider = mockk<SeriesCoverProvider>(relaxed = true)
+  private val groupCoverProvider = mockk<GroupCoverProvider>(relaxed = true)
 
   private val statusFlow = MutableSharedFlow<Pair<String, CacheState>>(replay = 1)
 
@@ -68,7 +68,7 @@ class CachingModelViewTest {
         libraryPreferences,
         downloadPreferences,
         cachedCoverProvider,
-        seriesCoverProvider,
+        groupCoverProvider,
       )
   }
 

@@ -179,7 +179,6 @@ class LissenMediaProviderTest {
     @Test
     fun `a stored item without indices is reordered like any other`() =
       runBlocking {
-        // every index is 0 and there are no keys: serialized by a version without indices
         val item =
           detailedItem(
             chapters =
@@ -222,7 +221,6 @@ class LissenMediaProviderTest {
     @Test
     fun `channel item is canonicalized before the cached progress is merged in`() =
       runBlocking {
-        // server order c1, c0; canonical (by date) is c0, c1
         val item =
           detailedItem(
             chapters =
@@ -232,13 +230,12 @@ class LissenMediaProviderTest {
               ),
           ).copy(
             libraryType = LibraryType.PODCAST,
-            // 5s into c1 in server coordinates
             progress = MediaProgress(currentTime = 5.0, isFinished = false, lastUpdate = 1L),
           )
         every { preferences.isForceCache() } returns false
         every { preferences.getEpisodeOrdering("book-1") } returns null
         coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
-        // 5s into c1 in canonical coordinates, newer than the channel's
+
         coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
           MediaProgress(currentTime = 15.0, isFinished = false, lastUpdate = 2L)
 
@@ -270,7 +267,6 @@ class LissenMediaProviderTest {
 
         val result = provider.fetchBook("book-1") as OperationResult.Success
 
-        // 5s into c1, and c1 starts at 10s in the canonical order
         assertEquals(15.0, result.data.progress?.currentTime)
       }
 
@@ -379,7 +375,6 @@ class LissenMediaProviderTest {
     @Test
     fun `a stored podcast in the user's order gets the cached position translated into that order`() =
       runBlocking {
-        // stored in DESCENDING order: c1 (published later) first, c0 second; 5s into c1
         val stored =
           detailedItem(
             chapters =
@@ -390,7 +385,7 @@ class LissenMediaProviderTest {
           ).copy(libraryType = LibraryType.PODCAST, progress = MediaProgress(currentTime = 5.0, isFinished = false, lastUpdate = 1_000L))
         every { preferences.getEpisodeOrdering("book-1") } returns
           EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
-        // the cache holds canonical positions: 3s into c0, which is the second episode in the user's order
+
         coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
           MediaProgress(currentTime = 3.0, isFinished = false, lastUpdate = 2_000L)
 
@@ -540,7 +535,7 @@ class LissenMediaProviderTest {
       runBlocking {
         val paged = PagedItems(items = listOf<LibraryEntry>(), currentPage = 0, totalItems = 0)
         every { preferences.isForceCache() } returns true
-        every { preferences.getLibraryGrouping() } returns LibraryGrouping.NONE
+        every { preferences.getLibraryGrouping("l1") } returns LibraryGrouping.NONE
         coEvery {
           localCacheRepository.fetchLibrary("l1", 10, 0, LibraryGrouping.NONE)
         } returns OperationResult.Success(paged)
@@ -556,7 +551,7 @@ class LissenMediaProviderTest {
       runBlocking {
         val paged = PagedItems(items = listOf<LibraryEntry>(), currentPage = 0, totalItems = 0)
         every { preferences.isForceCache() } returns false
-        every { preferences.getLibraryGrouping() } returns LibraryGrouping.NONE
+        every { preferences.getLibraryGrouping("l1") } returns LibraryGrouping.NONE
         coEvery {
           mediaChannel.fetchLibrary("l1", 10, 0, LibraryGrouping.NONE)
         } returns OperationResult.Success(paged)

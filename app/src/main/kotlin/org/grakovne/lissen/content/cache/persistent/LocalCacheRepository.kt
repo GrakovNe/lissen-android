@@ -5,6 +5,7 @@ import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.effectiveIn
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
@@ -40,7 +41,6 @@ class LocalCacheRepository
         .provideFileUri(libraryItemId, fileId)
         .takeIf { it.toFile().exists() }
 
-    /** The book id is also the session key, because the cache has no session entity. */
     suspend fun syncProgress(
       detailedItem: DetailedItem,
       progress: PlaybackProgress,
@@ -141,14 +141,7 @@ class LocalCacheRepository
     ): OperationResult<PagedItems<LibraryEntry>> {
       val libraryType = cachedLibraryRepository.fetchLibraryType(libraryId)
 
-      // the grouping is picked in a book library but kept for every library, and podcasts have neither genres nor narrators
-      val grouping =
-        when (libraryType) {
-          LibraryType.LIBRARY -> libraryGrouping
-          else -> libraryGrouping.takeUnless { it == LibraryGrouping.GENRE || it == LibraryGrouping.NARRATOR } ?: LibraryGrouping.NONE
-        }
-
-      return when (grouping) {
+      return when (libraryGrouping.effectiveIn(libraryType)) {
         LibraryGrouping.NONE -> {
           fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
             .map { it.asLibraryEntries() }
@@ -187,6 +180,16 @@ class LocalCacheRepository
         LibraryGrouping.NARRATOR -> {
           cachedBookRepository
             .fetchNarratorsGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = libraryType,
+            ).let { OperationResult.Success(it) }
+        }
+
+        LibraryGrouping.PLAYLIST -> {
+          cachedBookRepository
+            .fetchPlaylistsGrouped(
               libraryId = libraryId,
               pageSize = pageSize,
               pageNumber = pageNumber,
@@ -260,7 +263,6 @@ class LocalCacheRepository
 
     suspend fun fetchLatestUpdate(libraryId: String) = cachedBookRepository.fetchLatestUpdate(libraryId)
 
-    /** Returns the book in canonical order. Moving the progress onto an available chapter is the provider's job. */
     suspend fun fetchBook(bookId: String): DetailedItem? = cachedBookRepository.fetchBook(bookId)
 
     suspend fun fetchBookmarks(libraryItemId: String) =

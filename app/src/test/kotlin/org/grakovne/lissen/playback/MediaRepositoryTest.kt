@@ -37,10 +37,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-/**
- * The repository over a fake player and an inline main thread: the orchestration runs for
- * real, and only the media session and the Android looper are replaced.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MediaRepositoryTest {
   private class FakePlayer : PlayerConnection {
@@ -76,7 +72,6 @@ class MediaRepositoryTest {
     ) {
       calls.add("seekTo($mediaItemIndex, $positionMs)")
 
-      // a seek to the current position is masked and reported at once, as media3 does
       if (mediaItemIndex == currentMediaItemIndex && positionMs == currentPositionMs) return
       currentMediaItemIndex = mediaItemIndex
       currentPositionMs = positionMs
@@ -158,7 +153,6 @@ class MediaRepositoryTest {
     positionMs: Long,
   ) = Player.PositionInfo(null, mediaItemIndex, null, null, mediaItemIndex, positionMs, positionMs, -1, -1)
 
-  /** The book as the media session would report it: playing, ready, at its stored progress. */
   private fun playing(
     book: DetailedItem,
     playing: Boolean = false,
@@ -179,7 +173,6 @@ class MediaRepositoryTest {
     @Test
     fun `reorder keeps the listener on the same chapter and offset and rebuilds the queue`() =
       runTest {
-        // 35s is 5s into c1; in the descending order c1 starts at 50s
         playing(podcast(progress = progress(35.0)))
 
         assertTrue(repository.reorderPlayingItem("podcast", descending()))
@@ -200,8 +193,6 @@ class MediaRepositoryTest {
     @Test
     fun `restored position never lands in the restart guard window`() =
       runTest {
-        // 28s is 28s into c0; c0 ends up last (90..120s) and 118s would look like "finished,
-        // start over" to the service, so the position is clamped to total minus the threshold
         playing(podcast(progress = progress(28.0)))
 
         repository.reorderPlayingItem("podcast", descending())
@@ -272,7 +263,7 @@ class MediaRepositoryTest {
 
         assertTrue(repository.isPlaybackReady.value)
         assertEquals(listOf("pause", "play"), player.calls)
-        // the seeded position is the truth: the controller still describes the previous queue
+
         assertEquals(55.0, repository.totalPosition.value)
       }
 
@@ -312,8 +303,6 @@ class MediaRepositoryTest {
 
         repository.reorderPlayingItem("podcast", descending())
 
-        // 28s into c0, which the descending order moves to the end of the item: at once from the
-        // list in memory, and again once the stored list is re-read
         assertEquals(listOf(118.0), repository.bookmarks.value.map { it.totalPosition })
         assertEquals(listOf(118.0), repository.bookmarks.first { it.isNotEmpty() }.map { it.totalPosition })
       }
@@ -328,6 +317,41 @@ class MediaRepositoryTest {
 
         assertFalse(repository.preparePlayback("missing"))
         assertTrue(repository.mediaPreparingError.value)
+      }
+
+    private fun openedPosition() =
+      repository.playingBook.value
+        ?.progress
+        ?.currentTime
+
+    @Test
+    fun `a requested chapter opens the item at that chapter's start`() =
+      runTest {
+        coEvery { mediaChannel.fetchBook("podcast", null) } returns OperationResult.Success(podcast(progress = progress(100.0)))
+
+        assertTrue(repository.preparePlayback("podcast", chapterId = "c1"))
+
+        assertEquals(
+          30.0,
+          repository.playingBook.value
+            ?.progress
+            ?.currentTime,
+        )
+      }
+
+    @Test
+    fun `an unknown chapter leaves the saved position alone`() =
+      runTest {
+        coEvery { mediaChannel.fetchBook("podcast", null) } returns OperationResult.Success(podcast(progress = progress(100.0)))
+
+        assertTrue(repository.preparePlayback("podcast", chapterId = "gone"))
+
+        assertEquals(
+          100.0,
+          repository.playingBook.value
+            ?.progress
+            ?.currentTime,
+        )
       }
 
     @Test
@@ -350,7 +374,6 @@ class MediaRepositoryTest {
         repository.clearPreparedItem()
         repository.prepareAndPlay(podcast(id = "next"))
 
-        // the same book again, as openBook does right after preparing it
         repository.prepareAndPlay(repository.playingBook.value!!)
 
         assertFalse(repository.isPlaybackReady.value)
@@ -394,7 +417,7 @@ class MediaRepositoryTest {
         assertTrue(repository.mediaPreparingError.value)
         assertFalse(repository.isPlaying.value)
         assertFalse(mainThread.polling)
-        // the deferred autoplay is dropped: readiness will not come
+
         every { preferences.getPlayingItem() } returns repository.playingBook.value
         eventBus.emit(PlaybackEvent.PlaybackReady("next"))
         assertFalse(player.calls.contains("play"))
@@ -556,7 +579,6 @@ class MediaRepositoryTest {
       runTest {
         playing(podcast(progress = progress(35.0)))
 
-        // 5 s into c1, the step lands 30 s later
         repository.forward()
         assertTrue(steps.take(position(1, 35_000L)))
 
@@ -574,7 +596,6 @@ class MediaRepositoryTest {
         repository.updateTimer(CurrentEpisodeTimerOption)
         assertEquals(PlaybackCommand.SetTimer(35.0, CurrentEpisodeTimerOption), eventBus.commands.first())
 
-        // the auto-skip moved playback 5 s into c2 by itself
         player.currentMediaItemIndex = 2
         player.currentPositionMs = 5_000L
         player.listener.onPositionDiscontinuity(byPlayback = false)
@@ -589,7 +610,6 @@ class MediaRepositoryTest {
         repository.updateTimer(CurrentEpisodeTimerOption)
         assertEquals(PlaybackCommand.SetTimer(35.0, CurrentEpisodeTimerOption), eventBus.commands.first())
 
-        // the countdown was behind: c1 ran out first
         player.currentMediaItemIndex = 2
         player.currentPositionMs = 0L
         player.listener.onPositionDiscontinuity(byPlayback = true)

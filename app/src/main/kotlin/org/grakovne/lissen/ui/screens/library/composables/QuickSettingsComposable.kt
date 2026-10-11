@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Check
@@ -43,6 +44,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingOption
+import org.grakovne.lissen.common.isAvailableIn
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
@@ -73,7 +75,10 @@ fun QuickSettingsComposable(
   val grouping by librarySettingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
   val ordering by librarySettingsViewModel.preferredLibraryOrdering.collectAsState()
   val context = LocalContext.current
-  val isLibrary = libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY
+  val libraryType = libraryViewModel.fetchPreferredLibraryType()
+  val isLibrary = libraryType == LibraryType.LIBRARY
+
+  val groupingOptions = LibraryGrouping.entries.filter { it.isAvailableIn(libraryType) }
 
   var groupingExpanded by remember { mutableStateOf(false) }
   var sortExpanded by remember { mutableStateOf(false) }
@@ -97,7 +102,6 @@ fun QuickSettingsComposable(
         onClick = onForceLocalToggled,
       )
 
-      // a row the library type does not support is hidden, not dimmed
       if (isLibrary) {
         SettingsToggleRow(
           title = stringResource(R.string.hide_completed_items),
@@ -116,32 +120,29 @@ fun QuickSettingsComposable(
 
       Spacer(modifier = Modifier.height(4.dp))
 
-      if (isLibrary) {
-        SettingsPickerRow(
-          label = stringResource(R.string.library_quick_settings_grouping_title),
-          icon = Icons.Outlined.Workspaces,
-          value = grouping.toLocalizedName(context),
-          expanded = groupingExpanded,
-          onClick = { groupingExpanded = !groupingExpanded },
-        )
+      SettingsPickerRow(
+        label = stringResource(R.string.library_quick_settings_grouping_title),
+        icon = Icons.Outlined.Workspaces,
+        value = grouping.toLocalizedName(context),
+        expanded = groupingExpanded,
+        onClick = { groupingExpanded = !groupingExpanded },
+      )
 
-        AnimatedVisibility(visible = groupingExpanded) {
-          Column {
-            LibraryGrouping.entries.forEach { option ->
-              SettingsOptionRow(
-                title = option.toLocalizedName(context),
-                icon = option.icon(),
-                selected = grouping == option,
-                trailing = Icons.Outlined.Check,
-                onClick = { onGroupingSelected(option) },
-              )
-            }
+      AnimatedVisibility(visible = groupingExpanded) {
+        Column {
+          groupingOptions.forEach { option ->
+            SettingsOptionRow(
+              title = option.toLocalizedName(context),
+              icon = option.icon(),
+              selected = grouping == option,
+              trailing = Icons.Outlined.Check,
+              onClick = { onGroupingSelected(option) },
+            )
           }
         }
       }
 
-      // these groups are always listed by name; the books inside one keep the last picked sorting
-      if (isLibrary.not() || grouping !in NAME_SORTED_GROUPINGS) {
+      if (grouping !in NAME_SORTED_GROUPINGS) {
         SettingsPickerRow(
           label = stringResource(R.string.library_quick_settings_sort_title),
           icon = Icons.AutoMirrored.Outlined.Sort,
@@ -185,7 +186,8 @@ fun QuickSettingsComposable(
   }
 }
 
-private val NAME_SORTED_GROUPINGS = setOf(LibraryGrouping.AUTHOR, LibraryGrouping.GENRE, LibraryGrouping.NARRATOR)
+private val NAME_SORTED_GROUPINGS =
+  setOf(LibraryGrouping.AUTHOR, LibraryGrouping.GENRE, LibraryGrouping.NARRATOR, LibraryGrouping.PLAYLIST)
 
 private fun LibraryOrderingOption.icon(): ImageVector =
   when (this) {
@@ -210,6 +212,7 @@ private fun LibraryGrouping.icon(): ImageVector =
     LibraryGrouping.AUTHOR -> Icons.Outlined.Person
     LibraryGrouping.GENRE -> Icons.Outlined.TheaterComedy
     LibraryGrouping.NARRATOR -> Icons.Outlined.MicNone
+    LibraryGrouping.PLAYLIST -> Icons.AutoMirrored.Outlined.PlaylistPlay
   }
 
 private fun LibraryGrouping.toLocalizedName(context: Context): String =
@@ -219,4 +222,5 @@ private fun LibraryGrouping.toLocalizedName(context: Context): String =
     LibraryGrouping.AUTHOR -> context.getString(R.string.library_grouping_author)
     LibraryGrouping.GENRE -> context.getString(R.string.library_grouping_genre)
     LibraryGrouping.NARRATOR -> context.getString(R.string.library_grouping_narrator)
+    LibraryGrouping.PLAYLIST -> context.getString(R.string.library_grouping_playlist)
   }

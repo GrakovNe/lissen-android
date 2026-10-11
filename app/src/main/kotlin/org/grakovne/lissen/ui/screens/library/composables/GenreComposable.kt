@@ -7,7 +7,6 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
-// not prefetched like a series or an author: one genre can hold a large part of the library
 @Composable
 fun GenreComposable(
   genre: LibraryEntry.GenreEntry,
@@ -19,14 +18,15 @@ fun GenreComposable(
   onToggle: () -> Unit,
 ) {
   LibraryGroupComposable(
+    groupId = genre.id,
     title = genre.name,
-    bookCount = genre.bookCount,
+    itemCount = genre.bookCount,
     testTag = "genreItem_${genre.id}",
     expanded = expanded,
     loading = loading,
-    books = books,
+    items = books,
     onToggle = onToggle,
     cover = { GroupDrawableCover(R.drawable.genre_fallback) },
-    bookRows = { GroupBooks(it, imageLoader, navController) },
+    itemRows = { GroupBooks(it, imageLoader, navController) },
   )
 }

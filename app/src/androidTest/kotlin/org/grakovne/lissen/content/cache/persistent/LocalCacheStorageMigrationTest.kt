@@ -237,7 +237,7 @@ class LocalCacheStorageMigrationTest {
         VALUES ('book-1', 'Dune', 0, 0, 0)
         """.trimIndent(),
       )
-      // two re-caches of the same item in list order; the second marks c1 as downloaded
+
       db.execSQL(
         """
         INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)
@@ -296,7 +296,7 @@ class LocalCacheStorageMigrationTest {
         VALUES ('book-1', 'One', 0, 0, 0), ('book-2', 'Two', 0, 0, 0)
         """.trimIndent(),
       )
-      // rows of the two books interleaved by rowid
+
       db.execSQL(
         """
         INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)
@@ -424,6 +424,38 @@ class LocalCacheStorageMigrationTest {
 
     db.execSQL("DELETE FROM detailed_books WHERE id = 'book-1'")
     db.query("SELECT COUNT(*) FROM book_genres").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(0, cursor.getInt(0))
+    }
+  }
+
+  @Test
+  fun migrate25To26_createsBookPlaylistsTable_cascadingOnBookDelete() {
+    helper.createDatabase(TEST_DB, 25).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 0, 0, 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 26, true, MIGRATION_25_26)
+    db.execSQL("PRAGMA foreign_keys = ON")
+
+    db.execSQL(
+      """
+      INSERT INTO book_playlists (bookId, playlistId, playlistName, episodeId, position)
+      VALUES ('book-1', 'pl-1', 'Winter reads', NULL, 0)
+      """.trimIndent(),
+    )
+    db.query("SELECT COUNT(*) FROM book_playlists").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(1, cursor.getInt(0))
+    }
+
+    db.execSQL("DELETE FROM detailed_books WHERE id = 'book-1'")
+    db.query("SELECT COUNT(*) FROM book_playlists").use { cursor ->
       assertTrue(cursor.moveToFirst())
       assertEquals(0, cursor.getInt(0))
     }

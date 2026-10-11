@@ -16,6 +16,7 @@ data class DetailedItem(
   val genres: List<String> = emptyList(),
   val publisher: String?,
   val series: List<BookSeries>,
+  val playlists: List<BookPlaylist>? = null,
   val year: String?,
   val abstract: String?,
   val files: List<BookFile>,
@@ -29,7 +30,7 @@ data class DetailedItem(
 ) : Serializable {
   companion object {
     fun DetailedItem.same(other: DetailedItem) =
-      this.copy(progress = null, libraryType = null) == other.copy(progress = null, libraryType = null)
+      this.copy(progress = null, libraryType = null, playlists = null) == other.copy(progress = null, libraryType = null, playlists = null)
   }
 }
 
@@ -61,7 +62,6 @@ data class PlayingChapter(
   val end: Double,
   val title: String,
   val id: String,
-  /** The position the chapter came in with. The list order may differ once the user reorders. */
   val index: Int = 0,
   val publishedAt: Long? = null,
   val season: String? = null,
@@ -75,6 +75,15 @@ data class BookSeries(
   val serialNumber: String?,
   val name: String,
   val id: String? = null,
+) : Serializable
+
+@Keep
+@JsonClass(generateAdapter = true)
+data class BookPlaylist(
+  val id: String,
+  val name: String,
+  val position: Int,
+  val episodeId: String? = null,
 ) : Serializable
 
 @Keep

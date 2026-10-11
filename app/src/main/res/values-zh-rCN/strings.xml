@@ -277,6 +277,10 @@
     <string name="episode_ordering_episode_option">集数</string>
     <string name="library_grouping_genre">按流派</string>
     <string name="library_grouping_narrator">按演播者</string>
+    <string name="library_grouping_playlist">按播放列表</string>
+    <plurals name="playlist_items_count">
+        <item quantity="other">%d 项</item>
+    </plurals>
     <string name="player_settings_skip_disabled">禁用</string>
     <string name="sleep_timer_fade_disabled">禁用</string>
     <string name="rewind_on_pause_title">暂停回退</string>

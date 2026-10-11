@@ -15,9 +15,9 @@ import java.io.File
 import java.io.FileOutputStream
 
 @RunWith(AndroidJUnit4::class)
-class SeriesCoverComposerTest {
+class GroupCoverComposerTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val composer = SeriesCoverComposer()
+  private val composer = GroupCoverComposer()
 
   @Test
   fun stacksColoredCoversWithTheFirstOnTopAndTheLastPeekingOutAtTheCorner() {

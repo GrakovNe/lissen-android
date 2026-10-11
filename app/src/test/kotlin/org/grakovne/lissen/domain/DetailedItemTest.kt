@@ -48,6 +48,14 @@ class DetailedItemTest {
   }
 
   @Test
+  fun `same ignores the playlists an item is listed in`() {
+    val a = item().copy(playlists = listOf(BookPlaylist(id = "pl-1", name = "Commute", position = 0)))
+    val b = item().copy(playlists = null)
+
+    assertTrue(a.same(b))
+  }
+
+  @Test
   fun `same is false when a non-progress field differs`() {
     val a = item(title = "Title A")
     val b = item(title = "Title B")

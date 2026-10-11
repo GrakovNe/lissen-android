@@ -298,6 +298,13 @@
     <string name="episode_ordering_descending">Malejąco</string>
     <string name="library_grouping_genre">Według gatunku</string>
     <string name="library_grouping_narrator">Według lektora</string>
+    <string name="library_grouping_playlist">Według playlisty</string>
+    <plurals name="playlist_items_count">
+        <item quantity="one">%d element</item>
+        <item quantity="few">%d elementy</item>
+        <item quantity="many">%d elementów</item>
+        <item quantity="other">%d elementów</item>
+    </plurals>
     <string name="player_settings_auto_skip">Automatyczne pomijanie</string>
     <string name="player_settings_skip_disabled">Wyłączone</string>
     <string name="player_settings_intro_value">Wstęp %1$s</string>

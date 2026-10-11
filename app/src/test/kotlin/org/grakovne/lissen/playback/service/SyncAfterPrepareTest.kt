@@ -28,6 +28,7 @@ import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.PlaybackFixtures.podcast
+import org.grakovne.lissen.playback.PlaybackFixtures.progress
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -152,6 +153,21 @@ class SyncAfterPrepareTest {
     playerEvent()
 
     coVerify(exactly = 1) { mediaProvider.syncProgress(session, item, 0, any(), any()) }
+  }
+
+  @Test
+  fun `a queue prepared at a chapter reports nothing until played, then the chapter position`() {
+    val opened = podcast(progress = progress(30.0))
+    discontinuity(30_000L, Player.DISCONTINUITY_REASON_REMOVE)
+    service.startPlaybackSynchronization(opened)
+    playerEvent()
+
+    coVerify(exactly = 0) { mediaProvider.syncProgress(any(), any(), any(), any(), any()) }
+
+    playWhenReady = true
+    playerEvent()
+
+    coVerify(exactly = 1) { mediaProvider.syncProgress(session, opened, 1, PlaybackProgress(30.0, 30.0), any()) }
   }
 
   @Test

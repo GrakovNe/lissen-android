@@ -3,15 +3,18 @@ package org.grakovne.lissen.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.effectiveIn
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
@@ -40,7 +43,8 @@ class LibrarySettingsViewModel
 
     val hideCompleted = library.hideCompletedFlow
 
-    val libraryGrouping = library.libraryGroupingFlow
+    val libraryGrouping: Flow<LibraryGrouping> =
+      combine(library.libraryGroupingFlow, library.preferredLibraryTypeFlow) { grouping, type -> grouping.effectiveIn(type) }
 
     suspend fun fetchLibraries() {
       when (val response = mediaChannel.fetchLibraries()) {
@@ -85,7 +89,8 @@ class LibrarySettingsViewModel
     }
 
     fun preferLibraryGrouping(grouping: LibraryGrouping) {
-      Timber.d("User action: preferLibraryGrouping $grouping")
-      library.saveLibraryGrouping(grouping)
+      val libraryId = library.activeLibraryId() ?: return
+      Timber.d("User action: preferLibraryGrouping $grouping for $libraryId")
+      library.saveLibraryGrouping(libraryId, grouping)
     }
   }

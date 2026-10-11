@@ -23,6 +23,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.AfterEach
@@ -292,6 +293,27 @@ class LibraryViewModelTest {
         viewModel.groups.value.books["Jim Dale"]
           ?.map { it.id },
       )
+    }
+
+    @Test
+    fun `toggleGroup expands a playlist without fetching because its rows come with the entry`() {
+      every { preferences.getPreferredLibrary() } returns library
+      val playlist =
+        LibraryEntry.PlaylistEntry(
+          id = "pl-1",
+          name = "Commute",
+          items = listOf(PlaylistItem.BookItem(book("b2")), PlaylistItem.BookItem(book("b1"))),
+        )
+
+      viewModel.toggleGroup(playlist)
+
+      assertTrue("pl-1" in viewModel.groups.value.expanded)
+      assertNull(viewModel.groups.value.books["pl-1"])
+      assertTrue(
+        viewModel.groups.value.loading
+          .isEmpty(),
+      )
+      coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any()) }
     }
 
     @Test

@@ -199,6 +199,12 @@
     <string name="library_grouping_author">Por Autor</string>
     <string name="library_grouping_genre">Por Gênero</string>
     <string name="library_grouping_narrator">Por Narrador</string>
+    <string name="library_grouping_playlist">Por Playlist</string>
+    <plurals name="playlist_items_count">
+        <item quantity="one">%d item</item>
+        <item quantity="many">%d itens</item>
+        <item quantity="other">%d itens</item>
+    </plurals>
     <plurals name="series_books_count">
         <item quantity="one">%d livro</item>
         <item quantity="many">%d livros</item>

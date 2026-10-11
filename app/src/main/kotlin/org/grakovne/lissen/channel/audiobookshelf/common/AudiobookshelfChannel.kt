@@ -12,6 +12,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemR
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPlaylistsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LocalSessionSyncResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.OfflineSessionRequestConverter
@@ -24,12 +25,15 @@ import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.domain.BookPlaylist
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
+import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -49,6 +53,7 @@ abstract class AudiobookshelfChannel(
   private val bookmarkItemResponseConverter: BookmarkItemResponseConverter,
   private val offlineSessionRequestConverter: OfflineSessionRequestConverter,
   private val localSessionSyncResponseConverter: LocalSessionSyncResponseConverter,
+  private val libraryPlaylistsResponseConverter: LibraryPlaylistsResponseConverter,
 ) : MediaChannel {
   override fun provideDownloadClient(): OkHttpClient? = dataRepository.provideHttpClient()
 
@@ -111,6 +116,26 @@ abstract class AudiobookshelfChannel(
     dataRepository
       .fetchLibrary(libraryId)
       .map { libraryResponseConverter.apply(it) }
+
+  protected suspend fun fetchPlaylists(
+    libraryId: String,
+    pageSize: Int,
+    pageNumber: Int,
+  ): OperationResult<PagedItems<LibraryEntry>> =
+    dataRepository
+      .fetchLibraryPlaylists(libraryId)
+      .map { libraryPlaylistsResponseConverter.apply(it, pageSize, pageNumber) }
+
+  protected suspend fun fetchItemPlaylists(
+    libraryId: String,
+    itemId: String,
+  ): List<BookPlaylist>? =
+    dataRepository
+      .fetchLibraryPlaylists(libraryId)
+      .fold(
+        onSuccess = { libraryPlaylistsResponseConverter.playlistsOf(it, itemId) },
+        onFailure = { null },
+      )
 
   override fun fetchConnectionHost(): OperationResult<Host> =
     hostProvider

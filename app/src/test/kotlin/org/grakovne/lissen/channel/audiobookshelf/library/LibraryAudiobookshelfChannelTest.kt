@@ -52,6 +52,7 @@ class LibraryAudiobookshelfChannelTest {
       bookResponseConverter = mockk(relaxed = true),
       librarySearchItemsConverter = LibrarySearchItemsConverter(),
       libraryListResponseConverter = LibraryListResponseConverter(),
+      libraryPlaylistsResponseConverter = mockk(relaxed = true),
     )
 
   @Test
@@ -112,7 +113,7 @@ class LibraryAudiobookshelfChannelTest {
   @Test
   fun `fetchGenreBooks filters by the base64 genre and collects every page`() =
     runBlocking {
-      val filter = "genres.0JTQtdGC0LXQutGC0LjQsg==" // Детектив
+      val filter = "genres.0JTQtdGC0LXQutGC0LjQsg=="
       coEvery { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), filter) } returns page((1..20).map { "b$it" }, total = 24)
       coEvery { repository.fetchLibraryItems(LIBRARY, 20, 1, any(), any(), filter) } returns page((21..24).map { "b$it" }, total = 24)
 
@@ -125,7 +126,7 @@ class LibraryAudiobookshelfChannelTest {
   @Test
   fun `fetchNarratorBooks filters by the base64 narrator`() =
     runBlocking {
-      val filter = "narrators.U3RlcGhlbiBGcnk=" // Stephen Fry
+      val filter = "narrators.U3RlcGhlbiBGcnk="
       coEvery { repository.fetchLibraryItems(LIBRARY, any(), 0, any(), any(), filter) } returns page(listOf("b1"), total = 1)
 
       val result = channel.fetchNarratorBooks(LIBRARY, "Stephen Fry") as OperationResult.Success

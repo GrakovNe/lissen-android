@@ -17,6 +17,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistMemberEntry
 import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -25,6 +26,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import java.io.File
@@ -34,11 +36,18 @@ import javax.inject.Singleton
 
 private const val FINISHED_POSITION_EPSILON = 1.0
 
-// authors and narrators are cached as one comma-joined string, so a book is grouped under the first of them
+private const val SQLITE_VARIABLES_LIMIT = 999
+
+private const val PLAYLIST_MEMBERS_FROM =
+  """book_playlists
+        JOIN detailed_books ON detailed_books.id = book_playlists.bookId
+        LEFT JOIN book_chapters ON book_chapters.bookId = book_playlists.bookId AND book_chapters.bookChapterId = book_playlists.episodeId"""
+
+private const val PLAYLIST_MEMBER_IS_DOWNLOADED = "(book_playlists.episodeId IS NULL OR book_chapters.isCached = 1)"
+
 private fun firstOfJoined(column: String) =
   "TRIM(CASE WHEN instr($column, ',') > 0 THEN substr($column, 1, instr($column, ',') - 1) ELSE $column END)"
 
-// a grouping whose groups are told apart by a name computed from the cached book rather than by a server id
 private enum class NameGrouping(
   val fromClause: String,
   val nameExpression: String,
@@ -84,7 +93,6 @@ class CachedBookRepository
 
     suspend fun dropCache() = bookDao.dropCache()
 
-    /** Stores the book in canonical order, whatever order it arrives in. */
     suspend fun cacheBook(
       book: DetailedItem,
       fetchedChapters: List<PlayingChapter>,
@@ -328,6 +336,100 @@ class CachedBookRepository
       libraryType: LibraryType?,
     ): List<Book> = fetchNameGroupItems(NameGrouping.GENRE, libraryId, genre, libraryType)
 
+    suspend fun fetchPlaylistsGrouped(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryType: LibraryType?,
+    ): PagedItems<LibraryEntry> {
+      val (join, filter) = hideCompletedClauses(libraryType)
+
+      val countSql =
+        """
+        SELECT COUNT(DISTINCT book_playlists.playlistId)
+        FROM $PLAYLIST_MEMBERS_FROM
+        $join
+        WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_IS_DOWNLOADED $filter
+        """.trimIndent()
+
+      val total = bookDao.countRaw(SimpleSQLiteQuery(countSql, arrayOf<Any>(libraryId)))
+
+      if (total == 0) {
+        return PagedItems(items = emptyList(), currentPage = pageNumber, totalItems = 0)
+      }
+
+      val pageSql =
+        """
+        SELECT book_playlists.playlistId AS id, MAX(book_playlists.playlistName) AS name
+        FROM $PLAYLIST_MEMBERS_FROM
+        $join
+        WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_IS_DOWNLOADED $filter
+        GROUP BY book_playlists.playlistId
+        ORDER BY LOWER(name) ASC
+        LIMIT ? OFFSET ?
+        """.trimIndent()
+
+      val headers = bookDao.fetchPlaylistGroupEntries(SimpleSQLiteQuery(pageSql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize)))
+
+      val members = fetchPlaylistMembers(libraryId, headers.map { it.id }, libraryType)
+
+      val books =
+        members
+          .map { it.bookId }
+          .distinct()
+          .chunked(SQLITE_VARIABLES_LIMIT)
+          .flatMap { ids -> bookDao.fetchBooksByIds(ids) }
+          .associate { it.id to cachedBookEntityConverter.apply(it) }
+
+      val rows =
+        members
+          .groupBy { it.playlistId }
+          .mapValues { (_, playlistMembers) -> playlistMembers.mapNotNull { it.toPlaylistItem(books) } }
+
+      val items =
+        headers.map { header ->
+          LibraryEntry.PlaylistEntry(
+            id = header.id,
+            name = header.name,
+            items = rows[header.id].orEmpty(),
+          )
+        }
+
+      return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
+    }
+
+    private fun PlaylistMemberEntry.toPlaylistItem(books: Map<String, Book>): PlaylistItem? {
+      val book = books[bookId] ?: return null
+
+      return when (episodeId) {
+        null -> PlaylistItem.BookItem(book)
+        else -> episodeTitle?.let { PlaylistItem.EpisodeItem(book = book, episodeId = episodeId, title = it) }
+      }
+    }
+
+    private suspend fun fetchPlaylistMembers(
+      libraryId: String,
+      playlistIds: List<String>,
+      libraryType: LibraryType?,
+    ): List<PlaylistMemberEntry> {
+      if (playlistIds.isEmpty()) return emptyList()
+
+      val (join, filter) = hideCompletedClauses(libraryType)
+      val placeholders = playlistIds.joinToString(", ") { "?" }
+
+      val sql =
+        """
+        SELECT book_playlists.playlistId AS playlistId, book_playlists.bookId AS bookId, book_playlists.episodeId AS episodeId,
+          book_chapters.title AS episodeTitle, book_playlists.position AS position
+        FROM $PLAYLIST_MEMBERS_FROM
+        $join
+        WHERE detailed_books.libraryId = ? AND book_playlists.playlistId IN ($placeholders) AND $PLAYLIST_MEMBER_IS_DOWNLOADED $filter
+        ORDER BY book_playlists.playlistId ASC, book_playlists.position ASC
+        """.trimIndent()
+
+      return bookDao.fetchPlaylistMemberEntries(SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, *playlistIds.toTypedArray())))
+    }
+
     private suspend fun fetchNameGroups(
       grouping: NameGrouping,
       libraryId: String,
@@ -493,7 +595,6 @@ class CachedBookRepository
         MediaProgressEntity(
           bookId = playingItem.id,
           currentTime = canonicalTime,
-          // compares against the end in the user's order; today only LIBRARY reads this flag, and there the order is canonical
           isFinished = progress.currentTotalTime >= totalDuration - FINISHED_POSITION_EPSILON,
           lastUpdate = Instant.now().toEpochMilli(),
         )

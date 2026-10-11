@@ -195,7 +195,7 @@ val MIGRATION_10_11 =
         INSERT INTO detailed_books_new (
             id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt
         )
-        SELECT 
+        SELECT
             id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, $now
         FROM detailed_books
         """.trimIndent(),
@@ -235,7 +235,7 @@ val MIGRATION_11_12 =
         INSERT INTO detailed_books_new (
             id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt, updatedAt
         )
-        SELECT 
+        SELECT
             id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt, $now
         FROM detailed_books
         """.trimIndent(),
@@ -380,11 +380,6 @@ val MIGRATION_20_21 =
     }
   }
 
-/**
- * Backfills the canonical position from the insertion order, which is the order the item was
- * always shown in. Duplicate (bookId, chapterId) rows would break that order, so they are
- * collapsed first and the latest row wins.
- */
 val MIGRATION_21_22 =
   object : Migration(21, 22) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -455,7 +450,6 @@ val MIGRATION_22_23 =
     }
   }
 
-// UNKNOWN is gone from the enum, but earlier versions may have stored it
 val MIGRATION_23_24 =
   object : Migration(23, 24) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -464,7 +458,6 @@ val MIGRATION_23_24 =
     }
   }
 
-// no backfill: books cached before this version have no genres until they are cached again
 val MIGRATION_24_25 =
   object : Migration(24, 25) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -479,5 +472,26 @@ val MIGRATION_24_25 =
         """.trimIndent(),
       )
       db.execSQL("CREATE INDEX IF NOT EXISTS index_book_genres_genre ON book_genres (genre)")
+    }
+  }
+
+val MIGRATION_25_26 =
+  object : Migration(25, 26) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        CREATE TABLE IF NOT EXISTS book_playlists (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            bookId TEXT NOT NULL,
+            playlistId TEXT NOT NULL,
+            playlistName TEXT NOT NULL,
+            episodeId TEXT,
+            position INTEGER NOT NULL,
+            FOREIGN KEY(bookId) REFERENCES detailed_books(id) ON UPDATE NO ACTION ON DELETE CASCADE
+        )
+        """.trimIndent(),
+      )
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_book_playlists_bookId ON book_playlists (bookId)")
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_book_playlists_playlistId ON book_playlists (playlistId)")
     }
   }

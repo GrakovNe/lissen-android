@@ -1,6 +1,7 @@
 package org.grakovne.lissen.persistence.preferences
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
@@ -19,7 +20,13 @@ class LibraryPreferences
     val preferredLibraryTypeFlow: Flow<LibraryType> =
       store.asFlow(KEY_PREFERRED_LIBRARY_TYPE, ::getPreferredLibraryType)
     val hideCompletedFlow: Flow<Boolean> = store.asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
-    val libraryGroupingFlow: Flow<LibraryGrouping> = store.asFlow(KEY_LIBRARY_GROUPING, ::getLibraryGrouping)
+
+    val libraryGroupingFlow: Flow<LibraryGrouping> =
+      combine(
+        store.asFlow(KEY_LIBRARY_GROUPINGS, ::getLibraryGroupings),
+        store.asFlow(KEY_PREFERRED_LIBRARY_ID, ::activeLibraryId),
+      ) { groupings, libraryId -> groupings.groupingOf(libraryId) }
+
     val forceCacheFlow: Flow<Boolean> = store.asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
     val episodeOrderingFlow: Flow<Map<String, EpisodeOrderingConfiguration>> =
       store.asFlow(KEY_EPISODE_ORDERING, ::getEpisodeOrderings)
@@ -76,13 +83,24 @@ class LibraryPreferences
 
     fun saveHideCompleted(value: Boolean) = store.putBoolean(KEY_HIDE_COMPLETED, value)
 
-    fun getLibraryGrouping(): LibraryGrouping =
-      store
-        .getString(KEY_LIBRARY_GROUPING)
-        ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }
-        ?: LibraryGrouping.NONE
+    fun getLibraryGrouping(libraryId: String?): LibraryGrouping = getLibraryGroupings().groupingOf(libraryId)
 
-    fun saveLibraryGrouping(value: LibraryGrouping) = store.putString(KEY_LIBRARY_GROUPING, value.name)
+    fun getLibraryGroupings(): Map<String, LibraryGrouping> = store.getPerItem(KEY_LIBRARY_GROUPINGS, libraryGroupingAdapter)
+
+    fun saveLibraryGrouping(
+      libraryId: String,
+      value: LibraryGrouping,
+    ) = saveLibraryGroupings(getLibraryGroupings() + (libraryId to value))
+
+    fun saveLibraryGroupings(groupings: Map<String, LibraryGrouping>) =
+      store.putPerItem(KEY_LIBRARY_GROUPINGS, groupings, libraryGroupingAdapter)
+
+    private fun Map<String, LibraryGrouping>.groupingOf(libraryId: String?): LibraryGrouping =
+      libraryId?.let { this[it] }
+        ?: store
+          .getString(KEY_LEGACY_LIBRARY_GROUPING)
+          ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }
+        ?: LibraryGrouping.NONE
 
     fun isForceCache(): Boolean = store.getBoolean(CACHE_FORCE_ENABLED, false)
 
@@ -116,9 +134,11 @@ class LibraryPreferences
       private const val KEY_PREFERRED_LIBRARY_TYPE = "preferred_library_type"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
-      private const val KEY_LIBRARY_GROUPING = "library_grouping"
+      private const val KEY_LEGACY_LIBRARY_GROUPING = "library_grouping"
+      private const val KEY_LIBRARY_GROUPINGS = "library_groupings"
       private const val KEY_EPISODE_ORDERING = "episode_ordering"
 
       private val episodeOrderingEntryAdapter = moshi.adapter(EpisodeOrderingConfiguration::class.java)
+      private val libraryGroupingAdapter = moshi.adapter(LibraryGrouping::class.java)
     }
   }

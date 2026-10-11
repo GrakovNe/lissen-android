@@ -1,13 +1,17 @@
 package org.grakovne.lissen.ui
 
+import android.content.Intent
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -16,7 +20,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.ui.activity.AppActivity
+import org.grakovne.lissen.ui.navigation.CONTINUE_PLAYBACK
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -113,6 +119,53 @@ class PlayerE2ETest {
     )
 
     composeRule.onNodeWithTag("libraryScreen").assertIsDisplayed()
+  }
+
+  private fun continuePlayback(block: () -> Unit) {
+    val launchIntent = composeRule.activity.intent
+
+    composeRule.runOnUiThread {
+      val activity = composeRule.activity
+      activity.startActivity(Intent(activity, AppActivity::class.java).apply { action = CONTINUE_PLAYBACK })
+    }
+
+    try {
+      block()
+    } finally {
+      composeRule.runOnUiThread { composeRule.activity.intent = launchIntent }
+    }
+  }
+
+  private fun waitUntilPlaying(playing: Boolean) {
+    composeRule.waitUntil(timeoutMillis = TIMEOUT_MS) { mediaRepository.isPlaying.value == playing }
+  }
+
+  @Test
+  fun player_continuePlaybackStartsOnceAndKeepsThePauseAcrossSettings() {
+    loginAndOpenBook()
+    composeRule.onNodeWithTag("playerBackButton").performClick()
+    composeRule.waitUntilAtLeastOneExists(hasTestTag("libraryScreen"), TIMEOUT_MS)
+
+    continuePlayback {
+      composeRule.waitUntilAtLeastOneExists(hasTestTag("playerScreen"), TIMEOUT_MS)
+      waitUntilPlaying(true)
+
+      composeRule.onNodeWithContentDescription("Pause").performClick()
+      waitUntilPlaying(false)
+
+      composeRule.onNodeWithTag("playerSettingsButton").performClick()
+      composeRule.onNodeWithText("Application settings").performClick()
+      composeRule.waitUntilAtLeastOneExists(hasTestTag("settingsScreen"), TIMEOUT_MS)
+
+      Espresso.pressBack()
+      composeRule.waitUntilAtLeastOneExists(hasTestTag("playerScreen"), TIMEOUT_MS)
+
+      composeRule.waitForIdle()
+      assertFalse(mediaRepository.isPlaying.value)
+
+      Espresso.pressBack()
+      composeRule.waitUntilAtLeastOneExists(hasTestTag("libraryScreen"), TIMEOUT_MS)
+    }
   }
 
   @Test

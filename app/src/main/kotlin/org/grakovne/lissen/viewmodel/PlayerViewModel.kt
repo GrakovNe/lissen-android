@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -45,7 +46,6 @@ class PlayerViewModel
       libraryPreferences.preferredLibraryTypeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), libraryPreferences.getPreferredLibraryType())
 
-    /** The stored ordering of the item the screen shows, which is not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
 
     fun autoSkip(itemId: String): Flow<AutoSkipConfiguration> = autoSkipPreferences.flow(itemId)
@@ -111,8 +111,6 @@ class PlayerViewModel
         return
       }
 
-      // this is the item the resume paths would start, so restoring it keeps the last playing pointer where it is;
-      // nothing is loaded yet, and clearing here would drop the stored item of the active library
       val playingItem = preferences.getLastPlayingItem() ?: return
 
       viewModelScope.launch {
@@ -173,6 +171,7 @@ class PlayerViewModel
       libraryType: LibraryType?,
       useLocalCache: Boolean,
       playInstantly: Boolean,
+      chapterId: String? = null,
     ) {
       val currentBook = book.value
       val preparationRequired = requiresBookPreparation(bookId, useLocalCache)
@@ -185,8 +184,16 @@ class PlayerViewModel
           mediaRepository.preparePlayback(
             bookId = bookId,
             libraryType = currentBook?.takeIf { it.id == bookId }?.libraryType ?: storedBook?.libraryType ?: libraryType,
+            chapterId = chapterId,
           )
         } else {
+          chapterId
+            ?.let { id -> currentBook?.chapters?.firstOrNull { it.id == id } }
+            ?.let { chapter ->
+
+              mediaRepository.isPlaybackReady.first { it }
+              setChapter(chapter)
+            }
           true
         }
 
@@ -258,8 +265,6 @@ class PlayerViewModel
     ) {
       Timber.d("User action: setEpisodeOrdering $configuration for $itemId")
 
-      // stored first, so the media session and Android Auto already see the new order;
-      // rolled back if the player refuses
       val previous = libraryPreferences.getEpisodeOrdering(itemId)
       libraryPreferences.saveEpisodeOrdering(itemId, configuration)
 

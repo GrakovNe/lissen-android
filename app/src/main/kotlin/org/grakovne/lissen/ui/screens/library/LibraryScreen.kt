@@ -90,6 +90,7 @@ import org.grakovne.lissen.ui.screens.library.composables.LibrarySearchActionCom
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySwitchComposable
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
 import org.grakovne.lissen.ui.screens.library.composables.NarratorComposable
+import org.grakovne.lissen.ui.screens.library.composables.PlaylistComposable
 import org.grakovne.lissen.ui.screens.library.composables.QuickSettingsComposable
 import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
 import org.grakovne.lissen.ui.screens.library.composables.SeriesComposable
@@ -197,8 +198,6 @@ fun LibraryScreen(
   }
 
   LaunchedEffect(preparingError) {
-    // in force-cache mode a failed preparation only means the book is not downloaded;
-    // it stays selected so playback recovers when the mode changes back
     if (preparingError && cachingModelView.localCacheUsing().not()) {
       playerViewModel.clearPlayingBook()
     }
@@ -522,6 +521,7 @@ fun LibraryScreen(
               item(span = { GridItemSpan(maxLineSpan) }) {
                 LibraryFallbackComposable(
                   searchRequested = searchRequested,
+                  grouping = libraryGrouping,
                   contentCachingModelView = cachingModelView,
                   networkService = networkService,
                   libraryViewModel = libraryViewModel,
@@ -585,6 +585,16 @@ fun LibraryScreen(
                       expanded = entry.id in groups.expanded,
                       loading = entry.id in groups.loading,
                       books = groups.books[entry.id].orEmpty(),
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      onToggle = { libraryViewModel.toggleGroup(entry) },
+                    )
+                  }
+
+                  is LibraryEntry.PlaylistEntry -> {
+                    PlaylistComposable(
+                      playlist = entry,
+                      expanded = entry.id in groups.expanded,
                       imageLoader = imageLoader,
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },

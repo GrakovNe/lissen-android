@@ -19,6 +19,8 @@ import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistGroupEntry
+import org.grakovne.lissen.content.cache.persistent.entity.PlaylistMemberEntry
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
@@ -27,6 +29,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.PlaylistItem
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -393,7 +396,6 @@ class CachedBookRepositoryTest {
   @Test
   fun `cacheBook stores the item in the canonical order with the progress translated`() =
     runBlocking {
-      // playing order c1, c0 (descending by date), the user is 5s into c0 = 15s
       val playing =
         orderedItem(
           listOf(
@@ -410,7 +412,7 @@ class CachedBookRepositoryTest {
       assertEquals(listOf("c0", "c1"), bookSlot.captured.chapters.map { it.id })
       assertEquals(listOf("f-c0", "f-c1"), bookSlot.captured.files.map { it.id })
       assertEquals(listOf(0.0, 10.0), bookSlot.captured.chapters.map { it.start })
-      // 5s into c0, which starts at 0s in the canonical order
+
       assertEquals(5.0, bookSlot.captured.progress?.currentTime)
     }
 
@@ -428,17 +430,14 @@ class CachedBookRepositoryTest {
       val progressSlot = slot<MediaProgressEntity>()
       coEvery { bookDao.upsertMediaProgress(capture(progressSlot)) } returns Unit
 
-      // 5s into c1 in playing order; c1 starts at 10s canonically
       repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 5.0, currentTotalTime = 5.0))
       assertEquals(15.0, progressSlot.captured.currentTime)
       assertFalse(progressSlot.captured.isFinished)
 
-      // 300ms past the declared duration: the end of the item and finished, so it starts over next time
       repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 10.3, currentTotalTime = 20.3))
       assertEquals(20.0, progressSlot.captured.currentTime)
       assertTrue(progressSlot.captured.isFinished)
 
-      // almost through the canonically newest episode, the first thing played in this order: not finished
       repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 9.9, currentTotalTime = 9.9))
       assertEquals(19.9, progressSlot.captured.currentTime, 1e-9)
       assertFalse(progressSlot.captured.isFinished)
@@ -792,6 +791,83 @@ class CachedBookRepositoryTest {
       )
 
       assertFalse(progressSlot.captured.isFinished)
+    }
+
+  private fun member(
+    playlistId: String,
+    bookId: String,
+    episodeId: String? = null,
+    episodeTitle: String? = null,
+    position: Int,
+  ) = PlaylistMemberEntry(playlistId = playlistId, bookId = bookId, episodeId = episodeId, episodeTitle = episodeTitle, position = position)
+
+  @Test
+  fun `playlist grouping maps the cached rows into playlist entries`() =
+    runBlocking {
+      coEvery { bookDao.countRaw(any()) } returns 1
+      coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute"))
+      coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns
+        listOf(
+          member("pl-1", "p1", episodeId = "e1", episodeTitle = "Monday", position = 0),
+          member("pl-1", "b2", position = 1),
+          member("pl-1", "p1", episodeId = "e2", episodeTitle = "Tuesday", position = 2),
+        )
+      coEvery { bookDao.fetchBooksByIds(listOf("p1", "b2")) } returns listOf(entity("b2", author = "Andy Weir"), entity("p1"))
+
+      val playlists = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
+      val commute = playlists.items.single() as LibraryEntry.PlaylistEntry
+
+      assertEquals("Commute", commute.name)
+      assertEquals(3, commute.itemCount)
+      assertEquals(listOf("p1", "b2"), commute.coverItemIds)
+      assertEquals(
+        listOf(
+          PlaylistItem.EpisodeItem(book = commute.items[0].book, episodeId = "e1", title = "Monday"),
+          PlaylistItem.BookItem(commute.items[1].book),
+          PlaylistItem.EpisodeItem(book = commute.items[2].book, episodeId = "e2", title = "Tuesday"),
+        ),
+        commute.items,
+      )
+      assertEquals(listOf("p1", "b2", "p1"), commute.items.map { it.book.id })
+      assertEquals("Andy Weir", commute.items[1].book.author)
+      assertEquals(1, playlists.totalItems)
+    }
+
+  @Test
+  fun `empty playlist grouping skips the page query`() =
+    runBlocking {
+      coEvery { bookDao.countRaw(any()) } returns 0
+
+      val playlists = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
+
+      assertTrue(playlists.items.isEmpty())
+      coVerify(exactly = 0) { bookDao.fetchPlaylistGroupEntries(any()) }
+    }
+
+  @Test
+  fun `playlist grouping hides completed books only for library type`() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      val queries = mutableListOf<SupportSQLiteQuery>()
+      coEvery { bookDao.countRaw(capture(queries)) } returns 0
+
+      repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = LibraryType.LIBRARY)
+      repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = LibraryType.PODCAST)
+
+      assertTrue(queries[0].sql.contains("isFinished"))
+      assertFalse(queries[1].sql.contains("isFinished"))
+    }
+
+  @Test
+  fun `playlist grouping without cached members yields a playlist without rows`() =
+    runBlocking {
+      coEvery { bookDao.countRaw(any()) } returns 1
+      coEvery { bookDao.fetchPlaylistGroupEntries(any()) } returns listOf(PlaylistGroupEntry(id = "pl-1", name = "Commute"))
+      coEvery { bookDao.fetchPlaylistMemberEntries(any()) } returns emptyList()
+
+      val commute = repository.fetchPlaylistsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null).items.single()
+
+      assertTrue((commute as LibraryEntry.PlaylistEntry).items.isEmpty())
     }
 
   companion object {

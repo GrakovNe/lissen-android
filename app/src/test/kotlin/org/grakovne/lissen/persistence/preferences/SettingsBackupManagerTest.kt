@@ -43,7 +43,6 @@ class SettingsBackupManagerTest {
     every { context.getSharedPreferences(any(), any()) } returns sharedPreferences
     every { sharedPreferences.edit() } returns editor
 
-    // unstubbed keys return their default, so no getter sees a relaxed empty string
     every { sharedPreferences.getString(any(), any()) } answers { secondArg() }
     every { sharedPreferences.getBoolean(any(), any()) } answers { secondArg() }
     every { sharedPreferences.getInt(any(), any()) } answers { secondArg() }
@@ -112,6 +111,17 @@ class SettingsBackupManagerTest {
       assertTrue(backup.softwareCodecsEnabled == true)
       assertTrue(backup.hideCompleted == true)
       assertEquals("AUTHOR", backup.libraryGrouping)
+    }
+
+    @Test
+    fun `maps the grouping of every library and names the active library's one`() {
+      every { sharedPreferences.getString("preferred_library_id", any()) } returns "l2"
+      every { sharedPreferences.getString("library_groupings", any()) } returns """{"l1":"SERIES","l2":"PLAYLIST"}"""
+
+      val backup = preferences.exportSettings()
+
+      assertEquals(mapOf("l1" to "SERIES", "l2" to "PLAYLIST"), backup.libraryGroupings)
+      assertEquals("PLAYLIST", backup.libraryGrouping)
     }
 
     @Test
@@ -307,6 +317,43 @@ class SettingsBackupManagerTest {
     fun `ignores invalid library grouping string`() {
       preferences.importSettings(SettingsBackup(libraryGrouping = "NOT_A_GROUPING"))
       verify(exactly = 0) { editor.putString("library_grouping", any()) }
+      verify(exactly = 0) { editor.putString("library_groupings", any()) }
+    }
+
+    @Test
+    fun `restores the grouping of every library`() {
+      preferences.importSettings(SettingsBackup(libraryGroupings = mapOf("l1" to "SERIES", "l2" to "PLAYLIST", "l3" to "NOT_A_GROUPING")))
+
+      verify { editor.putString("library_groupings", """{"l1":"SERIES","l2":"PLAYLIST"}""") }
+    }
+
+    @Test
+    fun `the single grouping fills in the active library when the restored map has no entry for it`() {
+      every { sharedPreferences.getString("preferred_library_id", any()) } returns "l1"
+
+      preferences.importSettings(SettingsBackup(libraryGrouping = "SERIES", libraryGroupings = mapOf("l2" to "PLAYLIST")))
+
+      verify { editor.putString("library_groupings", """{"l2":"PLAYLIST"}""") }
+      verify { editor.putString("library_groupings", """{"l1":"SERIES"}""") }
+    }
+
+    @Test
+    fun `the single grouping does not override the active library's own restored entry`() {
+      every { sharedPreferences.getString("preferred_library_id", any()) } returns "l1"
+
+      preferences.importSettings(SettingsBackup(libraryGrouping = "SERIES", libraryGroupings = mapOf("l1" to "AUTHOR")))
+
+      verify(exactly = 1) { editor.putString("library_groupings", any()) }
+      verify { editor.putString("library_groupings", """{"l1":"AUTHOR"}""") }
+    }
+
+    @Test
+    fun `an old backup's single grouping applies to the active library`() {
+      every { sharedPreferences.getString("preferred_library_id", any()) } returns "l1"
+
+      preferences.importSettings(SettingsBackup(libraryGrouping = "AUTHOR"))
+
+      verify { editor.putString("library_groupings", """{"l1":"AUTHOR"}""") }
     }
 
     @Test

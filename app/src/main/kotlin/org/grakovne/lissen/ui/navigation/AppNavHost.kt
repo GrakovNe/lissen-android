@@ -66,7 +66,6 @@ fun AppNavHost(
   imageLoader: ImageLoader,
   appLaunchAction: AppLaunchAction,
 ) {
-  // used only on the first layout, so it is read once
   val startDestination =
     remember {
       val book = playbackPreferences.getLastPlayingItem()
@@ -126,7 +125,7 @@ fun AppNavHost(
             },
           ),
       ) { backStackEntry ->
-        // Navigation already decodes URL-encoded argument values, so read them as they are.
+
         val linkedSearchToken = backStackEntry.arguments?.getString(ARG_LINKED_SEARCH_TOKEN)
 
         LibraryScreen(
@@ -154,12 +153,17 @@ fun AppNavHost(
               type = NavType.BoolType
               nullable = false
             },
+            navArgument(ARG_CHAPTER_ID) {
+              type = NavType.StringType
+              nullable = true
+            },
           ),
       ) { navigationStack ->
         val bookId = navigationStack.arguments?.getString(ARG_BOOK_ID) ?: return@composable
         val bookTitle = navigationStack.arguments?.getString(ARG_BOOK_TITLE) ?: ""
         val bookSubtitle = navigationStack.arguments?.getString(ARG_BOOK_SUBTITLE)
         val startInstantly = navigationStack.arguments?.getBoolean(ARG_START_INSTANTLY) ?: false
+        val chapterId = navigationStack.arguments?.getString(ARG_CHAPTER_ID)
 
         PlayerScreen(
           navController = navigationService,
@@ -168,6 +172,7 @@ fun AppNavHost(
           bookTitle = bookTitle,
           bookSubtitle = bookSubtitle,
           playInstantly = startInstantly,
+          chapterId = chapterId,
         )
       }
 

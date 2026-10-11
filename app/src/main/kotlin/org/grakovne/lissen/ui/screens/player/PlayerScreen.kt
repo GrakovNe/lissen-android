@@ -45,6 +45,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -117,6 +118,7 @@ fun PlayerScreen(
   bookTitle: String,
   bookSubtitle: String?,
   playInstantly: Boolean,
+  chapterId: String? = null,
 ) {
   val context = LocalContext.current
 
@@ -195,6 +197,8 @@ fun PlayerScreen(
 
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
+  var firstEntry by rememberSaveable { mutableStateOf(true) }
+
   LaunchedEffect(Unit) {
     val useLocalCache = cachingModelView.localCacheUsing()
     val needsPreparation = playerViewModel.requiresBookPreparation(bookId, useLocalCache)
@@ -212,8 +216,10 @@ fun PlayerScreen(
       bookId = bookId,
       libraryType = playingBook?.takeIf { it.id == bookId }?.libraryType ?: preferredLibraryType,
       useLocalCache = useLocalCache,
-      playInstantly = playInstantly,
+      playInstantly = playInstantly && firstEntry,
+      chapterId = chapterId.takeIf { firstEntry },
     )
+    firstEntry = false
   }
 
   LaunchedEffect(playingQueueExpanded) {
@@ -245,7 +251,6 @@ fun PlayerScreen(
               }
 
               else -> {
-                // no dimming while the item loads or its queue is rebuilt: a tap does nothing
                 Row {
                   if (queueControlsVisible) {
                     IconButton(
@@ -444,7 +449,6 @@ fun PlayerScreen(
   }
 
   if (settingsSelected) {
-    // the same condition the player checks, so a tap never fails silently
     val canReorder = remember(isPlaybackReady, playingBook, bookId) { playerViewModel.canReorderPlayingItem(bookId) }
 
     PlayerSettingsComposable(
@@ -692,10 +696,6 @@ fun InfoRow(
   }
 }
 
-/**
- * The placeholder guesses from the library the item is opened from; a loaded item knows its own
- * type. An item that can never be reordered gets no ordering row at all, instead of a dimmed one.
- */
 internal fun isSortable(
   requestedBook: DetailedItem?,
   preferredLibraryType: LibraryType?,

@@ -29,6 +29,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryAuthor
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryNarratorsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPlaylistsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryStatsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LocalSessionSyncResponseConverter
@@ -65,7 +66,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 
-/** Real channel, file layout and chapter resolution against [MockWebServer]. Only the Room repositories are mocked. */
 class ContentCachingIntegrationTest {
   private val server = MockWebServer()
 
@@ -188,6 +188,7 @@ class ContentCachingIntegrationTest {
         libraryNarratorsResponseConverter = LibraryNarratorsResponseConverter(),
         bookResponseConverter = BookResponseConverter(),
         librarySearchItemsConverter = LibrarySearchItemsConverter(),
+        libraryPlaylistsResponseConverter = LibraryPlaylistsResponseConverter(),
       )
 
     properties = OfflineBookStorageProperties(context, downloadPreferences)
@@ -262,7 +263,6 @@ class ContentCachingIntegrationTest {
       server.enqueue(notFound())
       server.enqueue(libraries())
 
-      // the user flipped the order: same chapters, different bounds
       val reordered =
         book.copy(
           chapters =
@@ -296,7 +296,7 @@ class ContentCachingIntegrationTest {
       assertEquals(CacheState(CacheStatus.Error), states.last())
       assertEquals("bytes-f0", alreadyThere.readText())
       assertFalse(properties.provideMediaCachePatch("book", "f1").exists())
-      // only the chapter that failed is rolled back
+
       coVerify(exactly = 0) { bookRepository.cacheBook(any(), any(), match { dropped -> dropped.any { it.id == "c0" } }) }
     }
 
