@@ -4,6 +4,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playlist.LibraryP
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playlist.PlaylistItemResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playlist.PlaylistMetadataResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playlist.PlaylistResponse
+import org.grakovne.lissen.common.mergeAuthorNames
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookPlaylist
 import org.grakovne.lissen.domain.LibraryEntry
@@ -77,9 +78,7 @@ class LibraryPlaylistsResponseConverter
     }
 
     private fun PlaylistMetadataResponse.authorLine(): String? =
-      authorName
-        ?: authors?.takeIf { it.isNotEmpty() }?.joinToString(", ") { it.name }
-        ?: author
+      mergeAuthorNames(listOfNotNull(authorName) + authors.orEmpty().map { it.name } + listOfNotNull(author))
 
     private fun PlaylistMetadataResponse.seriesLine(): String? =
       seriesName

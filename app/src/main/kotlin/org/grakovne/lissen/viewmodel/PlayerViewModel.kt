@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -191,7 +192,11 @@ class PlayerViewModel
         } else {
           chapterId
             ?.let { id -> currentBook?.chapters?.firstOrNull { it.id == id } }
-            ?.let(::setChapter)
+            ?.let { chapter ->
+              // the loaded item's queue may still be building, and the service seeks to the saved position when it is done
+              mediaRepository.isPlaybackReady.first { it }
+              setChapter(chapter)
+            }
           true
         }
 

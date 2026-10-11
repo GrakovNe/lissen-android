@@ -513,6 +513,7 @@ class PlayerViewModelTest {
     fun `openBook moves an already loaded item to the requested chapter`() =
       runTest {
         playingBook.value = detailedItem(id = "book-1", chapters = listOf(chapter("e1"), chapter("e2")))
+        isPlaybackReady.value = true
 
         viewModel.openBook(
           bookId = "book-1",
@@ -524,6 +525,33 @@ class PlayerViewModelTest {
 
         verify { mediaRepository.setChapter(1) }
         coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any(), any()) }
+      }
+
+    @Test
+    fun `openBook waits for the loaded item's queue before moving to the requested chapter`() =
+      runTest {
+        playingBook.value = detailedItem(id = "book-1", chapters = listOf(chapter("e1"), chapter("e2")))
+        isPlaybackReady.value = false
+
+        val opening =
+          launch {
+            viewModel.openBook(
+              bookId = "book-1",
+              libraryType = LibraryType.PODCAST,
+              useLocalCache = false,
+              playInstantly = false,
+              chapterId = "e2",
+            )
+          }
+        runCurrent()
+
+        verify(exactly = 0) { mediaRepository.setChapter(any()) }
+
+        isPlaybackReady.value = true
+        runCurrent()
+
+        verify { mediaRepository.setChapter(1) }
+        opening.join()
       }
 
     @Test

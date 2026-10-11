@@ -75,16 +75,21 @@ class SettingsBackupManager
       backup.softwareCodecsEnabled?.let { playback.saveSoftwareCodecsEnabled(it) }
       backup.hideCompleted?.let { library.saveHideCompleted(it) }
 
-      backup.libraryGroupings
-        ?.mapNotNull { (libraryId, name) -> runCatching { LibraryGrouping.valueOf(name) }.getOrNull()?.let { libraryId to it } }
-        ?.toMap()
-        ?.let { library.saveLibraryGroupings(it) }
+      val restoredGroupings =
+        backup.libraryGroupings
+          ?.mapNotNull { (libraryId, name) -> runCatching { LibraryGrouping.valueOf(name) }.getOrNull()?.let { libraryId to it } }
+          ?.toMap()
 
-      // a backup from before per-library groupings applies to the active library
-      backup.libraryGrouping
-        ?.takeIf { backup.libraryGroupings == null }
-        ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }
-        ?.let { grouping -> library.activeLibraryId()?.let { library.saveLibraryGrouping(it, grouping) } }
+      restoredGroupings?.let { library.saveLibraryGroupings(it) }
+
+      // the single grouping is the active library's, from before groupings were kept per library or as its fallback
+      val activeLibraryId = library.activeLibraryId()
+
+      if (activeLibraryId != null && activeLibraryId !in restoredGroupings.orEmpty()) {
+        backup.libraryGrouping
+          ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }
+          ?.let { library.saveLibraryGrouping(activeLibraryId, it) }
+      }
 
       backup.libraryOrdering?.let { library.saveLibraryOrdering(it) }
       backup.autoDownloadOptionId?.let { download.saveAutoDownloadOption(it.makeDownloadOption()) }

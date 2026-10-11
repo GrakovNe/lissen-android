@@ -36,6 +36,9 @@ import javax.inject.Singleton
 
 private const val FINISHED_POSITION_EPSILON = 1.0
 
+// a page of playlists may name more books than SQLite before 3.32 (Android 13 and older) takes placeholders in one query
+private const val SQLITE_VARIABLES_LIMIT = 999
+
 // the chapter row gives an episode its title and tells whether that episode itself is downloaded
 private const val PLAYLIST_MEMBERS_FROM =
   """book_playlists
@@ -43,6 +46,7 @@ private const val PLAYLIST_MEMBERS_FROM =
         LEFT JOIN book_chapters ON book_chapters.bookId = book_playlists.bookId AND book_chapters.bookChapterId = book_playlists.episodeId"""
 
 // a book row stands for the book however much of it is downloaded, like a book of a series does
+// rows cached at different times may carry different names of one playlist: MAX keeps the pick deterministic
 private const val PLAYLIST_MEMBER_IS_DOWNLOADED = "(book_playlists.episodeId IS NULL OR book_chapters.isCached = 1)"
 
 // authors and narrators are cached as one comma-joined string, so a book is grouped under the first of them
@@ -363,12 +367,12 @@ class CachedBookRepository
 
       val pageSql =
         """
-        SELECT book_playlists.playlistId AS id, book_playlists.playlistName AS name
+        SELECT book_playlists.playlistId AS id, MAX(book_playlists.playlistName) AS name
         FROM $PLAYLIST_MEMBERS_FROM
         $join
         WHERE detailed_books.libraryId = ? AND $PLAYLIST_MEMBER_IS_DOWNLOADED $filter
         GROUP BY book_playlists.playlistId
-        ORDER BY LOWER(book_playlists.playlistName) ASC
+        ORDER BY LOWER(name) ASC
         LIMIT ? OFFSET ?
         """.trimIndent()
 
@@ -377,8 +381,11 @@ class CachedBookRepository
       val members = fetchPlaylistMembers(libraryId, headers.map { it.id }, libraryType)
 
       val books =
-        bookDao
-          .fetchBooksByIds(members.map { it.bookId }.distinct())
+        members
+          .map { it.bookId }
+          .distinct()
+          .chunked(SQLITE_VARIABLES_LIMIT)
+          .flatMap { ids -> bookDao.fetchBooksByIds(ids) }
           .associate { it.id to cachedBookEntityConverter.apply(it) }
 
       val rows =

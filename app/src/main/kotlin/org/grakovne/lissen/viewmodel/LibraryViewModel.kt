@@ -169,7 +169,7 @@ class LibraryViewModel
 
     private suspend fun fetchGroupBooks(entry: LibraryEntry) {
       val groupId = entry.groupId() ?: return
-      if (alreadyResolved(groupId)) {
+      if (entry is LibraryEntry.PlaylistEntry || alreadyResolved(groupId)) {
         return
       }
 
@@ -179,16 +179,10 @@ class LibraryViewModel
       val result =
         when (entry) {
           is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
-
           is LibraryEntry.AuthorEntry -> mediaChannel.fetchAuthorBooks(libraryId = libraryId, authorId = entry.id)
-
           is LibraryEntry.GenreEntry -> mediaChannel.fetchGenreBooks(libraryId = libraryId, genre = entry.name)
-
           is LibraryEntry.NarratorEntry -> mediaChannel.fetchNarratorBooks(libraryId = libraryId, narrator = entry.name)
-
-          // a playlist carries its rows
           is LibraryEntry.PlaylistEntry -> null
-
           is LibraryEntry.BookEntry -> null
         }
 

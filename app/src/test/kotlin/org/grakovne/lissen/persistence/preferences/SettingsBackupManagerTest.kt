@@ -329,6 +329,26 @@ class SettingsBackupManagerTest {
     }
 
     @Test
+    fun `the single grouping fills in the active library when the restored map has no entry for it`() {
+      every { sharedPreferences.getString("preferred_library_id", any()) } returns "l1"
+
+      preferences.importSettings(SettingsBackup(libraryGrouping = "SERIES", libraryGroupings = mapOf("l2" to "PLAYLIST")))
+
+      verify { editor.putString("library_groupings", """{"l2":"PLAYLIST"}""") }
+      verify { editor.putString("library_groupings", """{"l1":"SERIES"}""") }
+    }
+
+    @Test
+    fun `the single grouping does not override the active library's own restored entry`() {
+      every { sharedPreferences.getString("preferred_library_id", any()) } returns "l1"
+
+      preferences.importSettings(SettingsBackup(libraryGrouping = "SERIES", libraryGroupings = mapOf("l1" to "AUTHOR")))
+
+      verify(exactly = 1) { editor.putString("library_groupings", any()) }
+      verify { editor.putString("library_groupings", """{"l1":"AUTHOR"}""") }
+    }
+
+    @Test
     fun `an old backup's single grouping applies to the active library`() {
       every { sharedPreferences.getString("preferred_library_id", any()) } returns "l1"
 
