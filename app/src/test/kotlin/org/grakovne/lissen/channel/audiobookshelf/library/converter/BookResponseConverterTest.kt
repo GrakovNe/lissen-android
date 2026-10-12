@@ -179,6 +179,62 @@ class BookResponseConverterTest {
         )
       assertEquals("chapter-01", item.chapters[0].title)
     }
+
+    @Test
+    fun `last chapter extends to the audio end when the files outlast the chapters`() {
+      val item =
+        converter.apply(
+          bookResponse(
+            chapters = listOf(chapter("c1", 0.0, 40.0), chapter("c2", 40.0, 90.0)),
+            audioFiles = listOf(audioFile(0, 100.0)),
+          ),
+        )
+      assertEquals(2, item.chapters.size)
+      assertEquals(40.0, item.chapters[0].end, 0.001)
+      assertEquals(40.0, item.chapters[0].duration, 0.001)
+      assertEquals(40.0, item.chapters[1].start, 0.001)
+      assertEquals(100.0, item.chapters[1].end, 0.001)
+      assertEquals(60.0, item.chapters[1].duration, 0.001)
+    }
+
+    @Test
+    fun `extension covers the sum of multiple files`() {
+      val item =
+        converter.apply(
+          bookResponse(
+            chapters = listOf(chapter("c1", 0.0, 90.0)),
+            audioFiles = listOf(audioFile(0, 50.0), audioFile(1, 50.0)),
+          ),
+        )
+      assertEquals(100.0, item.chapters[0].end, 0.001)
+      assertEquals(100.0, item.chapters[0].duration, 0.001)
+    }
+
+    @Test
+    fun `chapters reaching the audio end are left alone`() {
+      val item =
+        converter.apply(
+          bookResponse(
+            chapters = listOf(chapter("c1", 0.0, 100.0)),
+            audioFiles = listOf(audioFile(0, 100.0)),
+          ),
+        )
+      assertEquals(100.0, item.chapters[0].end, 0.001)
+      assertEquals(100.0, item.chapters[0].duration, 0.001)
+    }
+
+    @Test
+    fun `chapters outlasting the audio are not shrunk`() {
+      val item =
+        converter.apply(
+          bookResponse(
+            chapters = listOf(chapter("c1", 0.0, 120.0)),
+            audioFiles = listOf(audioFile(0, 100.0)),
+          ),
+        )
+      assertEquals(120.0, item.chapters[0].end, 0.001)
+      assertEquals(120.0, item.chapters[0].duration, 0.001)
+    }
   }
 
   @Nested

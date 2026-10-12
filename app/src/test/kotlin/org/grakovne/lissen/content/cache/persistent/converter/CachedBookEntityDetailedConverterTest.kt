@@ -200,6 +200,40 @@ class CachedBookEntityDetailedConverterTest {
   }
 
   @Test
+  fun `last chapter extends to the stored audio end when the files outlast it`() {
+    val chapters =
+      listOf(
+        BookChapterEntity(
+          bookChapterId = "c1",
+          duration = 90.0,
+          start = 0.0,
+          end = 90.0,
+          title = "Chapter 1",
+          bookId = "book-1",
+          isCached = true,
+          chapterIndex = 0,
+        ),
+      )
+    val files =
+      listOf(
+        BookFileEntity(
+          bookFileId = "f1",
+          name = "one",
+          size = 0L,
+          duration = 100.0,
+          mimeType = "audio/mpeg",
+          bookId = "book-1",
+          fileIndex = 0,
+        ),
+      )
+
+    val chapter = converter.apply(entity(chapters = chapters, files = files)).chapters.single()
+
+    assertEquals(100.0, chapter.end, 0.001)
+    assertEquals(100.0, chapter.duration, 0.001)
+  }
+
+  @Test
   fun `maps the ordering keys onto the chapters`() {
     val chapters =
       listOf(
