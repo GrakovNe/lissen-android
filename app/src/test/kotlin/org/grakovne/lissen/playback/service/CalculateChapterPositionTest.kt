@@ -117,6 +117,15 @@ class CalculateChapterPositionTest {
   }
 
   @Nested
+  inner class ExtendedLastChapter {
+    // the last chapter runs to the end of the audio past its mark (#561): chapters [0,40] and [40,100]
+    private val book = createBook(40.0, 60.0)
+
+    @Test
+    fun `position in the tail resumes inside the last chapter`() = assertCorrectIndexAndPosition(book, 95.0, 1, 55.0)
+  }
+
+  @Nested
   inner class ThreeUnequalChapters {
     private val book = createBook(30.0, 60.0, 10.0)
 
