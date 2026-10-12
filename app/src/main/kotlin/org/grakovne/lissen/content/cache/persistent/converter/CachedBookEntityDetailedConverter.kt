@@ -12,6 +12,7 @@ import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.extendedToAudioEnd
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,8 +25,22 @@ class CachedBookEntityDetailedConverter
     fun apply(
       entity: CachedBookEntity,
       libraryType: LibraryType? = null,
-    ): DetailedItem =
-      DetailedItem(
+    ): DetailedItem {
+      val files =
+        entity
+          .files
+          .sortedBy { it.fileIndex }
+          .map { fileEntity ->
+            BookFile(
+              id = fileEntity.bookFileId,
+              name = fileEntity.name,
+              size = fileEntity.size,
+              duration = fileEntity.duration,
+              mimeType = fileEntity.mimeType,
+            )
+          }
+
+      return DetailedItem(
         id = entity.detailedBook.id,
         title = entity.detailedBook.title,
         subtitle = entity.detailedBook.subtitle,
@@ -42,33 +57,26 @@ class CachedBookEntityDetailedConverter
         libraryId = entity.detailedBook.libraryId,
         libraryType = libraryType,
         localProvided = true,
-        files =
-          entity.files.sortedBy { it.fileIndex }.map { fileEntity ->
-            BookFile(
-              id = fileEntity.bookFileId,
-              name = fileEntity.name,
-              size = fileEntity.size,
-              duration = fileEntity.duration,
-              mimeType = fileEntity.mimeType,
-            )
-          },
+        files = files,
         chapters =
-          entity.chapters.sortedBy { it.chapterIndex }.map { chapterEntity ->
-            PlayingChapter(
-              duration = chapterEntity.duration,
-              start = chapterEntity.start,
-              end = chapterEntity.end,
-              title = chapterEntity.title,
-              available = chapterEntity.isCached,
-              id = chapterEntity.bookChapterId,
-              podcastEpisodeState = null,
-              index = chapterEntity.chapterIndex,
-              publishedAt = chapterEntity.publishedAt,
-              season = chapterEntity.season,
-              episode = chapterEntity.episode,
-              fileName = chapterEntity.fileName,
-            )
-          },
+          entity.chapters
+            .sortedBy { it.chapterIndex }
+            .map { chapterEntity ->
+              PlayingChapter(
+                duration = chapterEntity.duration,
+                start = chapterEntity.start,
+                end = chapterEntity.end,
+                title = chapterEntity.title,
+                available = chapterEntity.isCached,
+                id = chapterEntity.bookChapterId,
+                podcastEpisodeState = null,
+                index = chapterEntity.chapterIndex,
+                publishedAt = chapterEntity.publishedAt,
+                season = chapterEntity.season,
+                episode = chapterEntity.episode,
+                fileName = chapterEntity.fileName,
+              )
+            }.extendedToAudioEnd(files.sumOf { it.duration }),
         abstract = entity.detailedBook.abstract,
         publisher = entity.detailedBook.publisher,
         year = entity.detailedBook.year,
@@ -97,6 +105,7 @@ class CachedBookEntityDetailedConverter
           },
         progress = entity.progress?.let { mediaProgressEntityConverter.apply(it) },
       )
+    }
 
     private companion object {
       val authorsType = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)

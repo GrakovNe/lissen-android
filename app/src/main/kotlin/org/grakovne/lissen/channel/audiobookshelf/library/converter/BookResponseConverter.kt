@@ -10,6 +10,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.extendedToAudioEnd
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -63,6 +64,27 @@ class BookResponseConverter
           ?: emptyList()
       }
 
+      val files =
+        item
+          .media
+          .audioFiles
+          ?.sortedBy { it.index }
+          ?.map {
+            BookFile(
+              id = it.ino,
+              name =
+                it.metaTags
+                  ?.tagTitle
+                  ?: (it.metadata.filename.removeSuffix(it.metadata.ext)),
+              duration = it.duration ?: 0.0,
+              mimeType = it.mimeType,
+              size = it.metadata.size,
+            )
+          }
+          ?: emptyList()
+
+      val chapters = maybeChapters?.extendedToAudioEnd(files.sumOf { it.duration }) ?: filesAsChapters()
+
       return DetailedItem(
         id = item.id,
         title = item.media.metadata.title,
@@ -78,25 +100,8 @@ class BookResponseConverter
           item.media.metadata.narrators
             ?.joinToString(separator = ", "),
         genres = item.media.metadata.genres ?: emptyList(),
-        files =
-          item
-            .media
-            .audioFiles
-            ?.sortedBy { it.index }
-            ?.map {
-              BookFile(
-                id = it.ino,
-                name =
-                  it.metaTags
-                    ?.tagTitle
-                    ?: (it.metadata.filename.removeSuffix(it.metadata.ext)),
-                duration = it.duration ?: 0.0,
-                mimeType = it.mimeType,
-                size = it.metadata.size,
-              )
-            }
-            ?: emptyList(),
-        chapters = maybeChapters ?: filesAsChapters(),
+        files = files,
+        chapters = chapters,
         libraryId = item.libraryId,
         libraryType = LibraryType.LIBRARY,
         localProvided = false,
