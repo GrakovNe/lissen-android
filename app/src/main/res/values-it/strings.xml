@@ -25,7 +25,7 @@
     <string name="login_error_connection_error">Errore di connessione</string>
     <string name="show_downloaded_content_only">Solo scaricati</string>
     <string name="the_library_is_empty">La libreria è vuota</string>
-    <string name="the_offline_library_is_empty">Nessun libro ancora salvato</string>
+    <string name="the_offline_library_is_empty">Nessun libro salvato</string>
     <string name="audiobookshelf_server_is_required">È necessario il server Audiobookshelf</string>
     <string name="app_crach_toast">Ci scusiamo per il blocco dell\'applicazione\nI log sono stati inviati per l\'analisi</string>
     <string name="playback_speed_title">Velocità di riproduzione</string>
@@ -52,7 +52,7 @@
     <string name="timer_title">Timer di riposo</string>
     <string name="player_screen_timer_navigation">Timer</string>
     <string name="chapter_search_hint">Cerca in base al titolo del capitolo</string>
-    <string name="the_offline_podcasts_is_empty">Nessun podcast ancora salvato</string>
+    <string name="the_offline_podcasts_is_empty">Nessun podcast salvato</string>
     <string name="player_screen_downloads_navigation">Download</string>
     <string name="downloads_menu_download_book">Scarica libro</string>
     <string name="downloads_menu_download_podcast">Scarica podcast</string>
@@ -298,4 +298,5 @@
     <string name="sleep_timer_fade_disabled">Disabilitato</string>
     <string name="rewind_on_pause_disabled">Disabilitato</string>
     <string name="rewind_on_pause_title">Riavvolgi sulla pausa</string>
+    <string name="no_playlists_yet">Nessuna playlist presente</string>
 </resources>
