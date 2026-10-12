@@ -312,4 +312,5 @@
     <string name="sleep_timer_fade_disabled">Wyłączone</string>
     <string name="rewind_on_pause_title">Przewiń do tyłu po wznowieniu</string>
     <string name="rewind_on_pause_disabled">Wyłączone</string>
+    <string name="no_playlists_yet">Nie ma jeszcze playlist</string>
 </resources>
