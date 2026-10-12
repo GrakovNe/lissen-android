@@ -288,4 +288,5 @@
     <string name="player_settings_auto_skip">自动跳过</string>
     <string name="player_settings_intro_value">片头 %1$s</string>
     <string name="player_settings_outro_value">片尾 %1$s</string>
+    <string name="no_playlists_yet">暂无播放列表</string>
 </resources>
