@@ -56,6 +56,29 @@ class DetailedItemTest {
   }
 
   @Test
+  fun `same ignores the chapter provenance marker`() {
+    val network =
+      item().copy(
+        chapters = listOf(chapter("f-1")),
+        sourceChapters = emptyList(),
+      )
+    val cached = item().copy(chapters = listOf(chapter("f-1")))
+
+    assertTrue(network.same(cached))
+  }
+
+  private fun chapter(id: String) =
+    PlayingChapter(
+      available = true,
+      podcastEpisodeState = null,
+      duration = 100.0,
+      start = 0.0,
+      end = 100.0,
+      title = "01.mp3",
+      id = id,
+    )
+
+  @Test
   fun `same is false when a non-progress field differs`() {
     val a = item(title = "Title A")
     val b = item(title = "Title B")

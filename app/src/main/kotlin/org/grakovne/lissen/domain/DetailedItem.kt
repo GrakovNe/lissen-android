@@ -21,6 +21,9 @@ data class DetailedItem(
   val abstract: String?,
   val files: List<BookFile>,
   val chapters: List<PlayingChapter>,
+  // Provenance marker: empty means the server sent no chapters, so `chapters` were derived from files.
+  // Items persisted before the field existed report the layout instead; treat the marker as best-effort.
+  val sourceChapters: List<PlayingChapter> = chapters,
   val progress: MediaProgress?,
   val libraryId: String?,
   val libraryType: LibraryType? = null,
@@ -29,8 +32,11 @@ data class DetailedItem(
   val updatedAt: Long,
 ) : Serializable {
   companion object {
+    // sourceChapters is provenance, not layout: the cache converter rebuilds items without it,
+    // so comparing it would report the same book as different and rebuild the queue for nothing.
     fun DetailedItem.same(other: DetailedItem) =
-      this.copy(progress = null, libraryType = null, playlists = null) == other.copy(progress = null, libraryType = null, playlists = null)
+      this.copy(progress = null, libraryType = null, playlists = null, sourceChapters = emptyList()) ==
+        other.copy(progress = null, libraryType = null, playlists = null, sourceChapters = emptyList())
   }
 }
 
