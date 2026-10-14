@@ -161,6 +161,13 @@
     <string name="playing_item_details_duration">Duration</string>
     <string name="playing_item_details_year">Year</string>
     <string name="playing_item_details_series">Series</string>
+    <string name="playing_finished_title">Finished listening</string>
+    <string name="playing_finished_more_series">More from “%1$s”</string>
+    <string name="playing_finished_more_author">More by %1$s</string>
+    <string name="playing_finished_more_random">From your library</string>
+    <string name="playing_finished_see_all_series">See all in series</string>
+    <string name="playing_finished_see_all_author">See all by %1$s</string>
+    <string name="playing_finished_see_all_random">Browse library</string>
     <string name="color_scheme_black">Black</string>
     <string name="chapters_list_empty">The book has no chapters</string>
     <string name="episodes_list_empty">No podcast has no episodes</string>

@@ -66,6 +66,9 @@ class MediaRepository
     private val _playingBook = MutableStateFlow<DetailedItem?>(null)
     val playingBook: StateFlow<DetailedItem?> = _playingBook.asStateFlow()
 
+    private val _finishedBook = MutableStateFlow<DetailedItem?>(null)
+    val finishedBook: StateFlow<DetailedItem?> = _finishedBook.asStateFlow()
+
     private val _mediaPreparingError = MutableStateFlow(false)
     val mediaPreparingError: StateFlow<Boolean> = _mediaPreparingError.asStateFlow()
 
@@ -128,6 +131,7 @@ class MediaRepository
         }
 
         override fun onEnded() {
+          _finishedBook.value = _playingBook.value
           player.seekTo(0, 0)
           player.pause()
         }
@@ -249,7 +253,12 @@ class MediaRepository
 
       _isPlaying.value = false
       _playingBook.value = null
+      _finishedBook.value = null
       preferences.clearPlayingItem(bookId)
+    }
+
+    fun clearFinishedBook() {
+      _finishedBook.value = null
     }
 
     fun setTotalPosition(totalPosition: Double) {
@@ -462,6 +471,8 @@ class MediaRepository
     }
 
     private fun startPreparingPlayback(book: DetailedItem) {
+      _finishedBook.value = null
+
       val sameBook = _playingBook.value?.same(book) ?: false
       queueRebuildInFlight = false
 

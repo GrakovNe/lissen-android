@@ -14,12 +14,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
+import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.FinishedSuggestion
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.domain.selectFinishedSuggestion
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
@@ -39,8 +45,88 @@ class PlayerViewModel
     private val libraryPreferences: LibraryPreferences,
     private val autoSkipPreferences: AutoSkipPreferences,
     private val session: SessionPreferences,
+    private val mediaChannel: LissenMediaProvider,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
+
+    val finishedBook: StateFlow<DetailedItem?> = mediaRepository.finishedBook
+
+    private val _finishedSuggestion = MutableStateFlow<FinishedSuggestion?>(null)
+    val finishedSuggestion: StateFlow<FinishedSuggestion?> = _finishedSuggestion.asStateFlow()
+
+    fun loadFinishedSuggestion() {
+      val book = mediaRepository.finishedBook.value ?: return
+      val libraryId = book.libraryId ?: return
+
+      viewModelScope.launch {
+        val unlistenedBooks = fetchUnlistenedBooks(libraryId)
+        _finishedSuggestion.value =
+          unlistenedBooks.foldAsync(
+            onSuccess = { books -> selectFinishedSuggestion(book, fetchSeriesBooks(libraryId, book), books) },
+            onFailure = { null },
+          )
+      }
+    }
+
+    private suspend fun fetchSeriesBooks(
+      libraryId: String,
+      book: DetailedItem,
+    ): List<Book> =
+      book.series
+        .firstOrNull { it.name.isNotBlank() }
+        ?.id
+        ?.let { seriesId -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) }
+        ?.fold(onSuccess = { it }, onFailure = { emptyList() })
+        ?: emptyList()
+
+    private suspend fun fetchUnlistenedBooks(libraryId: String): OperationResult<List<Book>> {
+      val collected = mutableListOf<Book>()
+      var failure: OperationResult.Error<PagedItems<Book>>? = null
+
+      while (failure == null && collected.size < FINISHED_UNLISTENED_MAX_BOOKS) {
+        when (
+          val result =
+            mediaChannel.fetchBooks(
+              libraryId = libraryId,
+              pageSize = FINISHED_UNLISTENED_PAGE_SIZE,
+              pageNumber = collected.size / FINISHED_UNLISTENED_PAGE_SIZE,
+              extraFilter = UNLISTENED_FILTER,
+            )
+        ) {
+          is OperationResult.Success -> {
+            collected += result.data.items
+
+            when (result.data.items.isEmpty() || collected.size >= result.data.totalItems) {
+              true -> break
+              false -> Unit
+            }
+          }
+
+          is OperationResult.Error -> {
+            failure = result
+          }
+        }
+      }
+
+      return when (failure) {
+        null -> {
+          OperationResult.Success(collected)
+        }
+
+        else -> {
+          when (collected.isEmpty()) {
+            true -> OperationResult.Error(failure.code, failure.message)
+            false -> OperationResult.Success(collected)
+          }
+        }
+      }
+    }
+
+    fun dismissFinishedBook() {
+      Timber.d("User action: dismissFinishedBook")
+      _finishedSuggestion.value = null
+      mediaRepository.clearFinishedBook()
+    }
 
     val preferredLibraryType: StateFlow<LibraryType> =
       libraryPreferences.preferredLibraryTypeFlow
@@ -278,5 +364,8 @@ class PlayerViewModel
 
     companion object {
       private const val EMPTY_SEARCH = ""
+      private const val FINISHED_UNLISTENED_PAGE_SIZE = 100
+      private const val FINISHED_UNLISTENED_MAX_BOOKS = 2000
+      private val UNLISTENED_FILTER = "progress" to "not-finished"
     }
   }

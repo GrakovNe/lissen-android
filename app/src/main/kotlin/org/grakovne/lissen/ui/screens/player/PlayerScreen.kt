@@ -68,14 +68,17 @@ import coil3.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.ordering.ReorderPlanner
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.FinishedSuggestionSource
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
 import org.grakovne.lissen.ui.adaptive.isWideLayout
+import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
+import org.grakovne.lissen.ui.screens.player.composable.FinishedBookSuggestion
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
@@ -91,6 +94,7 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueue
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
+import org.grakovne.lissen.ui.screens.player.composable.seriesName
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -135,6 +139,8 @@ fun PlayerScreen(
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val searchRequested by playerViewModel.searchRequested.collectAsState()
   val preparingError by playerViewModel.preparingError.collectAsState()
+  val finishedBook by playerViewModel.finishedBook.collectAsState()
+  val finishedSuggestion by playerViewModel.finishedSuggestion.collectAsState()
 
   val playerContent = resolvePlayerContent(bookId, loadedBook, playbackReady)
   val playingBook = playerContent.book
@@ -166,6 +172,16 @@ fun PlayerScreen(
   val seekTime by playbackSettingsViewModel.seekTime.collectAsState()
 
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
+
+  val finishedEligible =
+    finishedBook
+      ?.takeIf { it.id == bookId }
+      ?.takeIf { (it.libraryType ?: preferredLibraryType) == LibraryType.LIBRARY }
+
+  LaunchedEffect(finishedEligible?.id) {
+    if (finishedEligible != null) playerViewModel.loadFinishedSuggestion()
+  }
+
   val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
   val autoSkip by remember(bookId) { playerViewModel.autoSkip(bookId) }.collectAsState(initial = AutoSkipConfiguration.disabled)
 
@@ -461,6 +477,30 @@ fun PlayerScreen(
       onDismissRequest = { settingsSelected = false },
       navController = navController,
     )
+  }
+
+  finishedEligible?.let { book ->
+    finishedSuggestion?.let { suggestion ->
+      FinishedBookSuggestion(
+        book = book,
+        suggestion = suggestion,
+        imageLoader = imageLoader,
+        coverModel = BookCoverKey(book.id),
+        onDismiss = playerViewModel::dismissFinishedBook,
+        onSeeAll = {
+          playerViewModel.dismissFinishedBook()
+          when (suggestion.source) {
+            FinishedSuggestionSource.SERIES -> navController.showLinkedSearch(book.seriesName())
+            FinishedSuggestionSource.AUTHOR -> navController.showLinkedSearch(book.author.orEmpty())
+            FinishedSuggestionSource.RANDOM -> navController.showLibrary()
+          }
+        },
+        onCandidateClick = { candidate ->
+          playerViewModel.dismissFinishedBook()
+          navController.showPlayer(candidate.id, candidate.title, candidate.subtitle, startInstantly = true)
+        },
+      )
+    }
   }
 }
 
