@@ -162,5 +162,4 @@ class SelectFinishedSuggestionTest {
 
     assertEquals(first?.candidates?.map { it.id }, second?.candidates?.map { it.id })
   }
-
 }

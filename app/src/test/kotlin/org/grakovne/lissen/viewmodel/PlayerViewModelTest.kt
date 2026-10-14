@@ -88,7 +88,8 @@ class PlayerViewModelTest {
     every { libraryPreferences.preferredLibraryTypeFlow } returns preferredLibraryType
     every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.LIBRARY
 
-    viewModel = PlayerViewModel(mediaRepository, preferences, libraryPreferences, autoSkipPreferences, mockk(relaxed = true), mockk(relaxed = true))
+    viewModel =
+      PlayerViewModel(mediaRepository, preferences, libraryPreferences, autoSkipPreferences, mockk(relaxed = true), mockk(relaxed = true))
   }
 
   @AfterEach
