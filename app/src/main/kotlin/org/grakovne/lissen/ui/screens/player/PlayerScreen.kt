@@ -173,10 +173,7 @@ fun PlayerScreen(
 
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
 
-  val finishedEligible =
-    finishedBook
-      ?.takeIf { it.id == bookId }
-      ?.takeIf { (it.libraryType ?: preferredLibraryType) == LibraryType.LIBRARY }
+  val finishedEligible = finishedBook?.takeIf { it.id == bookId }
 
   LaunchedEffect(finishedEligible?.id) {
     if (finishedEligible != null) playerViewModel.loadFinishedSuggestion()

@@ -125,8 +125,8 @@ private fun FinishedCandidateCarousel(
   onCandidateClick: (Book) -> Unit,
 ) {
   val itemWidth = recentBookItemWidth()
-  val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-  val carouselWidth = itemWidth * suggestion.candidates.size + 16.dp * (suggestion.candidates.size - 1) + 8.dp
+  val screenWidth = LocalConfiguration.current.screenWidthDp.dp - 48.dp
+  val carouselWidth = itemWidth * suggestion.candidates.size + 16.dp * (suggestion.candidates.size - 1)
   val centered = suggestion.candidates.size < MAX_FINISHED_CANDIDATES || carouselWidth <= screenWidth
 
   Row(
@@ -134,7 +134,7 @@ private fun FinishedCandidateCarousel(
       Modifier
         .fillMaxWidth()
         .horizontalScroll(rememberScrollState())
-        .padding(horizontal = 4.dp),
+        .padding(horizontal = 24.dp),
     horizontalArrangement =
       when (centered) {
         true -> Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)

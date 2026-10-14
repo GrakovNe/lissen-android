@@ -148,17 +148,22 @@ private suspend fun loadPreview(
   val libraryId = libraries.first().id
   val books = fetchAllBooks(media, libraryId).sortedBy { it.title }
 
-  val frai = books.filter { it.author == "Макс Фрай" }
+  // Real "Лабиринты Эхо" cycle by Макс Фрай, present in the library
+  val echoCycle =
+    listOf("Тень Гугимагона", "Белые камни Харумбы", "Магахонские лисы", "Волонтеры вечности")
+      .map { title -> books.first { it.title == title } }
+
+  // Standalone Стивен Кинг novel with other King books as author candidates
+  val king = books.filter { it.author == "Стивен Кинг" }
 
   return when (case) {
-    1 -> seriesPreview(books, "Князь света", "Хроники Амбера", frai.take(3))
-    2 -> seriesPreview(books, "Князь света", "Хроники Амбера", frai.take(2))
-    3 -> seriesPreview(books, "Князь света", "Хроники Амбера", frai.take(1))
-    4 -> authorPreview(frai.first(), frai.drop(1).take(3))
-    5 -> authorPreview(frai.first(), frai.drop(1).take(2))
-    6 -> authorPreview(frai.first(), frai.drop(1).take(1))
-    7 -> randomPreview(books.first { it.author == "Фёдор Достоевский" }, books.shuffled().take(3))
-    else -> PreviewState(book = toDetailedItem(books.first()), suggestion = null)
+    1 -> seriesPreview(echoCycle.first(), ECHO_SERIES, echoCycle.drop(1).take(3))
+    2 -> seriesPreview(echoCycle.first(), ECHO_SERIES, echoCycle.drop(1).take(2))
+    3 -> seriesPreview(echoCycle.first(), ECHO_SERIES, echoCycle.drop(1).take(1))
+    4 -> authorPreview(books.first { it.title == "Холли" }, king.filter { it.title != "Холли" }.take(3))
+    5 -> authorPreview(books.first { it.title == "Холли" }, king.filter { it.title != "Холли" }.take(2))
+    6 -> authorPreview(books.first { it.title == "Холли" }, king.filter { it.title != "Холли" }.take(1))
+    else -> randomPreview(books.first { it.author == "Фёдор Достоевский" }, books.shuffled().take(3))
   }
 }
 
@@ -185,17 +190,15 @@ private suspend fun fetchAllBooks(
   return collected
 }
 
+private const val ECHO_SERIES = "Лабиринты Эхо"
+
 private fun seriesPreview(
-  books: List<Book>,
-  finishedTitle: String,
+  finished: Book,
   seriesName: String,
   candidates: List<Book>,
 ): PreviewState =
   PreviewState(
-    book =
-      toDetailedItem(
-        books.first { it.title == finishedTitle },
-      ).copy(series = listOf(BookSeries(serialNumber = "1", name = seriesName))),
+    book = toDetailedItem(finished).copy(series = listOf(BookSeries(serialNumber = "1", name = seriesName))),
     suggestion = FinishedSuggestion(FinishedSuggestionSource.SERIES, candidates),
   )
 

@@ -57,6 +57,12 @@ class PlayerViewModel
     fun loadFinishedSuggestion() {
       val book = mediaRepository.finishedBook.value ?: return
       val libraryId = book.libraryId ?: return
+      val libraryType = book.libraryType ?: libraryPreferences.getPreferredLibraryType()
+
+      if (libraryType != LibraryType.LIBRARY) {
+        _finishedSuggestion.value = null
+        return
+      }
 
       viewModelScope.launch {
         val unlistenedBooks = fetchUnlistenedBooks(libraryId)
