@@ -1,7 +1,5 @@
 package org.grakovne.lissen.domain
 
-import kotlin.random.Random
-
 const val MAX_FINISHED_CANDIDATES = 3
 
 enum class FinishedSuggestionSource {
@@ -20,7 +18,6 @@ fun selectFinishedSuggestion(
   seriesBooks: List<Book>,
   authorBooks: List<Book>,
   randomBooks: List<Book>,
-  random: Random = Random.Default,
 ): FinishedSuggestion? {
   val seriesCandidates =
     when (finished.series.any { it.name.isNotBlank() }) {
@@ -55,7 +52,6 @@ fun selectFinishedSuggestion(
   return randomBooks
     .filter { it.id != finished.id }
     .distinctBy { it.id }
-    .shuffled(random)
     .take(MAX_FINISHED_CANDIDATES)
     .takeIf { it.isNotEmpty() }
     ?.let { FinishedSuggestion(FinishedSuggestionSource.RANDOM, it) }

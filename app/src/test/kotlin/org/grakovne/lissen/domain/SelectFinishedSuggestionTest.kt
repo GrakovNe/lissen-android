@@ -2,9 +2,7 @@ package org.grakovne.lissen.domain
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlin.random.Random
 
 class SelectFinishedSuggestionTest {
   private fun book(
@@ -111,29 +109,55 @@ class SelectFinishedSuggestionTest {
   fun `no series and no author books fall through to random`() {
     val randomBooks = listOf(book("b", author = "Author Two"), book("c", author = "Author Three"), book("d", author = "Author Four"))
 
-    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks, random = Random(42))
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks)
 
     assertEquals(FinishedSuggestionSource.RANDOM, suggestion?.source)
     assertEquals(3, suggestion?.candidates?.size)
   }
 
   @Test
-  fun `random picks three books from the pool`() {
+  fun `random takes the first books of the pool in order`() {
     val randomBooks = (1..10).map { book("b$it", author = "Author Two") }
 
-    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks, random = Random(7))
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks)
 
-    assertEquals(3, suggestion?.candidates?.size)
-    assertTrue(suggestion?.candidates?.map { it.id }?.all { id -> randomBooks.any { it.id == id } } ?: false)
+    assertEquals(listOf("b1", "b2", "b3"), suggestion?.candidates?.map { it.id })
   }
 
   @Test
   fun `finished book is excluded from random`() {
     val randomBooks = listOf(book("finished"), book("b", author = "Author Two"))
 
-    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks, random = Random(1))
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks)
 
     assertEquals(listOf("b"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `duplicates are removed from author candidates`() {
+    val authorBooks = listOf(book("b"), book("b"), book("c"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), authorBooks, emptyList())
+
+    assertEquals(listOf("b", "c"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `duplicates are removed from random candidates`() {
+    val randomBooks = listOf(book("b"), book("b"), book("c"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks)
+
+    assertEquals(listOf("b", "c"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `duplicates are removed from series candidates`() {
+    val seriesBooks = listOf(book("finished"), book("b"), book("b"), book("c"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, emptyList(), emptyList())
+
+    assertEquals(listOf("b", "c"), suggestion?.candidates?.map { it.id })
   }
 
   @Test
@@ -158,15 +182,5 @@ class SelectFinishedSuggestionTest {
     val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, authorBooks, emptyList())
 
     assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
-  }
-
-  @Test
-  fun `same seed produces the same random selection`() {
-    val randomBooks = (1..10).map { book("b$it", author = "Author Two") }
-
-    val first = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks, random = Random(99))
-    val second = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks, random = Random(99))
-
-    assertEquals(first?.candidates?.map { it.id }, second?.candidates?.map { it.id })
   }
 }
