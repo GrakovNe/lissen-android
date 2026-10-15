@@ -18,19 +18,18 @@ data class FinishedSuggestion(
 fun selectFinishedSuggestion(
   finished: DetailedItem,
   seriesBooks: List<Book>,
-  unlistenedBooks: List<Book>,
+  authorBooks: List<Book>,
+  randomBooks: List<Book>,
   random: Random = Random.Default,
 ): FinishedSuggestion? {
-  val unlistened = unlistenedBooks.filter { it.id != finished.id }.distinctBy { it.id }
-  val unlistenedIds = unlistened.map { it.id }.toSet()
-
   val seriesCandidates =
     when (finished.series.any { it.name.isNotBlank() }) {
       true -> {
+        // seriesBooks come sorted by series sequence from the server
         seriesBooks
           .dropWhile { it.id != finished.id }
           .drop(1)
-          .filter { it.id in unlistenedIds }
+          .filter { it.id != finished.id }
           .distinctBy { it.id }
           .take(MAX_FINISHED_CANDIDATES)
       }
@@ -45,17 +44,18 @@ fun selectFinishedSuggestion(
   }
 
   val authorCandidates =
-    finished.author
-      ?.takeIf { it.isNotBlank() }
-      ?.let { author -> unlistened.filter { it.author == author } }
-      ?.take(MAX_FINISHED_CANDIDATES)
-      .orEmpty()
+    authorBooks
+      .filter { it.id != finished.id }
+      .distinctBy { it.id }
+      .take(MAX_FINISHED_CANDIDATES)
 
   if (authorCandidates.isNotEmpty()) {
     return FinishedSuggestion(FinishedSuggestionSource.AUTHOR, authorCandidates)
   }
 
-  return unlistened
+  return randomBooks
+    .filter { it.id != finished.id }
+    .distinctBy { it.id }
     .shuffled(random)
     .take(MAX_FINISHED_CANDIDATES)
     .takeIf { it.isNotEmpty() }

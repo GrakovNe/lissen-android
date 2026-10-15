@@ -53,15 +53,38 @@ class FinishedSuggestionAcceptanceTest {
   }
 
   @Test
-  fun unlistenedFilterSucceedsOnRealServer() {
+  fun notStartedFilterSucceedsOnRealServer() {
     runBlocking {
       val page =
         mediaProvider
-          .fetchBooks(libraryId = libraryId, pageSize = 100, pageNumber = 0, extraFilter = "progress" to "not-finished")
-          .fold(onSuccess = { it }, onFailure = { error("unlistened filter failed") })
+          .fetchBooks(libraryId = libraryId, pageSize = 100, pageNumber = 0, extraFilter = "progress" to "not-started")
+          .fold(onSuccess = { it }, onFailure = { error("not-started filter failed") })
 
-      assertTrue(page.items.isNotEmpty())
-      assertTrue(books.map { it.id }.toSet().containsAll(page.items.map { it.id }))
+      val notFinished =
+        mediaProvider
+          .fetchBooks(libraryId = libraryId, pageSize = 100, pageNumber = 0, extraFilter = "progress" to "not-finished")
+          .fold(onSuccess = { it.items.map { book -> book.id }.toSet() }, onFailure = { error("not-finished filter failed") })
+
+      assertTrue(notFinished.containsAll(page.items.map { it.id }))
+    }
+  }
+
+  @Test
+  fun authorFilterSucceedsOnRealServer() {
+    runBlocking {
+      val first =
+        mediaProvider
+          .fetchBook(books.first().id)
+          .fold(onSuccess = { it }, onFailure = { error("book fetch failed") })
+
+      val authorId = first.authors.firstOrNull()?.id ?: error("book has no author id")
+
+      val page =
+        mediaProvider
+          .fetchBooks(libraryId = libraryId, pageSize = 100, pageNumber = 0, extraFilter = "authors" to authorId)
+          .fold(onSuccess = { it }, onFailure = { error("author filter failed") })
+
+      assertTrue(page.items.any { it.id == first.id })
     }
   }
 
@@ -71,7 +94,8 @@ class FinishedSuggestionAcceptanceTest {
     val following = books.filter { it.id != finished.id }.take(3)
     val seriesBooks = listOf(finished) + following
 
-    val suggestion = selectFinishedSuggestion(finishedItem(finished, seriesName = "Acceptance Series"), seriesBooks, unlistened(finished))
+    val suggestion =
+      selectFinishedSuggestion(finishedItem(finished, seriesName = "Acceptance Series"), seriesBooks, emptyList(), emptyList())
 
     assertEquals(FinishedSuggestionSource.SERIES, suggestion?.source)
     assertEquals(following.map { it.id }, suggestion?.candidates?.map { it.id })
@@ -83,7 +107,12 @@ class FinishedSuggestionAcceptanceTest {
     val following = books.filter { it.id != finished.id }.take(2)
 
     val suggestion =
-      selectFinishedSuggestion(finishedItem(finished, seriesName = "Acceptance Series"), listOf(finished) + following, unlistened(finished))
+      selectFinishedSuggestion(
+        finishedItem(finished, seriesName = "Acceptance Series"),
+        listOf(finished) + following,
+        emptyList(),
+        emptyList(),
+      )
 
     assertEquals(FinishedSuggestionSource.SERIES, suggestion?.source)
     assertEquals(following.map { it.id }, suggestion?.candidates?.map { it.id })
@@ -95,7 +124,12 @@ class FinishedSuggestionAcceptanceTest {
     val following = books.filter { it.id != finished.id }.take(1)
 
     val suggestion =
-      selectFinishedSuggestion(finishedItem(finished, seriesName = "Acceptance Series"), listOf(finished) + following, unlistened(finished))
+      selectFinishedSuggestion(
+        finishedItem(finished, seriesName = "Acceptance Series"),
+        listOf(finished) + following,
+        emptyList(),
+        emptyList(),
+      )
 
     assertEquals(FinishedSuggestionSource.SERIES, suggestion?.source)
     assertEquals(following.map { it.id }, suggestion?.candidates?.map { it.id })
@@ -106,14 +140,14 @@ class FinishedSuggestionAcceptanceTest {
     val author = "Acceptance Author"
     val authored = books.take(6).map { it.copy(author = author) }
     val finished = authored.first()
-    val listenedSeriesSiblings = authored.subList(1, 3)
     val authorCandidates = authored.subList(3, 6)
 
     val suggestion =
       selectFinishedSuggestion(
         finishedItem(finished, seriesName = "Acceptance Series"),
-        seriesBooks = listOf(finished) + listenedSeriesSiblings,
-        unlistenedBooks = authorCandidates + books.drop(6),
+        seriesBooks = listOf(finished),
+        authorBooks = authorCandidates,
+        randomBooks = books.drop(6),
       )
 
     assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
@@ -126,7 +160,7 @@ class FinishedSuggestionAcceptanceTest {
     val authored = books.take(3).map { it.copy(author = author) }
     val finished = authored.first()
 
-    val suggestion = selectFinishedSuggestion(finishedItem(finished), emptyList(), authored.drop(1))
+    val suggestion = selectFinishedSuggestion(finishedItem(finished), emptyList(), authored.drop(1), emptyList())
 
     assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
     assertEquals(authored.drop(1).map { it.id }, suggestion?.candidates?.map { it.id })
@@ -138,7 +172,7 @@ class FinishedSuggestionAcceptanceTest {
     val authored = books.take(2).map { it.copy(author = author) }
     val finished = authored.first()
 
-    val suggestion = selectFinishedSuggestion(finishedItem(finished), emptyList(), authored.drop(1))
+    val suggestion = selectFinishedSuggestion(finishedItem(finished), emptyList(), authored.drop(1), emptyList())
 
     assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
     assertEquals(authored.drop(1).map { it.id }, suggestion?.candidates?.map { it.id })
@@ -149,7 +183,8 @@ class FinishedSuggestionAcceptanceTest {
     val finished = books.first().copy(author = "Unique Acceptance Author")
     val pool = books.filter { it.id != finished.id }.map { it.copy(author = "Someone Else") }
 
-    val suggestion = selectFinishedSuggestion(finishedItem(finished), emptyList(), pool, random = kotlin.random.Random(42))
+    val suggestion =
+      selectFinishedSuggestion(finishedItem(finished), emptyList(), emptyList(), pool, random = kotlin.random.Random(42))
 
     assertEquals(FinishedSuggestionSource.RANDOM, suggestion?.source)
     assertEquals(3, suggestion?.candidates?.size)
@@ -160,7 +195,7 @@ class FinishedSuggestionAcceptanceTest {
   fun noSuggestionWhenLibraryHasOnlyTheFinishedBook() {
     val finished = books.first()
 
-    val suggestion = selectFinishedSuggestion(finishedItem(finished), emptyList(), listOf(finished))
+    val suggestion = selectFinishedSuggestion(finishedItem(finished), emptyList(), emptyList(), listOf(finished))
 
     assertNull(suggestion)
   }
@@ -184,8 +219,6 @@ class FinishedSuggestionAcceptanceTest {
 
     return collected
   }
-
-  private fun unlistened(finished: Book): List<Book> = books.filter { it.id != finished.id }
 
   private fun finishedItem(
     book: Book,

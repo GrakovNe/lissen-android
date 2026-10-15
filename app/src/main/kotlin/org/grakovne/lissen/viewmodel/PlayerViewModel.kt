@@ -22,7 +22,6 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.FinishedSuggestion
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.domain.selectFinishedSuggestion
@@ -65,38 +64,58 @@ class PlayerViewModel
       }
 
       viewModelScope.launch {
-        val unlistenedBooks = fetchUnlistenedBooks(libraryId)
-        _finishedSuggestion.value =
-          unlistenedBooks.foldAsync(
-            onSuccess = { books -> selectFinishedSuggestion(book, fetchSeriesBooks(libraryId, book), books) },
-            onFailure = { null },
-          )
+        _finishedSuggestion.value = resolveFinishedSuggestion(libraryId, book)
       }
     }
 
-    private suspend fun fetchSeriesBooks(
+    private suspend fun resolveFinishedSuggestion(
       libraryId: String,
       book: DetailedItem,
-    ): List<Book> =
+    ): FinishedSuggestion? {
       book.series
         .firstOrNull { it.name.isNotBlank() }
         ?.id
-        ?.let { seriesId -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) }
-        ?.fold(onSuccess = { it }, onFailure = { emptyList() })
-        ?: emptyList()
+        ?.let { seriesId ->
+          val seriesBooks =
+            mediaChannel
+              .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
+              .fold(onSuccess = { it }, onFailure = { emptyList() })
 
-    private suspend fun fetchUnlistenedBooks(libraryId: String): OperationResult<List<Book>> {
+          selectFinishedSuggestion(book, seriesBooks, emptyList(), emptyList())?.let { return it }
+        }
+
+      book.authors
+        .firstOrNull { it.id.isNotBlank() }
+        ?.let { author ->
+          val authorBooks =
+            mediaChannel
+              .fetchBooks(
+                libraryId = libraryId,
+                pageSize = FINISHED_SUGGESTION_PAGE_SIZE,
+                pageNumber = 0,
+                extraFilter = AUTHOR_FILTER to author.id,
+              ).fold(onSuccess = { it.items }, onFailure = { emptyList() })
+
+          selectFinishedSuggestion(book, emptyList(), authorBooks, emptyList())?.let { return it }
+        }
+
+      val randomBooks = fetchNotStartedBooks(libraryId)
+
+      return selectFinishedSuggestion(book, emptyList(), emptyList(), randomBooks)
+    }
+
+    private suspend fun fetchNotStartedBooks(libraryId: String): List<Book> {
       val collected = mutableListOf<Book>()
-      var failure: OperationResult.Error<PagedItems<Book>>? = null
+      var pageNumber = 0
 
-      while (failure == null && collected.size < FINISHED_UNLISTENED_MAX_BOOKS) {
+      while (collected.size < FINISHED_RANDOM_BOOKS_POOL) {
         when (
           val result =
             mediaChannel.fetchBooks(
               libraryId = libraryId,
-              pageSize = FINISHED_UNLISTENED_PAGE_SIZE,
-              pageNumber = collected.size / FINISHED_UNLISTENED_PAGE_SIZE,
-              extraFilter = UNLISTENED_FILTER,
+              pageSize = FINISHED_SUGGESTION_PAGE_SIZE,
+              pageNumber = pageNumber,
+              extraFilter = NOT_STARTED_FILTER,
             )
         ) {
           is OperationResult.Success -> {
@@ -109,23 +128,14 @@ class PlayerViewModel
           }
 
           is OperationResult.Error -> {
-            failure = result
+            break
           }
         }
+
+        pageNumber += 1
       }
 
-      return when (failure) {
-        null -> {
-          OperationResult.Success(collected)
-        }
-
-        else -> {
-          when (collected.isEmpty()) {
-            true -> OperationResult.Error(failure.code, failure.message)
-            false -> OperationResult.Success(collected)
-          }
-        }
-      }
+      return collected
     }
 
     fun dismissFinishedBook() {
@@ -370,8 +380,9 @@ class PlayerViewModel
 
     companion object {
       private const val EMPTY_SEARCH = ""
-      private const val FINISHED_UNLISTENED_PAGE_SIZE = 100
-      private const val FINISHED_UNLISTENED_MAX_BOOKS = 2000
-      private val UNLISTENED_FILTER = "progress" to "not-finished"
+      private const val FINISHED_SUGGESTION_PAGE_SIZE = 100
+      private const val FINISHED_RANDOM_BOOKS_POOL = 200
+      private const val AUTHOR_FILTER = "authors"
+      private val NOT_STARTED_FILTER = "progress" to "not-started"
     }
   }
