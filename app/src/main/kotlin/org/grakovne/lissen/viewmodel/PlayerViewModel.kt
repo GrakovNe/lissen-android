@@ -14,17 +14,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
-import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.FinishedSuggestion
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.domain.selectFinishedSuggestion
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
@@ -44,105 +39,8 @@ class PlayerViewModel
     private val libraryPreferences: LibraryPreferences,
     private val autoSkipPreferences: AutoSkipPreferences,
     private val session: SessionPreferences,
-    private val mediaChannel: LissenMediaProvider,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
-
-    val finishedBook: StateFlow<DetailedItem?> = mediaRepository.finishedBook
-
-    private val _finishedSuggestion = MutableStateFlow<FinishedSuggestion?>(null)
-    val finishedSuggestion: StateFlow<FinishedSuggestion?> = _finishedSuggestion.asStateFlow()
-
-    fun loadFinishedSuggestion() {
-      val book = mediaRepository.finishedBook.value ?: return
-      val libraryId = book.libraryId ?: return
-      val libraryType = book.libraryType ?: libraryPreferences.getPreferredLibraryType()
-
-      if (libraryType != LibraryType.LIBRARY) {
-        _finishedSuggestion.value = null
-        return
-      }
-
-      viewModelScope.launch {
-        _finishedSuggestion.value = resolveFinishedSuggestion(libraryId, book)
-      }
-    }
-
-    private suspend fun resolveFinishedSuggestion(
-      libraryId: String,
-      book: DetailedItem,
-    ): FinishedSuggestion? {
-      book.series
-        .firstOrNull { it.name.isNotBlank() }
-        ?.id
-        ?.let { seriesId ->
-          val seriesBooks =
-            mediaChannel
-              .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
-              .fold(onSuccess = { it }, onFailure = { emptyList() })
-
-          selectFinishedSuggestion(book, seriesBooks, emptyList(), emptyList())?.let { return it }
-        }
-
-      book.authors
-        .firstOrNull { it.id.isNotBlank() }
-        ?.let { author ->
-          val authorBooks =
-            mediaChannel
-              .fetchBooks(
-                libraryId = libraryId,
-                pageSize = FINISHED_SUGGESTION_PAGE_SIZE,
-                pageNumber = 0,
-                extraFilter = AUTHOR_FILTER to author.id,
-              ).fold(onSuccess = { it.items }, onFailure = { emptyList() })
-
-          selectFinishedSuggestion(book, emptyList(), authorBooks, emptyList())?.let { return it }
-        }
-
-      val randomBooks = fetchNotStartedBooks(libraryId)
-
-      return selectFinishedSuggestion(book, emptyList(), emptyList(), randomBooks)
-    }
-
-    private suspend fun fetchNotStartedBooks(libraryId: String): List<Book> {
-      val collected = mutableListOf<Book>()
-      var pageNumber = 0
-
-      while (collected.size < FINISHED_RANDOM_BOOKS_POOL) {
-        when (
-          val result =
-            mediaChannel.fetchBooks(
-              libraryId = libraryId,
-              pageSize = FINISHED_SUGGESTION_PAGE_SIZE,
-              pageNumber = pageNumber,
-              extraFilter = NOT_STARTED_FILTER,
-            )
-        ) {
-          is OperationResult.Success -> {
-            collected += result.data.items
-
-            when (result.data.items.isEmpty() || collected.size >= result.data.totalItems) {
-              true -> break
-              false -> Unit
-            }
-          }
-
-          is OperationResult.Error -> {
-            break
-          }
-        }
-
-        pageNumber += 1
-      }
-
-      return collected
-    }
-
-    fun dismissFinishedBook() {
-      Timber.d("User action: dismissFinishedBook")
-      _finishedSuggestion.value = null
-      mediaRepository.clearFinishedBook()
-    }
 
     val preferredLibraryType: StateFlow<LibraryType> =
       libraryPreferences.preferredLibraryTypeFlow
@@ -380,9 +278,5 @@ class PlayerViewModel
 
     companion object {
       private const val EMPTY_SEARCH = ""
-      private const val FINISHED_SUGGESTION_PAGE_SIZE = 100
-      private const val FINISHED_RANDOM_BOOKS_POOL = 200
-      private const val AUTHOR_FILTER = "authors"
-      private val NOT_STARTED_FILTER = "progress" to "not-started"
     }
   }

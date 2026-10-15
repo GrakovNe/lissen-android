@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -113,6 +114,38 @@ class FinishedSuggestionE2ETest {
     waitUntilGone(hasTestTag("finishedSeeAll"))
     composeRule.onNodeWithTag("playerScreen").assertIsDisplayed()
     assertTrue(mediaRepository.finishedBook.value == null)
+  }
+
+  @Test
+  fun finishedBookWhileInBackgroundShowsSuggestionWhenAppOpens() {
+    composeRule.loginToLibrary()
+    composeRule.waitUntilBookItemsExist()
+
+    composeRule
+      .onNodeWithTag("libraryGrid")
+      .performScrollToNode(hasText(COPPER_BEECHES, substring = true))
+
+    composeRule.onNodeWithText(COPPER_BEECHES, substring = true).performClick()
+
+    composeRule.waitUntilAtLeastOneExists(hasTestTag("playerScreen"), TIMEOUT_MS)
+    composeRule.waitUntil(timeoutMillis = TIMEOUT_MS) { mediaRepository.isPlaybackReady.value }
+
+    val finished = mediaRepository.playingBook.value
+    assertNotNull(finished)
+
+    composeRule.runOnUiThread {
+      mediaRepository.setTotalPosition(finished!!.chapters.sumOf { it.duration } - NEAR_END_SECONDS)
+      mediaRepository.togglePlayPause()
+    }
+
+    composeRule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+
+    composeRule.waitUntil(timeoutMillis = MODAL_TIMEOUT_MS) { mediaRepository.finishedBook.value != null }
+
+    composeRule.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+
+    composeRule.waitUntilAtLeastOneExists(hasTestTag("finishedSeeAll"), TIMEOUT_MS)
+    composeRule.onNodeWithText("FINISHED LISTENING").assertIsDisplayed()
   }
 
   private fun SemanticsNode.firstText(): String {

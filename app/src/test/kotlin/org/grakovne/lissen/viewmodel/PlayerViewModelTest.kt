@@ -22,16 +22,12 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryOrderingDirection
-import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.BookAuthor
 import org.grakovne.lissen.domain.BookChapterState
-import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
-import org.grakovne.lissen.domain.FinishedSuggestionSource
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlayingChapter
@@ -67,13 +63,11 @@ class PlayerViewModelTest {
   private val timerOption = MutableStateFlow<TimerOption?>(null)
   private val timerRemaining = MutableStateFlow<Long?>(null)
   private val preferredLibraryType = MutableStateFlow(LibraryType.LIBRARY)
-  private val finishedBook = MutableStateFlow<DetailedItem?>(null)
 
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
   private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
   private val autoSkipPreferences = mockk<AutoSkipPreferences>(relaxed = true)
-  private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private lateinit var viewModel: PlayerViewModel
 
   @BeforeEach
@@ -91,7 +85,6 @@ class PlayerViewModelTest {
     every { mediaRepository.mediaPreparingError } returns mediaPreparingError
     every { mediaRepository.isPlaying } returns isPlaying
     every { mediaRepository.bookmarks } returns bookmarks
-    every { mediaRepository.finishedBook } returns finishedBook
     every { mediaRepository.timerOption } returns timerOption
     every { mediaRepository.timerRemaining } returns timerRemaining
 
@@ -100,7 +93,7 @@ class PlayerViewModelTest {
     every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.LIBRARY
 
     viewModel =
-      PlayerViewModel(mediaRepository, preferences, libraryPreferences, autoSkipPreferences, mockk(relaxed = true), mediaChannel)
+      PlayerViewModel(mediaRepository, preferences, libraryPreferences, autoSkipPreferences, mockk(relaxed = true))
   }
 
   @AfterEach
@@ -346,97 +339,6 @@ class PlayerViewModelTest {
 
       verify(exactly = 0) { mediaRepository.setChapter(any()) }
     }
-  }
-
-  @Nested
-  inner class FinishedSuggestion {
-    @Test
-    fun `loadFinishedSuggestion suggests nothing for a podcast episode`() {
-      finishedBook.value = detailedItem(id = "episode-1", libraryType = LibraryType.PODCAST)
-
-      viewModel.loadFinishedSuggestion()
-
-      assertEquals(null, viewModel.finishedSuggestion.value)
-      coVerify(exactly = 0) { mediaChannel.fetchBooks(any(), any(), any(), any(), any()) }
-      coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any()) }
-    }
-
-    @Test
-    fun `loadFinishedSuggestion suggests nothing when the preferred library is a podcast`() {
-      every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.PODCAST
-      finishedBook.value = detailedItem(id = "episode-1", libraryType = null)
-
-      viewModel.loadFinishedSuggestion()
-
-      assertEquals(null, viewModel.finishedSuggestion.value)
-      coVerify(exactly = 0) { mediaChannel.fetchBooks(any(), any(), any(), any(), any()) }
-    }
-
-    @Test
-    fun `loadFinishedSuggestion suggests next series books without fetching the library`() {
-      finishedBook.value =
-        detailedItem(
-          id = "book-1",
-          libraryType = LibraryType.LIBRARY,
-          series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1")),
-        )
-      coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any()) } returns
-        OperationResult.Success(listOf(book("book-1"), book("book-2"), book("book-3")))
-
-      viewModel.loadFinishedSuggestion()
-
-      val suggestion = viewModel.finishedSuggestion.value
-      assertEquals(FinishedSuggestionSource.SERIES, suggestion?.source)
-      assertEquals(listOf("book-2", "book-3"), suggestion?.candidates?.map { it.id })
-      coVerify(exactly = 0) { mediaChannel.fetchBooks(any(), any(), any(), any(), any()) }
-    }
-
-    @Test
-    fun `loadFinishedSuggestion suggests author books when the series has no next books`() {
-      finishedBook.value =
-        detailedItem(
-          id = "book-1",
-          libraryType = LibraryType.LIBRARY,
-          series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1")),
-          authors = listOf(BookAuthor(id = "author-1", name = "Author")),
-        )
-      coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any()) } returns
-        OperationResult.Success(listOf(book("book-1")))
-      coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "authors" to "author-1", any()) } returns
-        OperationResult.Success(PagedItems(items = listOf(book("book-2")), currentPage = 0, totalItems = 1))
-
-      viewModel.loadFinishedSuggestion()
-
-      val suggestion = viewModel.finishedSuggestion.value
-      assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
-      assertEquals(listOf("book-2"), suggestion?.candidates?.map { it.id })
-    }
-
-    @Test
-    fun `loadFinishedSuggestion suggests not started books when there is no series and no author`() {
-      finishedBook.value = detailedItem(id = "book-1", libraryType = LibraryType.LIBRARY)
-      coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) } returns
-        OperationResult.Success(PagedItems(items = listOf(book("book-2")), currentPage = 0, totalItems = 1))
-
-      viewModel.loadFinishedSuggestion()
-
-      val suggestion = viewModel.finishedSuggestion.value
-      assertEquals(FinishedSuggestionSource.RANDOM, suggestion?.source)
-      assertEquals(listOf("book-2"), suggestion?.candidates?.map { it.id })
-    }
-
-    @Test
-    fun `loadFinishedSuggestion suggests nothing when the not started pool fails`() {
-      finishedBook.value = detailedItem(id = "book-1", libraryType = LibraryType.LIBRARY)
-      coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) } returns
-        OperationResult.Error(code = OperationError.NetworkError, message = "boom")
-
-      viewModel.loadFinishedSuggestion()
-
-      assertEquals(null, viewModel.finishedSuggestion.value)
-    }
-
-    private fun book(id: String) = Book(id = id, subtitle = null, series = null, title = "Candidate $id", author = "Another Author")
   }
 
   @Nested
@@ -755,17 +657,15 @@ class PlayerViewModelTest {
     id: String = "book-1",
     libraryType: LibraryType? = null,
     localProvided: Boolean = false,
-    series: List<BookSeries> = emptyList(),
-    authors: List<BookAuthor> = emptyList(),
   ) = DetailedItem(
     id = id,
     title = "Test Book",
     subtitle = null,
     author = "Author",
-    authors = authors,
+    authors = emptyList(),
     narrator = null,
     publisher = null,
-    series = series,
+    series = emptyList(),
     year = null,
     abstract = null,
     files = emptyList(),

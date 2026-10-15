@@ -25,7 +25,6 @@ fun selectFinishedSuggestion(
   val seriesCandidates =
     when (finished.series.any { it.name.isNotBlank() }) {
       true -> {
-        // seriesBooks come sorted by series sequence from the server
         seriesBooks
           .dropWhile { it.id != finished.id }
           .drop(1)

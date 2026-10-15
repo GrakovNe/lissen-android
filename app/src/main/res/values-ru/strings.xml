@@ -168,6 +168,13 @@
     <string name="playing_item_details_publisher">Издатель</string>
     <string name="playing_item_details_year">Год</string>
     <string name="playing_item_details_series">Серия</string>
+    <string name="playing_finished_title">Прослушано</string>
+    <string name="playing_finished_more_series">Следующие в серии «%1$s»</string>
+    <string name="playing_finished_more_author">Другие книги автора: %1$s</string>
+    <string name="playing_finished_more_random">Ещё в вашей библиотеке</string>
+    <string name="playing_finished_see_all_series">Смотреть всю серию</string>
+    <string name="playing_finished_see_all_author">Смотреть все книги автора: %1$s</string>
+    <string name="playing_finished_see_all_random">Перейти в библиотеку</string>
     <string name="color_scheme_black">Чёрная</string>
     <string name="chapters_list_empty">У книги нет глав</string>
     <string name="episodes_list_empty">У подкаста нет выпусков</string>

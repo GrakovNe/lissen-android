@@ -1,19 +1,15 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -29,10 +25,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
@@ -44,8 +38,12 @@ import org.grakovne.lissen.domain.FinishedSuggestionSource
 import org.grakovne.lissen.domain.MAX_FINISHED_CANDIDATES
 import org.grakovne.lissen.ui.adaptive.recentBookItemWidth
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.BookCoverCarousel
 import org.grakovne.lissen.ui.components.BookCoverKey
+import org.grakovne.lissen.ui.components.CarouselBook
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
+
+private val SHEET_HORIZONTAL_PADDING = 24.dp
 
 @Composable
 fun FinishedBookSuggestion(
@@ -69,7 +67,7 @@ fun FinishedBookSuggestion(
           .fillMaxWidth()
           .padding(bottom = 32.dp),
     ) {
-      Column(Modifier.padding(horizontal = 24.dp)) {
+      Column(Modifier.padding(horizontal = SHEET_HORIZONTAL_PADDING)) {
         FinishedBookRow(
           book = book,
           coverModel = coverModel,
@@ -80,7 +78,7 @@ fun FinishedBookSuggestion(
 
         Text(
           text = finishedMoreLabel(book, suggestion),
-          style = typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+          style = typography.bodyLarge,
           color = colorScheme.onSurface,
           maxLines = 2,
           overflow = TextOverflow.Ellipsis,
@@ -89,18 +87,33 @@ fun FinishedBookSuggestion(
 
       Spacer(Modifier.height(12.dp))
 
-      FinishedCandidateCarousel(
-        suggestion = suggestion,
+      BookCoverCarousel(
+        books =
+          suggestion.candidates.map { candidate ->
+            CarouselBook(
+              id = candidate.id,
+              coverModel = candidateCoverModel(candidate),
+              title = candidate.title,
+              subtitle = candidate.subtitle,
+              author = candidate.author,
+            )
+          },
         imageLoader = imageLoader,
-        candidateCoverModel = candidateCoverModel,
-        onCandidateClick = onCandidateClick,
+        onClick = { carouselBook ->
+          suggestion.candidates.first { it.id == carouselBook.id }.let(onCandidateClick)
+        },
+        modifier =
+          Modifier
+            .padding(horizontal = SHEET_HORIZONTAL_PADDING),
+        centered = isCarouselCentered(suggestion),
+        itemTestTag = "finishedCandidate",
       )
 
       Spacer(Modifier.height(16.dp))
 
       Text(
         text = finishedSeeAllLabel(book, suggestion),
-        style = typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+        style = typography.bodyMedium,
         color = colorScheme.primary,
         textAlign = TextAlign.Center,
         modifier =
@@ -118,39 +131,15 @@ fun FinishedBookSuggestion(
 }
 
 @Composable
-private fun FinishedCandidateCarousel(
-  suggestion: FinishedSuggestion,
-  imageLoader: ImageLoader,
-  candidateCoverModel: (Book) -> Any,
-  onCandidateClick: (Book) -> Unit,
-) {
-  val itemWidth = recentBookItemWidth()
-  val screenWidth = LocalConfiguration.current.screenWidthDp.dp - 48.dp
-  val carouselWidth = itemWidth * suggestion.candidates.size + 16.dp * (suggestion.candidates.size - 1)
-  val centered = suggestion.candidates.size < MAX_FINISHED_CANDIDATES || carouselWidth <= screenWidth
-
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .horizontalScroll(rememberScrollState())
-        .padding(horizontal = 24.dp),
-    horizontalArrangement =
-      when (centered) {
-        true -> Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
-        false -> Arrangement.spacedBy(16.dp)
-      },
-  ) {
-    suggestion.candidates.forEach { candidate ->
-      FinishedCandidateItem(
-        candidate = candidate,
-        width = itemWidth,
-        coverModel = candidateCoverModel(candidate),
-        imageLoader = imageLoader,
-        onClick = { onCandidateClick(candidate) },
-      )
-    }
+private fun isCarouselCentered(suggestion: FinishedSuggestion): Boolean {
+  if (suggestion.candidates.size < MAX_FINISHED_CANDIDATES) {
+    return true
   }
+
+  val itemWidth = recentBookItemWidth()
+  val availableWidth = LocalConfiguration.current.screenWidthDp.dp - SHEET_HORIZONTAL_PADDING * 2
+
+  return itemWidth * suggestion.candidates.size + 16.dp * (suggestion.candidates.size - 1) <= availableWidth
 }
 
 @Composable
@@ -195,7 +184,7 @@ private fun FinishedBookRow(
 
       Text(
         text = book.title,
-        style = typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+        style = typography.bodyMedium,
         color = colorScheme.onSurface,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
@@ -214,70 +203,6 @@ private fun FinishedBookRow(
           )
         }
     }
-  }
-}
-
-@Composable
-private fun FinishedCandidateItem(
-  candidate: Book,
-  width: Dp,
-  coverModel: Any,
-  imageLoader: ImageLoader,
-  onClick: () -> Unit,
-) {
-  val context = LocalContext.current
-
-  val imageRequest =
-    remember(coverModel) {
-      ImageRequest
-        .Builder(context)
-        .data(coverModel)
-        .build()
-    }
-
-  Column(
-    modifier =
-      Modifier
-        .width(width)
-        .testTag("finishedCandidate")
-        .clickable(onClick = onClick),
-  ) {
-    AsyncShimmeringImage(
-      imageRequest = imageRequest,
-      imageLoader = imageLoader,
-      contentDescription = null,
-      contentScale = ContentScale.FillBounds,
-      modifier =
-        Modifier
-          .fillMaxWidth()
-          .aspectRatio(1f)
-          .clip(RoundedCornerShape(8.dp)),
-      error = painterResource(R.drawable.cover_fallback),
-    )
-
-    Spacer(Modifier.height(6.dp))
-
-    Text(
-      text = candidate.title,
-      style = typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-      color = colorScheme.onSurface,
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis,
-    )
-
-    candidate
-      .author
-      ?.takeIf { it.isNotBlank() }
-      ?.let {
-        Spacer(Modifier.height(2.dp))
-
-        Text(
-          text = it,
-          style = typography.bodySmall.copy(color = colorScheme.onSurface.copy(alpha = 0.6f)),
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis,
-        )
-      }
   }
 }
 

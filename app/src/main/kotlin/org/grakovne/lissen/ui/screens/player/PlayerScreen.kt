@@ -96,6 +96,7 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetails
 import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
 import org.grakovne.lissen.ui.screens.player.composable.seriesName
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.FinishedSuggestionViewModel
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -131,6 +132,7 @@ fun PlayerScreen(
   val cachingModelView: CachingModelView = hiltViewModel()
   val playerViewModel: PlayerViewModel = hiltViewModel()
   val playbackSettingsViewModel: PlaybackSettingsViewModel = hiltViewModel()
+  val finishedSuggestionViewModel: FinishedSuggestionViewModel = hiltViewModel()
 
   val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
@@ -139,8 +141,8 @@ fun PlayerScreen(
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val searchRequested by playerViewModel.searchRequested.collectAsState()
   val preparingError by playerViewModel.preparingError.collectAsState()
-  val finishedBook by playerViewModel.finishedBook.collectAsState()
-  val finishedSuggestion by playerViewModel.finishedSuggestion.collectAsState()
+  val finishedBook by finishedSuggestionViewModel.finishedBook.collectAsState()
+  val finishedSuggestion by finishedSuggestionViewModel.suggestion.collectAsState()
 
   val playerContent = resolvePlayerContent(bookId, loadedBook, playbackReady)
   val playingBook = playerContent.book
@@ -173,10 +175,8 @@ fun PlayerScreen(
 
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
 
-  val finishedEligible = finishedBook?.takeIf { it.id == bookId }
-
-  LaunchedEffect(finishedEligible?.id) {
-    if (finishedEligible != null) playerViewModel.loadFinishedSuggestion()
+  LaunchedEffect(finishedBook?.id) {
+    finishedBook?.id?.let(finishedSuggestionViewModel::load)
   }
 
   val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
@@ -476,16 +476,16 @@ fun PlayerScreen(
     )
   }
 
-  finishedEligible?.let { book ->
+  finishedBook?.takeIf { it.id == bookId }?.let { book ->
     finishedSuggestion?.let { suggestion ->
       FinishedBookSuggestion(
         book = book,
         suggestion = suggestion,
         imageLoader = imageLoader,
         coverModel = BookCoverKey(book.id),
-        onDismiss = playerViewModel::dismissFinishedBook,
+        onDismiss = finishedSuggestionViewModel::dismiss,
         onSeeAll = {
-          playerViewModel.dismissFinishedBook()
+          finishedSuggestionViewModel.dismiss()
           when (suggestion.source) {
             FinishedSuggestionSource.SERIES -> navController.showLinkedSearch(book.seriesName())
             FinishedSuggestionSource.AUTHOR -> navController.showLinkedSearch(book.author.orEmpty())
@@ -493,7 +493,7 @@ fun PlayerScreen(
           }
         },
         onCandidateClick = { candidate ->
-          playerViewModel.dismissFinishedBook()
+          finishedSuggestionViewModel.dismiss()
           navController.showPlayer(candidate.id, candidate.title, candidate.subtitle, startInstantly = true)
         },
       )
