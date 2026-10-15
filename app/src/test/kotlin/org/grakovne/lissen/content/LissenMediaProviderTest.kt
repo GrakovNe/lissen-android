@@ -565,6 +565,19 @@ class LissenMediaProviderTest {
   @Nested
   inner class FetchSeriesItems {
     @Test
+    fun `passes includeFinished to the local cache`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        coEvery {
+          localCacheRepository.fetchSeriesItems(libraryId = "l1", seriesId = "s1", includeFinished = true)
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchSeriesItems("l1", "s1", includeFinished = true)
+
+        coVerify { localCacheRepository.fetchSeriesItems("l1", "s1", includeFinished = true) }
+      }
+
+    @Test
     fun `uses local cache without calling channel when force cache enabled`() =
       runBlocking {
         every { preferences.isForceCache() } returns true

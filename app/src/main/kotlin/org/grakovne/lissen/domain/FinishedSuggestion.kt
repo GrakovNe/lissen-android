@@ -13,6 +13,8 @@ data class FinishedSuggestion(
   val candidates: List<Book>,
 )
 
+fun DetailedItem.primaryAuthor(): BookAuthor? = authors.firstOrNull { it.id.isNotBlank() }
+
 fun selectFinishedSuggestion(
   finished: DetailedItem,
   seriesBooks: List<Book>,

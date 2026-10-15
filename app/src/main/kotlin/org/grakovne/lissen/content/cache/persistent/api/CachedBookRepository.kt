@@ -232,8 +232,13 @@ class CachedBookRepository
       libraryId: String,
       seriesId: String,
       libraryType: LibraryType?,
+      includeFinished: Boolean = false,
     ): List<Book> {
-      val (join, filter) = hideCompletedClauses(libraryType)
+      val (join, filter) =
+        when (includeFinished) {
+          true -> "" to ""
+          false -> hideCompletedClauses(libraryType)
+        }
 
       val sql =
         """

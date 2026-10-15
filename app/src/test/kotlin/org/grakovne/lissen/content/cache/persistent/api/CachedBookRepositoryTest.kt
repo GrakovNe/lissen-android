@@ -310,6 +310,20 @@ class CachedBookRepositoryTest {
     }
 
   @Test
+  fun `series items including finished skip the hide completed filter`() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      val queries = mutableListOf<SupportSQLiteQuery>()
+      coEvery { bookDao.fetchCachedBooks(capture(queries)) } returns emptyList()
+
+      repository.fetchSeriesItems(LIBRARY_ID, "ser", libraryType = LibraryType.LIBRARY, includeFinished = true)
+      repository.fetchSeriesItems(LIBRARY_ID, "ser", libraryType = LibraryType.LIBRARY)
+
+      assertFalse(queries[0].sql.contains("isFinished"))
+      assertTrue(queries[1].sql.contains("isFinished"))
+    }
+
+  @Test
   fun `series and author drill-down hide completed only for library type`() =
     runBlocking {
       every { preferences.getHideCompleted() } returns true

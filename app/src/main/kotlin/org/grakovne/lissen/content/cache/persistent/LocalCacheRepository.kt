@@ -209,12 +209,14 @@ class LocalCacheRepository
     suspend fun fetchSeriesItems(
       libraryId: String,
       seriesId: String,
+      includeFinished: Boolean = false,
     ): OperationResult<List<Book>> =
       cachedBookRepository
         .fetchSeriesItems(
           libraryId = libraryId,
           seriesId = seriesId,
           libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+          includeFinished = includeFinished,
         ).let { OperationResult.Success(it) }
 
     suspend fun fetchAuthorItems(

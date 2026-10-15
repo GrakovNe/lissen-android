@@ -184,4 +184,19 @@ class SelectFinishedSuggestionTest {
 
     assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
   }
+
+  @Test
+  fun `primary author is the first one with an id, not the joined author line`() {
+    val item =
+      detailedItem(author = "Unknown, Neil Gaiman, Terry Pratchett").copy(
+        authors =
+          listOf(
+            BookAuthor(id = "", name = "Unknown"),
+            BookAuthor(id = "author-1", name = "Neil Gaiman"),
+            BookAuthor(id = "author-2", name = "Terry Pratchett"),
+          ),
+      )
+
+    assertEquals(BookAuthor(id = "author-1", name = "Neil Gaiman"), item.primaryAuthor())
+  }
 }

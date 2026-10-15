@@ -4,6 +4,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,7 +66,7 @@ class FinishedSuggestionViewModelTest {
 
     assertEquals(null, viewModel.suggestion.value)
     coVerify(exactly = 0) { mediaChannel.fetchBooks(any(), any(), any(), any(), any()) }
-    coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any()) }
+    coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any(), any()) }
   }
 
   @Test
@@ -97,7 +98,7 @@ class FinishedSuggestionViewModelTest {
         libraryType = LibraryType.LIBRARY,
         series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1")),
       )
-    coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any()) } returns
+    coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any(), any()) } returns
       OperationResult.Success(listOf(book("book-1"), book("book-2"), book("book-3")))
 
     viewModel.load("book-1")
@@ -117,7 +118,7 @@ class FinishedSuggestionViewModelTest {
         series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1")),
         authors = listOf(BookAuthor(id = "author-1", name = "Author")),
       )
-    coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any()) } returns
+    coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any(), any()) } returns
       OperationResult.Success(listOf(book("book-1")))
     coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "authors" to "author-1", any()) } returns
       OperationResult.Success(PagedItems(items = listOf(book("book-2")), currentPage = 0, totalItems = 1))
@@ -193,7 +194,7 @@ class FinishedSuggestionViewModelTest {
 
     assertEquals(null, viewModel.suggestion.value)
     coVerify(exactly = 0) { mediaChannel.fetchBooks(any(), any(), any(), any(), any()) }
-    coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any()) }
+    coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any(), any()) }
   }
 
   @Test
@@ -204,7 +205,7 @@ class FinishedSuggestionViewModelTest {
 
     assertEquals(null, viewModel.suggestion.value)
     coVerify(exactly = 0) { mediaChannel.fetchBooks(any(), any(), any(), any(), any()) }
-    coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any()) }
+    coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any(), any()) }
   }
 
   @Test
@@ -216,7 +217,7 @@ class FinishedSuggestionViewModelTest {
         series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1")),
         authors = listOf(BookAuthor(id = "author-1", name = "Author")),
       )
-    coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any()) } returns
+    coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any(), any()) } returns
       OperationResult.Error(code = OperationError.NetworkError, message = "boom")
     coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "authors" to "author-1", any()) } returns
       OperationResult.Success(PagedItems(items = listOf(book("book-2")), currentPage = 0, totalItems = 1))
@@ -263,7 +264,7 @@ class FinishedSuggestionViewModelTest {
     viewModel.load("book-1")
 
     assertEquals(FinishedSuggestionSource.AUTHOR, viewModel.suggestion.value?.source)
-    coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any()) }
+    coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any(), any(), any()) }
   }
 
   @Test
@@ -331,6 +332,123 @@ class FinishedSuggestionViewModelTest {
 
     assertEquals(FinishedSuggestionSource.LIBRARY, viewModel.suggestion.value?.source)
     coVerify(exactly = 0) { mediaChannel.fetchBooks("lib-1", any(), any(), any(), any()) }
+  }
+
+  @Test
+  fun `load queries the finished book library type, not the preferred one`() {
+    every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.PODCAST
+    finishedBook.value =
+      detailedItem(
+        id = "book-1",
+        libraryType = LibraryType.LIBRARY,
+        series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1")),
+        authors = listOf(BookAuthor(id = "author-1", name = "Author")),
+      )
+    coEvery { mediaChannel.fetchSeriesItems(any(), any(), any(), any()) } returns OperationResult.Success(listOf(book("book-1")))
+    coEvery { mediaChannel.fetchBooks(any(), any(), any(), any(), any()) } returns
+      OperationResult.Success(PagedItems(items = emptyList(), currentPage = 0, totalItems = 0))
+
+    viewModel.load("book-1")
+
+    coVerify { mediaChannel.fetchSeriesItems("lib-1", "series-1", LibraryType.LIBRARY, any()) }
+    coVerify { mediaChannel.fetchBooks("lib-1", any(), any(), "authors" to "author-1", LibraryType.LIBRARY) }
+    coVerify { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", LibraryType.LIBRARY) }
+    coVerify(exactly = 0) { mediaChannel.fetchBooks(any(), any(), any(), any(), LibraryType.PODCAST) }
+  }
+
+  @Test
+  fun `series candidates follow the series position, not the fetch order`() {
+    finishedBook.value =
+      detailedItem(
+        id = "book-1",
+        libraryType = LibraryType.LIBRARY,
+        series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1")),
+      )
+    coEvery { mediaChannel.fetchSeriesItems("lib-1", "series-1", any(), any()) } returns
+      OperationResult.Success(
+        listOf(
+          book("book-3").copy(series = "Test Series #3"),
+          book("book-1").copy(series = "Test Series #1"),
+          book("book-2").copy(series = "Test Series #2"),
+        ),
+      )
+
+    viewModel.load("book-1")
+
+    assertEquals(
+      listOf("book-2", "book-3"),
+      viewModel.suggestion.value
+        ?.candidates
+        ?.map { it.id },
+    )
+  }
+
+  @Test
+  fun `series lookup keeps finished books so the finished one anchors the next`() {
+    finishedBook.value =
+      detailedItem(
+        id = "book-1",
+        libraryType = LibraryType.LIBRARY,
+        series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1")),
+      )
+
+    viewModel.load("book-1")
+
+    coVerify { mediaChannel.fetchSeriesItems("lib-1", "series-1", any(), includeFinished = true) }
+  }
+
+  @Test
+  fun `dismiss drops a suggestion that arrives after it`() {
+    val pool = CompletableDeferred<OperationResult<PagedItems<Book>>>()
+    finishedBook.value = detailedItem(id = "book-1", libraryType = LibraryType.LIBRARY)
+    coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) } coAnswers { pool.await() }
+    viewModel.load("book-1")
+
+    viewModel.dismiss()
+    pool.complete(OperationResult.Success(PagedItems(items = listOf(book("book-2")), currentPage = 0, totalItems = 1)))
+
+    assertEquals(null, viewModel.suggestion.value)
+  }
+
+  @Test
+  fun `load hides the previous suggestion while the next one is loading`() {
+    finishedBook.value = detailedItem(id = "book-1", libraryType = LibraryType.LIBRARY)
+    coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) } returns
+      OperationResult.Success(PagedItems(items = listOf(book("book-2")), currentPage = 0, totalItems = 1))
+    viewModel.load("book-1")
+    assertNotNull(viewModel.suggestion.value)
+
+    val nextPool = CompletableDeferred<OperationResult<PagedItems<Book>>>()
+    coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) } coAnswers { nextPool.await() }
+    finishedBook.value = detailedItem(id = "book-3", libraryType = LibraryType.LIBRARY)
+    viewModel.load("book-3")
+
+    assertEquals(null, viewModel.suggestion.value)
+  }
+
+  @Test
+  fun `author paging does not count the finished book as a candidate`() {
+    finishedBook.value =
+      detailedItem(
+        id = "book-1",
+        libraryType = LibraryType.LIBRARY,
+        authors = listOf(BookAuthor(id = "author-1", name = "Author")),
+      )
+    val firstPage = listOf(book("book-1")) + (2 until MAX_FINISHED_CANDIDATES + 1).map { book("book-$it") }
+    val secondPage = (MAX_FINISHED_CANDIDATES + 1..MAX_FINISHED_CANDIDATES * 2).map { book("book-$it") }
+    coEvery { mediaChannel.fetchBooks("lib-1", any(), 0, "authors" to "author-1", any()) } returns
+      OperationResult.Success(PagedItems(items = firstPage, currentPage = 0, totalItems = 100))
+    coEvery { mediaChannel.fetchBooks("lib-1", any(), 1, "authors" to "author-1", any()) } returns
+      OperationResult.Success(PagedItems(items = secondPage, currentPage = 1, totalItems = 100))
+
+    viewModel.load("book-1")
+
+    assertEquals(
+      MAX_FINISHED_CANDIDATES,
+      viewModel.suggestion.value
+        ?.candidates
+        ?.size,
+    )
   }
 
   private fun book(id: String) = Book(id = id, subtitle = null, series = null, title = "Candidate $id", author = "Another Author")

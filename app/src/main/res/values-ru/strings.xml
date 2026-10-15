@@ -172,9 +172,9 @@
     <string name="playing_finished_more_series">Следующие в серии «%1$s»</string>
     <string name="playing_finished_more_author">Другие книги автора: %1$s</string>
     <string name="playing_finished_more_library">Ещё в вашей библиотеке</string>
-    <string name="playing_finished_see_all_series">Смотреть всю серию</string>
-    <string name="playing_finished_see_all_author">Смотреть все книги автора: %1$s</string>
-    <string name="playing_finished_see_all_library">Перейти в библиотеку</string>
+    <string name="playing_finished_see_all_series">Больше книг серии</string>
+    <string name="playing_finished_see_all_author">Больше книг автора</string>
+    <string name="playing_finished_see_all_library">Вернуться в библиотеку</string>
     <string name="color_scheme_black">Чёрная</string>
     <string name="chapters_list_empty">У книги нет глав</string>
     <string name="episodes_list_empty">У подкаста нет выпусков</string>

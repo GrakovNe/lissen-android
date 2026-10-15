@@ -92,6 +92,7 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.NavigationBa
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
+import org.grakovne.lissen.ui.screens.player.composable.primaryAuthorName
 import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
 import org.grakovne.lissen.ui.screens.player.composable.seriesName
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -487,7 +488,7 @@ fun PlayerScreen(
           finishedSuggestionViewModel.dismiss()
           when (suggestion.source) {
             FinishedSuggestionSource.SERIES -> navController.showLinkedSearch(book.seriesName())
-            FinishedSuggestionSource.AUTHOR -> navController.showLinkedSearch(book.author.orEmpty())
+            FinishedSuggestionSource.AUTHOR -> navController.showLinkedSearch(book.primaryAuthorName())
             FinishedSuggestionSource.LIBRARY -> navController.showLibrary()
           }
         },

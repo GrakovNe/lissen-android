@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -36,8 +35,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.FinishedSuggestion
 import org.grakovne.lissen.domain.FinishedSuggestionSource
-import org.grakovne.lissen.domain.MAX_FINISHED_CANDIDATES
-import org.grakovne.lissen.ui.adaptive.recentBookItemWidth
+import org.grakovne.lissen.domain.primaryAuthor
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.components.BookCoverCarousel
 import org.grakovne.lissen.ui.components.BookCoverKey
@@ -106,14 +104,14 @@ fun FinishedBookSuggestionComposable(
         modifier =
           Modifier
             .padding(horizontal = SHEET_HORIZONTAL_PADDING),
-        centered = isCarouselCentered(suggestion),
+        centered = true,
         itemTestTag = "finishedCandidate",
       )
 
       Spacer(Modifier.height(16.dp))
 
       Text(
-        text = finishedSeeAllLabel(book, suggestion),
+        text = finishedSeeAllLabel(suggestion),
         style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
         color = colorScheme.primary,
         textAlign = TextAlign.Center,
@@ -129,18 +127,6 @@ fun FinishedBookSuggestionComposable(
       )
     }
   }
-}
-
-@Composable
-private fun isCarouselCentered(suggestion: FinishedSuggestion): Boolean {
-  if (suggestion.candidates.size < MAX_FINISHED_CANDIDATES) {
-    return true
-  }
-
-  val itemWidth = recentBookItemWidth()
-  val availableWidth = LocalConfiguration.current.screenWidthDp.dp - SHEET_HORIZONTAL_PADDING * 2
-
-  return itemWidth * suggestion.candidates.size + 16.dp * (suggestion.candidates.size - 1) <= availableWidth
 }
 
 @Composable
@@ -214,19 +200,18 @@ private fun finishedMoreLabel(
 ): String =
   when (suggestion.source) {
     FinishedSuggestionSource.SERIES -> stringResource(R.string.playing_finished_more_series, book.seriesName())
-    FinishedSuggestionSource.AUTHOR -> stringResource(R.string.playing_finished_more_author, book.author.orEmpty())
+    FinishedSuggestionSource.AUTHOR -> stringResource(R.string.playing_finished_more_author, book.primaryAuthorName())
     FinishedSuggestionSource.LIBRARY -> stringResource(R.string.playing_finished_more_library)
   }
 
 @Composable
-private fun finishedSeeAllLabel(
-  book: DetailedItem,
-  suggestion: FinishedSuggestion,
-): String =
+private fun finishedSeeAllLabel(suggestion: FinishedSuggestion): String =
   when (suggestion.source) {
     FinishedSuggestionSource.SERIES -> stringResource(R.string.playing_finished_see_all_series)
-    FinishedSuggestionSource.AUTHOR -> stringResource(R.string.playing_finished_see_all_author, book.author.orEmpty())
+    FinishedSuggestionSource.AUTHOR -> stringResource(R.string.playing_finished_see_all_author)
     FinishedSuggestionSource.LIBRARY -> stringResource(R.string.playing_finished_see_all_library)
   }
 
 fun DetailedItem.seriesName(): String = series.firstOrNull { it.name.isNotBlank() }?.name.orEmpty()
+
+fun DetailedItem.primaryAuthorName(): String = primaryAuthor()?.name.orEmpty()
