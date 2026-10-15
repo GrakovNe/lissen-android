@@ -75,6 +75,7 @@ class CachedBookGroupingTest {
     seriesId: String? = null,
     seriesJson: String? = null,
     narrator: String? = null,
+    authorsJson: String? = null,
   ) = dao.upsertBook(
     BookEntity(
       id = id,
@@ -90,6 +91,7 @@ class CachedBookGroupingTest {
       seriesJson = seriesJson,
       seriesNames = null,
       seriesId = seriesId,
+      authorsJson = authorsJson,
       createdAt = 0,
       updatedAt = 0,
     ),
@@ -263,6 +265,69 @@ class CachedBookGroupingTest {
 
       dao.upsertCachedBook(book.copy(genres = listOf("Romance")), emptyList(), emptyList())
       assertEquals(listOf("Romance"), dao.fetchCachedBook("b1")!!.genres)
+    }
+
+  @Test
+  fun fetchBooks_authorsExtraFilter_returnsOnlyBooksOfThatAuthor() =
+    runBlocking {
+      insert("a1", "Ann One", authorsJson = """[{"id":"auth-1","name":"Ann"}]""")
+      insert("a2", "Ann Two", authorsJson = """[{"id":"auth-1","name":"Ann"},{"id":"auth-3","name":"Cy"}]""")
+      insert("b1", "Bob One", authorsJson = """[{"id":"auth-2","name":"Bob"}]""")
+      insert("n1", "No Authors")
+
+      val books = repository.fetchBooks(LIBRARY, pageNumber = 0, pageSize = 20, libraryType = null, extraFilter = "authors" to "auth-1")
+
+      assertEquals(setOf("a1", "a2"), books.map { it.id }.toSet())
+      assertEquals(2, repository.countBooks(LIBRARY, null, "authors" to "auth-1"))
+    }
+
+  @Test
+  fun fetchBooks_notStartedExtraFilter_excludesBooksWithProgress() =
+    runBlocking {
+      insert("a1", "Started")
+      insert("a2", "Fresh")
+      insert("a3", "Finished")
+      dao.upsertMediaProgress(MediaProgressEntity(bookId = "a1", currentTime = 10.0, isFinished = false, lastUpdate = 0))
+      dao.upsertMediaProgress(MediaProgressEntity(bookId = "a3", currentTime = 100.0, isFinished = true, lastUpdate = 0))
+
+      val books =
+        repository.fetchBooks(
+          LIBRARY,
+          pageNumber = 0,
+          pageSize = 20,
+          libraryType = null,
+          extraFilter =
+            "progress" to "not-started",
+        )
+
+      assertEquals(listOf("a2"), books.map { it.id })
+      assertEquals(1, repository.countBooks(LIBRARY, null, "progress" to "not-started"))
+    }
+
+  @Test
+  fun fetchBooks_withoutExtraFilter_returnsEverything() =
+    runBlocking {
+      insert("a1", "Started")
+      insert("a2", "Fresh")
+      dao.upsertMediaProgress(MediaProgressEntity(bookId = "a1", currentTime = 10.0, isFinished = false, lastUpdate = 0))
+
+      val books = repository.fetchBooks(LIBRARY, pageNumber = 0, pageSize = 20, libraryType = null)
+
+      assertEquals(setOf("a1", "a2"), books.map { it.id }.toSet())
+    }
+
+  @Test
+  fun fetchBooks_extraFilterPagesOverFilteredItems() =
+    runBlocking {
+      insert("a1", "Ann One", authorsJson = """[{"id":"auth-1","name":"Ann"}]""")
+      insert("a2", "Ann Two", authorsJson = """[{"id":"auth-1","name":"Ann"}]""")
+      insert("a3", "Ann Three", authorsJson = """[{"id":"auth-1","name":"Ann"}]""")
+      insert("b1", "Bob One", authorsJson = """[{"id":"auth-2","name":"Bob"}]""")
+
+      val page0 = repository.fetchBooks(LIBRARY, pageNumber = 0, pageSize = 2, libraryType = null, extraFilter = "authors" to "auth-1")
+      val page1 = repository.fetchBooks(LIBRARY, pageNumber = 1, pageSize = 2, libraryType = null, extraFilter = "authors" to "auth-1")
+
+      assertEquals(setOf("a1", "a2", "a3"), (page0 + page1).map { it.id }.toSet())
     }
 
   private fun detailedItem(genres: List<String>) =

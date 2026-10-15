@@ -137,11 +137,12 @@ class CachedBookRepository
       pageNumber: Int,
       pageSize: Int,
       libraryType: LibraryType?,
+      extraFilter: Pair<String, String>? = null,
     ): List<Book> {
       val (option, direction) = buildOrdering()
 
       val request =
-        fetchRequest(libraryId, libraryType)
+        fetchRequest(libraryId, libraryType, extraFilter)
           .pageNumber(pageNumber)
           .pageSize(pageSize)
           .orderField(option)
@@ -156,16 +157,19 @@ class CachedBookRepository
     suspend fun countBooks(
       libraryId: String,
       libraryType: LibraryType?,
-    ): Int = bookDao.countRaw(fetchRequest(libraryId, libraryType).buildCount())
+      extraFilter: Pair<String, String>? = null,
+    ): Int = bookDao.countRaw(fetchRequest(libraryId, libraryType, extraFilter).buildCount())
 
     private fun fetchRequest(
       libraryId: String,
       libraryType: LibraryType?,
+      extraFilter: Pair<String, String>? = null,
     ): FetchRequestBuilder =
       FetchRequestBuilder()
         .libraryId(libraryId)
         .libraryType(libraryType)
         .hideCompleted(preferences.getHideCompleted())
+        .extraFilter(extraFilter)
 
     private fun hideCompletedClauses(libraryType: LibraryType?): Pair<String, String> =
       hideCompletedSql(hideCompletedApplies(preferences.getHideCompleted(), libraryType), "detailed_books.id")

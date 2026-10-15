@@ -176,7 +176,14 @@ class LissenMediaProvider
       Timber.d("Fetching books: libraryId=$libraryId, libraryType=$libraryType, page=$pageNumber, pageSize=$pageSize")
 
       return cacheOrChannel(
-        local = { localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber) },
+        local = {
+          localCacheRepository.fetchBooks(
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+            extraFilter = extraFilter,
+          )
+        },
         remote = {
           val channel = provideChannelFor(libraryType)
           channel.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber, extraFilter)

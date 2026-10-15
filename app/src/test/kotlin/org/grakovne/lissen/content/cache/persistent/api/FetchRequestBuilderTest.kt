@@ -1,5 +1,8 @@
 package org.grakovne.lissen.content.cache.persistent.api
 
+import androidx.sqlite.db.SupportSQLiteProgram
+import io.mockk.mockk
+import io.mockk.verify
 import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -91,6 +94,65 @@ class FetchRequestBuilderTest {
     fun `invalid direction falls back to ASC`() {
       val query = builder().orderDirection("RANDOM").build()
       assertTrue(query.sql.contains("ASC"), "Expected fallback ASC, got: ${query.sql}")
+    }
+  }
+
+  @Nested
+  inner class ExtraFilter {
+    @Test
+    fun `authors filter adds a like clause on authorsJson with the id argument`() {
+      val query = builder().libraryId("lib-1").extraFilter("authors" to "auth-1").build()
+
+      assertTrue(query.sql.contains("authorsJson LIKE ?"), "Expected authorsJson LIKE clause, got: ${query.sql}")
+
+      val program = mockk<SupportSQLiteProgram>(relaxed = true)
+      query.bindTo(program)
+      verify { program.bindString(2, "%\"id\":\"auth-1\"%") }
+    }
+
+    @Test
+    fun `not started filter excludes books with progress beyond zero`() {
+      val query = builder().libraryId("lib-1").extraFilter("progress" to "not-started").build()
+
+      assertTrue(query.sql.contains("NOT EXISTS"), "Expected NOT EXISTS clause, got: ${query.sql}")
+      assertTrue(query.sql.contains("mp2.currentTime > 0"), "Expected currentTime guard, got: ${query.sql}")
+    }
+
+    @Test
+    fun `unknown filter is ignored`() {
+      val query = builder().libraryId("lib-1").extraFilter("mystery" to "value").build()
+
+      assertFalse(query.sql.contains("mystery"), "Expected no clause, got: ${query.sql}")
+    }
+
+    @Test
+    fun `count query applies the same extra filter`() {
+      val query = builder().libraryId("lib-1").extraFilter("authors" to "auth-1").buildCount()
+
+      assertTrue(query.sql.contains("authorsJson LIKE ?"), "Expected authorsJson LIKE clause, got: ${query.sql}")
+      assertTrue(query.sql.contains("COUNT"), "Expected COUNT query, got: ${query.sql}")
+    }
+
+    @Test
+    fun `extra filter combines with hide completed without join conflicts`() {
+      val query =
+        builder()
+          .libraryId("lib-1")
+          .libraryType(LibraryType.LIBRARY)
+          .hideCompleted(true)
+          .extraFilter("progress" to "not-started")
+          .build()
+
+      assertTrue(query.sql.contains("LEFT JOIN media_progress mp"), "Expected hideCompleted join, got: ${query.sql}")
+      assertTrue(query.sql.contains("mp2"), "Expected independent progress subquery, got: ${query.sql}")
+    }
+
+    @Test
+    fun `authors filter adds exactly one extra argument`() {
+      val withFilter = builder().libraryId("lib-1").extraFilter("authors" to "auth-1").build()
+      val withoutFilter = builder().libraryId("lib-1").build()
+
+      assertEquals(withoutFilter.argCount + 1, withFilter.argCount)
     }
   }
 
