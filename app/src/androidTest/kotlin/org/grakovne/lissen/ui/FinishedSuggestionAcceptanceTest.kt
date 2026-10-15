@@ -147,7 +147,7 @@ class FinishedSuggestionAcceptanceTest {
         finishedItem(finished, seriesName = "Acceptance Series"),
         seriesBooks = listOf(finished),
         authorBooks = authorCandidates,
-        randomBooks = books.drop(6),
+        libraryBooks = books.drop(6),
       )
 
     assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
@@ -179,14 +179,14 @@ class FinishedSuggestionAcceptanceTest {
   }
 
   @Test
-  fun threeRandomBooksAreSuggestedWhenNothingMatches() {
+  fun threeLibraryBooksAreSuggestedWhenNothingMatches() {
     val finished = books.first().copy(author = "Unique Acceptance Author")
     val pool = books.filter { it.id != finished.id }.map { it.copy(author = "Someone Else") }
 
     val suggestion =
-      selectFinishedSuggestion(finishedItem(finished), emptyList(), emptyList(), pool, random = kotlin.random.Random(42))
+      selectFinishedSuggestion(finishedItem(finished), emptyList(), emptyList(), pool)
 
-    assertEquals(FinishedSuggestionSource.RANDOM, suggestion?.source)
+    assertEquals(FinishedSuggestionSource.LIBRARY, suggestion?.source)
     assertEquals(3, suggestion?.candidates?.size)
     assertTrue(pool.map { it.id }.toSet().containsAll(suggestion?.candidates?.map { it.id } ?: emptyList()))
   }

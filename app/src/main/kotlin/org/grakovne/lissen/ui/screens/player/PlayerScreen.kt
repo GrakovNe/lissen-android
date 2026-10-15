@@ -489,7 +489,7 @@ fun PlayerScreen(
           when (suggestion.source) {
             FinishedSuggestionSource.SERIES -> navController.showLinkedSearch(book.seriesName())
             FinishedSuggestionSource.AUTHOR -> navController.showLinkedSearch(book.author.orEmpty())
-            FinishedSuggestionSource.RANDOM -> navController.showLibrary()
+            FinishedSuggestionSource.LIBRARY -> navController.showLibrary()
           }
         },
         onCandidateClick = { candidate ->

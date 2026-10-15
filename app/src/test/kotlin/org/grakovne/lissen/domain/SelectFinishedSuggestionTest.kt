@@ -106,29 +106,29 @@ class SelectFinishedSuggestionTest {
   }
 
   @Test
-  fun `no series and no author books fall through to random`() {
-    val randomBooks = listOf(book("b", author = "Author Two"), book("c", author = "Author Three"), book("d", author = "Author Four"))
+  fun `no series and no author books fall through to the library pool`() {
+    val libraryBooks = listOf(book("b", author = "Author Two"), book("c", author = "Author Three"), book("d", author = "Author Four"))
 
-    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks)
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
 
-    assertEquals(FinishedSuggestionSource.RANDOM, suggestion?.source)
+    assertEquals(FinishedSuggestionSource.LIBRARY, suggestion?.source)
     assertEquals(3, suggestion?.candidates?.size)
   }
 
   @Test
-  fun `random takes the first books of the pool in order`() {
-    val randomBooks = (1..10).map { book("b$it", author = "Author Two") }
+  fun `library pool takes the first books in order`() {
+    val libraryBooks = (1..10).map { book("b$it", author = "Author Two") }
 
-    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks)
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
 
     assertEquals(listOf("b1", "b2", "b3"), suggestion?.candidates?.map { it.id })
   }
 
   @Test
-  fun `finished book is excluded from random`() {
-    val randomBooks = listOf(book("finished"), book("b", author = "Author Two"))
+  fun `finished book is excluded from the library pool`() {
+    val libraryBooks = listOf(book("finished"), book("b", author = "Author Two"))
 
-    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks)
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
 
     assertEquals(listOf("b"), suggestion?.candidates?.map { it.id })
   }
@@ -143,10 +143,10 @@ class SelectFinishedSuggestionTest {
   }
 
   @Test
-  fun `duplicates are removed from random candidates`() {
-    val randomBooks = listOf(book("b"), book("b"), book("c"))
+  fun `duplicates are removed from library candidates`() {
+    val libraryBooks = listOf(book("b"), book("b"), book("c"))
 
-    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), randomBooks)
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
 
     assertEquals(listOf("b", "c"), suggestion?.candidates?.map { it.id })
   }

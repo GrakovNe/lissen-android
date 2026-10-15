@@ -78,9 +78,9 @@ class FinishedSuggestionViewModel
           selectFinishedSuggestion(book, emptyList(), authorBooks, emptyList())?.let { return it }
         }
 
-      val randomBooks = fetchCandidates(libraryId, NOT_STARTED_FILTER)
+      val libraryBooks = fetchCandidates(libraryId, NOT_STARTED_FILTER)
 
-      return selectFinishedSuggestion(book, emptyList(), emptyList(), randomBooks)
+      return selectFinishedSuggestion(book, emptyList(), emptyList(), libraryBooks)
     }
 
     private suspend fun fetchCandidates(

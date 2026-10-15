@@ -138,7 +138,7 @@ class FinishedSuggestionViewModelTest {
     viewModel.load("book-1")
 
     val suggestion = viewModel.suggestion.value
-    assertEquals(FinishedSuggestionSource.RANDOM, suggestion?.source)
+    assertEquals(FinishedSuggestionSource.LIBRARY, suggestion?.source)
     assertEquals(listOf("book-2"), suggestion?.candidates?.map { it.id })
   }
 
@@ -228,7 +228,7 @@ class FinishedSuggestionViewModelTest {
   }
 
   @Test
-  fun `load falls through to random when the author fetch fails`() {
+  fun `load falls through to the library pool when the author fetch fails`() {
     finishedBook.value =
       detailedItem(
         id = "book-1",
@@ -243,7 +243,7 @@ class FinishedSuggestionViewModelTest {
     viewModel.load("book-1")
 
     val suggestion = viewModel.suggestion.value
-    assertEquals(FinishedSuggestionSource.RANDOM, suggestion?.source)
+    assertEquals(FinishedSuggestionSource.LIBRARY, suggestion?.source)
     assertEquals(listOf("book-2"), suggestion?.candidates?.map { it.id })
   }
 
@@ -278,7 +278,7 @@ class FinishedSuggestionViewModelTest {
 
     viewModel.load("book-1")
 
-    assertEquals(FinishedSuggestionSource.RANDOM, viewModel.suggestion.value?.source)
+    assertEquals(FinishedSuggestionSource.LIBRARY, viewModel.suggestion.value?.source)
     coVerify(exactly = 0) { mediaChannel.fetchBooks(any(), any(), any(), match { it?.first == "authors" }, any()) }
   }
 
@@ -318,6 +318,18 @@ class FinishedSuggestionViewModelTest {
         ?.map { it.id },
     )
     coVerify(exactly = 2) { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) }
+  }
+
+  @Test
+  fun `load fetches the pool from the finished book library`() {
+    finishedBook.value = detailedItem(id = "book-1", libraryType = LibraryType.LIBRARY, libraryId = "lib-2")
+    coEvery { mediaChannel.fetchBooks("lib-2", any(), any(), "progress" to "not-started", any()) } returns
+      OperationResult.Success(PagedItems(items = listOf(book("book-2")), currentPage = 0, totalItems = 1))
+
+    viewModel.load("book-1")
+
+    assertEquals(FinishedSuggestionSource.LIBRARY, viewModel.suggestion.value?.source)
+    coVerify(exactly = 0) { mediaChannel.fetchBooks("lib-1", any(), any(), any(), any()) }
   }
 
   private fun book(id: String) = Book(id = id, subtitle = null, series = null, title = "Candidate $id", author = "Another Author")

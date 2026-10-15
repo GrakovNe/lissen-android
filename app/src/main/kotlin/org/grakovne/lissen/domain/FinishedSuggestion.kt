@@ -5,7 +5,7 @@ const val MAX_FINISHED_CANDIDATES = 3
 enum class FinishedSuggestionSource {
   SERIES,
   AUTHOR,
-  RANDOM,
+  LIBRARY,
 }
 
 data class FinishedSuggestion(
@@ -17,7 +17,7 @@ fun selectFinishedSuggestion(
   finished: DetailedItem,
   seriesBooks: List<Book>,
   authorBooks: List<Book>,
-  randomBooks: List<Book>,
+  libraryBooks: List<Book>,
 ): FinishedSuggestion? {
   val seriesCandidates =
     when (finished.series.any { it.name.isNotBlank() }) {
@@ -49,10 +49,10 @@ fun selectFinishedSuggestion(
     return FinishedSuggestion(FinishedSuggestionSource.AUTHOR, authorCandidates)
   }
 
-  return randomBooks
+  return libraryBooks
     .filter { it.id != finished.id }
     .distinctBy { it.id }
     .take(MAX_FINISHED_CANDIDATES)
     .takeIf { it.isNotEmpty() }
-    ?.let { FinishedSuggestion(FinishedSuggestionSource.RANDOM, it) }
+    ?.let { FinishedSuggestion(FinishedSuggestionSource.LIBRARY, it) }
 }

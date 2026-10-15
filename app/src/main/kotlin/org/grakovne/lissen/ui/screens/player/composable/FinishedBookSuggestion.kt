@@ -214,7 +214,7 @@ private fun finishedMoreLabel(
   when (suggestion.source) {
     FinishedSuggestionSource.SERIES -> stringResource(R.string.playing_finished_more_series, book.seriesName())
     FinishedSuggestionSource.AUTHOR -> stringResource(R.string.playing_finished_more_author, book.author.orEmpty())
-    FinishedSuggestionSource.RANDOM -> stringResource(R.string.playing_finished_more_random)
+    FinishedSuggestionSource.LIBRARY -> stringResource(R.string.playing_finished_more_library)
   }
 
 @Composable
@@ -225,7 +225,7 @@ private fun finishedSeeAllLabel(
   when (suggestion.source) {
     FinishedSuggestionSource.SERIES -> stringResource(R.string.playing_finished_see_all_series)
     FinishedSuggestionSource.AUTHOR -> stringResource(R.string.playing_finished_see_all_author, book.author.orEmpty())
-    FinishedSuggestionSource.RANDOM -> stringResource(R.string.playing_finished_see_all_random)
+    FinishedSuggestionSource.LIBRARY -> stringResource(R.string.playing_finished_see_all_library)
   }
 
 fun DetailedItem.seriesName(): String = series.firstOrNull { it.name.isNotBlank() }?.name.orEmpty()
