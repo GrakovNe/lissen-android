@@ -1,7 +1,9 @@
 package org.grakovne.lissen.viewmodel
 
+import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +24,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(UnstableApi::class)
 class FinishedSuggestionViewModel
   @Inject
   constructor(

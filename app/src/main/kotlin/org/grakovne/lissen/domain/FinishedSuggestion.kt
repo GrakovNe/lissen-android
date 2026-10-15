@@ -1,6 +1,6 @@
 package org.grakovne.lissen.domain
 
-const val MAX_FINISHED_CANDIDATES = 3
+const val MAX_FINISHED_CANDIDATES = 6
 
 enum class FinishedSuggestionSource {
   SERIES,

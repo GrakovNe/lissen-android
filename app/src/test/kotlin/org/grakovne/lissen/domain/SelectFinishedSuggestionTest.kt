@@ -38,13 +38,14 @@ class SelectFinishedSuggestionTest {
   private val series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1"))
 
   @Test
-  fun `three next books in series are suggested`() {
-    val seriesBooks = listOf(book("finished"), book("b"), book("c"), book("d"), book("e"))
+  fun `next books in series are capped at the candidate limit`() {
+    val nextBooks = (1..MAX_FINISHED_CANDIDATES + 2).map { book("b$it") }
+    val seriesBooks = listOf(book("finished")) + nextBooks
 
     val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, emptyList(), emptyList())
 
     assertEquals(FinishedSuggestionSource.SERIES, suggestion?.source)
-    assertEquals(listOf("b", "c", "d"), suggestion?.candidates?.map { it.id })
+    assertEquals(nextBooks.take(MAX_FINISHED_CANDIDATES).map { it.id }, suggestion?.candidates?.map { it.id })
   }
 
   @Test
@@ -80,12 +81,12 @@ class SelectFinishedSuggestionTest {
 
   @Test
   fun `book without series falls through to author`() {
-    val authorBooks = listOf(book("b"), book("c"), book("d"), book("e"))
+    val authorBooks = (1..MAX_FINISHED_CANDIDATES + 1).map { book("b$it") }
 
     val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), authorBooks, emptyList())
 
     assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
-    assertEquals(listOf("b", "c", "d"), suggestion?.candidates?.map { it.id })
+    assertEquals(authorBooks.take(MAX_FINISHED_CANDIDATES).map { it.id }, suggestion?.candidates?.map { it.id })
   }
 
   @Test
@@ -117,11 +118,11 @@ class SelectFinishedSuggestionTest {
 
   @Test
   fun `library pool takes the first books in order`() {
-    val libraryBooks = (1..10).map { book("b$it", author = "Author Two") }
+    val libraryBooks = (1..MAX_FINISHED_CANDIDATES + 4).map { book("b$it", author = "Author Two") }
 
     val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
 
-    assertEquals(listOf("b1", "b2", "b3"), suggestion?.candidates?.map { it.id })
+    assertEquals(libraryBooks.take(MAX_FINISHED_CANDIDATES).map { it.id }, suggestion?.candidates?.map { it.id })
   }
 
   @Test

@@ -145,19 +145,20 @@ class FinishedSuggestionViewModelTest {
   @Test
   fun `load fetches next pages until there are enough candidates`() {
     finishedBook.value = detailedItem(id = "book-1", libraryType = LibraryType.LIBRARY)
-    coEvery { mediaChannel.fetchBooks("lib-1", any(), 0, "progress" to "not-started", any()) } returns
-      OperationResult.Success(PagedItems(items = listOf(book("book-2")), currentPage = 0, totalItems = 10))
-    coEvery { mediaChannel.fetchBooks("lib-1", any(), 1, "progress" to "not-started", any()) } returns
-      OperationResult.Success(PagedItems(items = listOf(book("book-3")), currentPage = 1, totalItems = 10))
-    coEvery { mediaChannel.fetchBooks("lib-1", any(), 2, "progress" to "not-started", any()) } returns
-      OperationResult.Success(PagedItems(items = listOf(book("book-4")), currentPage = 2, totalItems = 10))
+    coEvery { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) } answers {
+      val page = thirdArg<Int>()
+      OperationResult.Success(PagedItems(items = listOf(book("page-$page")), currentPage = page, totalItems = 100))
+    }
 
     viewModel.load("book-1")
 
     val suggestion = viewModel.suggestion.value
     assertNotNull(suggestion)
-    assertEquals(setOf("book-2", "book-3", "book-4"), suggestion?.candidates?.map { it.id }?.toSet())
-    coVerify(exactly = 3) { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) }
+    assertEquals(
+      (0 until MAX_FINISHED_CANDIDATES).map { "page-$it" }.toSet(),
+      suggestion?.candidates?.map { it.id }?.toSet(),
+    )
+    coVerify(exactly = MAX_FINISHED_CANDIDATES) { mediaChannel.fetchBooks("lib-1", any(), any(), "progress" to "not-started", any()) }
   }
 
   @Test

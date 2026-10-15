@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
@@ -78,7 +77,7 @@ import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
-import org.grakovne.lissen.ui.screens.player.composable.FinishedBookSuggestion
+import org.grakovne.lissen.ui.screens.player.composable.FinishedBookSuggestionComposable
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
@@ -478,7 +477,7 @@ fun PlayerScreen(
 
   finishedBook?.takeIf { it.id == bookId }?.let { book ->
     finishedSuggestion?.let { suggestion ->
-      FinishedBookSuggestion(
+      FinishedBookSuggestionComposable(
         book = book,
         suggestion = suggestion,
         imageLoader = imageLoader,

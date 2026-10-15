@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,7 +47,7 @@ import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 private val SHEET_HORIZONTAL_PADDING = 24.dp
 
 @Composable
-fun FinishedBookSuggestion(
+fun FinishedBookSuggestionComposable(
   book: DetailedItem,
   suggestion: FinishedSuggestion,
   imageLoader: ImageLoader,
@@ -113,7 +114,7 @@ fun FinishedBookSuggestion(
 
       Text(
         text = finishedSeeAllLabel(book, suggestion),
-        style = typography.bodyMedium,
+        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
         color = colorScheme.primary,
         textAlign = TextAlign.Center,
         modifier =
@@ -124,7 +125,7 @@ fun FinishedBookSuggestion(
               interactionSource = remember { MutableInteractionSource() },
               indication = null,
             ) { onSeeAll() }
-            .padding(vertical = 8.dp),
+            .padding(top = 8.dp),
       )
     }
   }
