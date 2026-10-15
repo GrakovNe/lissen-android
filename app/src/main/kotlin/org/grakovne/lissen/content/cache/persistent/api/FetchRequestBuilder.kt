@@ -2,6 +2,7 @@ package org.grakovne.lissen.content.cache.persistent.api
 
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.domain.LibraryType
 
 class FetchRequestBuilder {
@@ -94,12 +95,12 @@ class FetchRequestBuilder {
     filter
       ?.let { (key, value) ->
         when {
-          key == AUTHOR_FILTER -> {
+          key == LibraryFilters.AUTHORS -> {
             args.add("%\"id\":\"$value\"%")
             "AND (b.authorsJson LIKE ?)"
           }
 
-          key == PROGRESS_FILTER && value == NOT_STARTED -> {
+          key == LibraryFilters.PROGRESS && value == LibraryFilters.NOT_STARTED -> {
             "AND (NOT EXISTS (SELECT 1 FROM media_progress mp2 WHERE mp2.bookId = b.id AND mp2.currentTime > 0))"
           }
 
@@ -108,10 +109,4 @@ class FetchRequestBuilder {
           }
         }
       } ?: ""
-
-  private companion object {
-    private const val AUTHOR_FILTER = "authors"
-    private const val PROGRESS_FILTER = "progress"
-    private const val NOT_STARTED = "not-started"
-  }
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
@@ -73,12 +74,12 @@ class FinishedSuggestionViewModel
       book.authors
         .firstOrNull { it.id.isNotBlank() }
         ?.let { author ->
-          val authorBooks = fetchCandidates(libraryId, AUTHOR_FILTER to author.id)
+          val authorBooks = fetchCandidates(libraryId, LibraryFilters.AUTHORS to author.id)
 
           selectFinishedSuggestion(book, emptyList(), authorBooks, emptyList())?.let { return it }
         }
 
-      val libraryBooks = fetchCandidates(libraryId, NOT_STARTED_FILTER)
+      val libraryBooks = fetchCandidates(libraryId, LibraryFilters.PROGRESS to LibraryFilters.NOT_STARTED)
 
       return selectFinishedSuggestion(book, emptyList(), emptyList(), libraryBooks)
     }
@@ -118,10 +119,5 @@ class FinishedSuggestionViewModel
       }
 
       return collected
-    }
-
-    companion object {
-      private const val AUTHOR_FILTER = "authors"
-      private val NOT_STARTED_FILTER = "progress" to "not-started"
     }
   }

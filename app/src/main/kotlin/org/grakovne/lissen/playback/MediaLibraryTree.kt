@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -213,7 +214,7 @@ class MediaLibraryTree
                 +libraryFilterNode(
                   libraryId,
                   library.type,
-                  "series",
+                  LibraryFilters.SERIES,
                   context.getString(R.string.tree_node_series),
                   library.filters?.series,
                 ) {
@@ -222,7 +223,7 @@ class MediaLibraryTree
                 +libraryFilterNode(
                   libraryId,
                   library.type,
-                  "authors",
+                  LibraryFilters.AUTHORS,
                   context.getString(R.string.tree_node_authors),
                   library.filters?.authors,
                 ) {
@@ -231,13 +232,19 @@ class MediaLibraryTree
                 +libraryFilterNode(
                   libraryId,
                   library.type,
-                  "genres",
+                  LibraryFilters.GENRES,
                   context.getString(R.string.tree_node_genres),
                   library.filters?.genres,
                 ) {
                   it to it
                 }
-                +libraryFilterNode(libraryId, library.type, "tags", context.getString(R.string.tree_node_tags), library.filters?.tags) {
+                +libraryFilterNode(
+                  libraryId,
+                  library.type,
+                  LibraryFilters.TAGS,
+                  context.getString(R.string.tree_node_tags),
+                  library.filters?.tags,
+                ) {
                   it to it
                 }
               }

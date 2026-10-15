@@ -29,6 +29,7 @@ import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryFilteringRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
+import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.OperationResult.Success
 import org.grakovne.lissen.common.LibraryGrouping
@@ -95,7 +96,7 @@ class LibraryAudiobookshelfChannel
       extraFilter: Pair<String, String>?,
     ): OperationResult<PagedItems<Book>> {
       val (option, direction) =
-        if (extraFilter?.first == "series") {
+        if (extraFilter?.first == LibraryFilters.SERIES) {
           "sequence" to "0"
         } else {
           libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
@@ -201,7 +202,7 @@ class LibraryAudiobookshelfChannel
       genre: String,
     ): OperationResult<List<Book>> =
       concurrentFetchSemaphore.withPermit {
-        fetchAllGroupBooks(libraryId = libraryId, groupFilter = encodeLibraryFilter("genres", genre))
+        fetchAllGroupBooks(libraryId = libraryId, groupFilter = encodeLibraryFilter(LibraryFilters.GENRES, genre))
       }
 
     override suspend fun fetchNarratorBooks(
@@ -209,7 +210,7 @@ class LibraryAudiobookshelfChannel
       narrator: String,
     ): OperationResult<List<Book>> =
       concurrentFetchSemaphore.withPermit {
-        fetchAllGroupBooks(libraryId = libraryId, groupFilter = encodeLibraryFilter("narrators", narrator))
+        fetchAllGroupBooks(libraryId = libraryId, groupFilter = encodeLibraryFilter(LibraryFilters.NARRATORS, narrator))
       }
 
     private suspend fun fetchAllGroupBooks(
