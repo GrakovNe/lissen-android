@@ -304,4 +304,5 @@
     <string name="sleep_timer_fade_disabled">Onemogućeno</string>
     <string name="rewind_on_pause_title">Premotavanje tijekom pauze</string>
     <string name="rewind_on_pause_disabled">Onemogućeno</string>
+    <string name="no_playlists_yet">Još nema popisa za reprodukciju</string>
 </resources>
