@@ -17,15 +17,19 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.channel.common.OperationError
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryOrderingDirection
+import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -88,7 +92,8 @@ class PlayerViewModelTest {
     every { libraryPreferences.preferredLibraryTypeFlow } returns preferredLibraryType
     every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.LIBRARY
 
-    viewModel = PlayerViewModel(mediaRepository, preferences, libraryPreferences, autoSkipPreferences, mockk(relaxed = true))
+    viewModel =
+      PlayerViewModel(mediaRepository, preferences, libraryPreferences, autoSkipPreferences, mockk(relaxed = true))
   }
 
   @AfterEach
@@ -657,6 +662,7 @@ class PlayerViewModelTest {
     title = "Test Book",
     subtitle = null,
     author = "Author",
+    authors = emptyList(),
     narrator = null,
     publisher = null,
     series = emptyList(),

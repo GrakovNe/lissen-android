@@ -116,19 +116,26 @@ class LocalCacheRepository
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      extraFilter: Pair<String, String>? = null,
     ): OperationResult<PagedItems<Book>> {
       val libraryType = cachedLibraryRepository.fetchLibraryType(libraryId)
 
       val books =
         cachedBookRepository
-          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId, libraryType = libraryType)
+          .fetchBooks(
+            pageNumber = pageNumber,
+            pageSize = pageSize,
+            libraryId = libraryId,
+            libraryType = libraryType,
+            extraFilter = extraFilter,
+          )
 
       return OperationResult
         .Success(
           PagedItems(
             items = books,
             currentPage = pageNumber,
-            totalItems = cachedBookRepository.countBooks(libraryId, libraryType),
+            totalItems = cachedBookRepository.countBooks(libraryId, libraryType, extraFilter),
           ),
         )
     }
@@ -202,12 +209,14 @@ class LocalCacheRepository
     suspend fun fetchSeriesItems(
       libraryId: String,
       seriesId: String,
+      includeFinished: Boolean = false,
     ): OperationResult<List<Book>> =
       cachedBookRepository
         .fetchSeriesItems(
           libraryId = libraryId,
           seriesId = seriesId,
           libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+          includeFinished = includeFinished,
         ).let { OperationResult.Success(it) }
 
     suspend fun fetchAuthorItems(

@@ -427,6 +427,24 @@ class LocalCacheRepositoryTest {
       }
 
     @Test
+    fun `series items pass includeFinished through`() =
+      runBlocking {
+        coEvery { cachedLibraryRepository.fetchLibraryType("lib") } returns LibraryType.LIBRARY
+        coEvery {
+          cachedBookRepository.fetchSeriesItems(
+            libraryId = "lib",
+            seriesId = "s1",
+            libraryType = LibraryType.LIBRARY,
+            includeFinished = true,
+          )
+        } returns listOf(book("b1"))
+
+        val result = repository.fetchSeriesItems("lib", "s1", includeFinished = true) as OperationResult.Success
+
+        assertEquals(listOf(book("b1")), result.data)
+      }
+
+    @Test
     fun `author items receive the resolved library type`() =
       runBlocking {
         coEvery { cachedLibraryRepository.fetchLibraryType("lib") } returns LibraryType.PODCAST

@@ -37,6 +37,7 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryStatsResp
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
+import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.domain.Bookmark
@@ -178,7 +179,7 @@ class AudioBookshelfRepository
           pageNumber = pageNumber,
           sort = "sequence",
           desc = "0",
-          filter = encodeLibraryFilter("series", seriesId),
+          filter = encodeLibraryFilter(LibraryFilters.SERIES, seriesId),
         )
       }
 

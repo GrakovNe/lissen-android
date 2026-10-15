@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
@@ -68,14 +67,17 @@ import coil3.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.ordering.ReorderPlanner
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.FinishedSuggestionSource
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
 import org.grakovne.lissen.ui.adaptive.isWideLayout
+import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
+import org.grakovne.lissen.ui.screens.player.composable.FinishedBookSuggestionComposable
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
@@ -90,8 +92,11 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.NavigationBa
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
+import org.grakovne.lissen.ui.screens.player.composable.primaryAuthorName
 import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
+import org.grakovne.lissen.ui.screens.player.composable.seriesName
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.FinishedSuggestionViewModel
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -127,6 +132,7 @@ fun PlayerScreen(
   val cachingModelView: CachingModelView = hiltViewModel()
   val playerViewModel: PlayerViewModel = hiltViewModel()
   val playbackSettingsViewModel: PlaybackSettingsViewModel = hiltViewModel()
+  val finishedSuggestionViewModel: FinishedSuggestionViewModel = hiltViewModel()
 
   val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
@@ -135,6 +141,8 @@ fun PlayerScreen(
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val searchRequested by playerViewModel.searchRequested.collectAsState()
   val preparingError by playerViewModel.preparingError.collectAsState()
+  val finishedBook by finishedSuggestionViewModel.finishedBook.collectAsState()
+  val finishedSuggestion by finishedSuggestionViewModel.suggestion.collectAsState()
 
   val playerContent = resolvePlayerContent(bookId, loadedBook, playbackReady)
   val playingBook = playerContent.book
@@ -166,6 +174,11 @@ fun PlayerScreen(
   val seekTime by playbackSettingsViewModel.seekTime.collectAsState()
 
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
+
+  LaunchedEffect(finishedBook?.id) {
+    finishedBook?.id?.let(finishedSuggestionViewModel::load)
+  }
+
   val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
   val autoSkip by remember(bookId) { playerViewModel.autoSkip(bookId) }.collectAsState(initial = AutoSkipConfiguration.disabled)
 
@@ -461,6 +474,30 @@ fun PlayerScreen(
       onDismissRequest = { settingsSelected = false },
       navController = navController,
     )
+  }
+
+  finishedBook?.takeIf { it.id == bookId }?.let { book ->
+    finishedSuggestion?.let { suggestion ->
+      FinishedBookSuggestionComposable(
+        book = book,
+        suggestion = suggestion,
+        imageLoader = imageLoader,
+        coverModel = BookCoverKey(book.id),
+        onDismiss = finishedSuggestionViewModel::dismiss,
+        onSeeAll = {
+          finishedSuggestionViewModel.dismiss()
+          when (suggestion.source) {
+            FinishedSuggestionSource.SERIES -> navController.showLinkedSearch(book.seriesName())
+            FinishedSuggestionSource.AUTHOR -> navController.showLinkedSearch(book.primaryAuthorName())
+            FinishedSuggestionSource.LIBRARY -> navController.showLibrary()
+          }
+        },
+        onCandidateClick = { candidate ->
+          finishedSuggestionViewModel.dismiss()
+          navController.showPlayer(candidate.id, candidate.title, candidate.subtitle, startInstantly = true)
+        },
+      )
+    }
   }
 }
 

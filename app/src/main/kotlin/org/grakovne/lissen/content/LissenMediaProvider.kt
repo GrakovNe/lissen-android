@@ -176,7 +176,14 @@ class LissenMediaProvider
       Timber.d("Fetching books: libraryId=$libraryId, libraryType=$libraryType, page=$pageNumber, pageSize=$pageSize")
 
       return cacheOrChannel(
-        local = { localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber) },
+        local = {
+          localCacheRepository.fetchBooks(
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+            extraFilter = extraFilter,
+          )
+        },
         remote = {
           val channel = provideChannelFor(libraryType)
           channel.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber, extraFilter)
@@ -223,11 +230,14 @@ class LissenMediaProvider
       libraryId: String,
       seriesId: String,
       libraryType: LibraryType? = null,
+      includeFinished: Boolean = false,
     ): OperationResult<List<Book>> {
-      Timber.d("Fetching series items: libraryId=$libraryId, seriesId=$seriesId")
+      Timber.d("Fetching series items: libraryId=$libraryId, seriesId=$seriesId, includeFinished=$includeFinished")
 
       return cacheOrChannel(
-        local = { localCacheRepository.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) },
+        local = {
+          localCacheRepository.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId, includeFinished = includeFinished)
+        },
         remote = { provideChannelFor(libraryType).fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) },
       )
     }

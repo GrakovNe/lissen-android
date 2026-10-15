@@ -1,0 +1,202 @@
+package org.grakovne.lissen.domain
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
+
+class SelectFinishedSuggestionTest {
+  private fun book(
+    id: String,
+    author: String? = "Author One",
+    series: String? = null,
+  ) = Book(id = id, subtitle = null, series = series, title = "Title $id", author = author)
+
+  private fun detailedItem(
+    id: String = "finished",
+    author: String? = "Author One",
+    series: List<BookSeries> = emptyList(),
+  ) = DetailedItem(
+    id = id,
+    title = "Finished Book",
+    subtitle = null,
+    author = author,
+    narrator = null,
+    publisher = null,
+    series = series,
+    year = null,
+    abstract = null,
+    files = emptyList(),
+    chapters = emptyList(),
+    progress = MediaProgress(currentTime = 100.0, isFinished = true, lastUpdate = 0L),
+    libraryId = "library-1",
+    libraryType = LibraryType.LIBRARY,
+    localProvided = false,
+    createdAt = 0L,
+    updatedAt = 0L,
+  )
+
+  private val series = listOf(BookSeries(serialNumber = "1", name = "Test Series", id = "series-1"))
+
+  @Test
+  fun `next books in series are capped at the candidate limit`() {
+    val nextBooks = (1..MAX_FINISHED_CANDIDATES + 2).map { book("b$it") }
+    val seriesBooks = listOf(book("finished")) + nextBooks
+
+    val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, emptyList(), emptyList())
+
+    assertEquals(FinishedSuggestionSource.SERIES, suggestion?.source)
+    assertEquals(nextBooks.take(MAX_FINISHED_CANDIDATES).map { it.id }, suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `two next books in series are suggested when series ends`() {
+    val seriesBooks = listOf(book("finished"), book("b"), book("c"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, emptyList(), emptyList())
+
+    assertEquals(FinishedSuggestionSource.SERIES, suggestion?.source)
+    assertEquals(listOf("b", "c"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `single next book in series is suggested`() {
+    val seriesBooks = listOf(book("a"), book("finished"), book("b"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, emptyList(), emptyList())
+
+    assertEquals(FinishedSuggestionSource.SERIES, suggestion?.source)
+    assertEquals(listOf("b"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `last book in series falls through to author`() {
+    val seriesBooks = listOf(book("a"), book("b"), book("finished"))
+    val authorBooks = listOf(book("d"), book("e"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, authorBooks, emptyList())
+
+    assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
+    assertEquals(listOf("d", "e"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `book without series falls through to author`() {
+    val authorBooks = (1..MAX_FINISHED_CANDIDATES + 1).map { book("b$it") }
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), authorBooks, emptyList())
+
+    assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
+    assertEquals(authorBooks.take(MAX_FINISHED_CANDIDATES).map { it.id }, suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `single author book is suggested`() {
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), listOf(book("b")), emptyList())
+
+    assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
+    assertEquals(listOf("b"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `finished book is excluded from author candidates`() {
+    val authorBooks = listOf(book("finished"), book("b"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), authorBooks, emptyList())
+
+    assertEquals(listOf("b"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `no series and no author books fall through to the library pool`() {
+    val libraryBooks = listOf(book("b", author = "Author Two"), book("c", author = "Author Three"), book("d", author = "Author Four"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
+
+    assertEquals(FinishedSuggestionSource.LIBRARY, suggestion?.source)
+    assertEquals(3, suggestion?.candidates?.size)
+  }
+
+  @Test
+  fun `library pool takes the first books in order`() {
+    val libraryBooks = (1..MAX_FINISHED_CANDIDATES + 4).map { book("b$it", author = "Author Two") }
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
+
+    assertEquals(libraryBooks.take(MAX_FINISHED_CANDIDATES).map { it.id }, suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `finished book is excluded from the library pool`() {
+    val libraryBooks = listOf(book("finished"), book("b", author = "Author Two"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
+
+    assertEquals(listOf("b"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `duplicates are removed from author candidates`() {
+    val authorBooks = listOf(book("b"), book("b"), book("c"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), authorBooks, emptyList())
+
+    assertEquals(listOf("b", "c"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `duplicates are removed from library candidates`() {
+    val libraryBooks = listOf(book("b"), book("b"), book("c"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), libraryBooks)
+
+    assertEquals(listOf("b", "c"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `duplicates are removed from series candidates`() {
+    val seriesBooks = listOf(book("finished"), book("b"), book("b"), book("c"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, emptyList(), emptyList())
+
+    assertEquals(listOf("b", "c"), suggestion?.candidates?.map { it.id })
+  }
+
+  @Test
+  fun `the only book in library produces no suggestion`() {
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), listOf(book("finished")))
+
+    assertNull(suggestion)
+  }
+
+  @Test
+  fun `empty pools produce no suggestion`() {
+    val suggestion = selectFinishedSuggestion(detailedItem(), emptyList(), emptyList(), emptyList())
+
+    assertNull(suggestion)
+  }
+
+  @Test
+  fun `finished book missing from series list falls through to author`() {
+    val seriesBooks = listOf(book("a"), book("b"))
+    val authorBooks = listOf(book("b"))
+
+    val suggestion = selectFinishedSuggestion(detailedItem(series = series), seriesBooks, authorBooks, emptyList())
+
+    assertEquals(FinishedSuggestionSource.AUTHOR, suggestion?.source)
+  }
+
+  @Test
+  fun `primary author is the first one with an id, not the joined author line`() {
+    val item =
+      detailedItem(author = "Unknown, Neil Gaiman, Terry Pratchett").copy(
+        authors =
+          listOf(
+            BookAuthor(id = "", name = "Unknown"),
+            BookAuthor(id = "author-1", name = "Neil Gaiman"),
+            BookAuthor(id = "author-2", name = "Terry Pratchett"),
+          ),
+      )
+
+    assertEquals(BookAuthor(id = "author-1", name = "Neil Gaiman"), item.primaryAuthor())
+  }
+}
