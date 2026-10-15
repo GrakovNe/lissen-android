@@ -187,7 +187,7 @@ class FinishedSuggestionAcceptanceTest {
       selectFinishedSuggestion(finishedItem(finished), emptyList(), emptyList(), pool)
 
     assertEquals(FinishedSuggestionSource.LIBRARY, suggestion?.source)
-    assertEquals(3, suggestion?.candidates?.size)
+    assertEquals(6, suggestion?.candidates?.size)
     assertTrue(pool.map { it.id }.toSet().containsAll(suggestion?.candidates?.map { it.id } ?: emptyList()))
   }
 
