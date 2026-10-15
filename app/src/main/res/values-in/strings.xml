@@ -277,7 +277,7 @@
     <string name="a11y_rewind">Putar balik</string>
     <string name="library_grouping_genre">Berdasarkan Genre</string>
     <string name="library_grouping_narrator">Berdasarkan Narator</string>
-    <string name="library_grouping_playlist">Berdasarkan Daftar Putar</string>
+    <string name="library_grouping_playlist">Berdasarkan Playlist</string>
     <plurals name="playlist_items_count">
         <item quantity="other">%d item</item>
     </plurals>
@@ -288,4 +288,5 @@
     <string name="sleep_timer_fade_disabled">Nonaktif</string>
     <string name="rewind_on_pause_title">Mundurkan saat jeda</string>
     <string name="rewind_on_pause_disabled">Nonaktif</string>
+    <string name="no_playlists_yet">Belum ada playlist</string>
 </resources>
