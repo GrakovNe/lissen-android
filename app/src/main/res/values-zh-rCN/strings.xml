@@ -289,4 +289,11 @@
     <string name="player_settings_intro_value">片头 %1$s</string>
     <string name="player_settings_outro_value">片尾 %1$s</string>
     <string name="no_playlists_yet">暂无播放列表</string>
+    <string name="playing_finished_title">已听完</string>
+    <string name="playing_finished_more_series">《%1$s》系列下一部</string>
+    <string name="playing_finished_more_author">%1$s 的其他作品</string>
+    <string name="playing_finished_more_library">其他作品</string>
+    <string name="playing_finished_see_all_series">系列更多作品</string>
+    <string name="playing_finished_see_all_author">作者更多作品</string>
+    <string name="playing_finished_see_all_library">返回媒体库</string>
 </resources>
