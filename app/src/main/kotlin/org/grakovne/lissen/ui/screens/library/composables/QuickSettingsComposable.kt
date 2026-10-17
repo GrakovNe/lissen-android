@@ -28,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -144,6 +145,10 @@ fun QuickSettingsComposable(
       }
 
       val sortSupported = grouping !in NAME_SORTED_GROUPINGS
+
+      LaunchedEffect(sortSupported) {
+        if (!sortSupported) sortExpanded = false
+      }
 
       SettingsPickerRow(
         label = stringResource(R.string.library_quick_settings_sort_title),
