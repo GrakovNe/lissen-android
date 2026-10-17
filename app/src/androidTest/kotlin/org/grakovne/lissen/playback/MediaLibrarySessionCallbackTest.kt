@@ -247,6 +247,87 @@ class MediaLibrarySessionCallbackTest {
     }
 
   @Test
+  fun onSetMediaItems_fileChapteredBook_buildsOneClipPerFile() =
+    runBlocking {
+      val book =
+        makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L)).copy(
+          chapters =
+            listOf(
+              PlayingChapter(
+                available = true,
+                podcastEpisodeState = null,
+                duration = 100.0,
+                start = 0.0,
+                end = 100.0,
+                title = "01.mp3",
+                id = "f-1",
+              ),
+              PlayingChapter(
+                available = true,
+                podcastEpisodeState = null,
+                duration = 100.0,
+                start = 100.0,
+                end = 200.0,
+                title = "02.mp3",
+                id = "f-2",
+              ),
+              PlayingChapter(
+                available = true,
+                podcastEpisodeState = null,
+                duration = 100.0,
+                start = 200.0,
+                end = 300.0,
+                title = "03.mp3",
+                id = "f-3",
+              ),
+            ),
+        )
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(book)
+
+      val mediaItem = MediaItem.Builder().setMediaId(MediaLibraryTree.bookPath("book-1")).build()
+      val result =
+        callback
+          .onSetMediaItems(session, controller, listOf(mediaItem), C.INDEX_UNSET, C.TIME_UNSET)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("01.mp3", "02.mp3", "03.mp3"), result.mediaItems.map { it.mediaMetadata.title })
+      result.mediaItems.forEachIndexed { index, fileItem ->
+        val segments =
+          fileItem.requestMetadata.extras!!.let {
+            BundleCompat.getParcelableArrayList(it, FILE_SEGMENTS, FileClip::class.java)
+          }
+        assertEquals(1, segments!!.size)
+        assertEquals("f-${index + 1}", segments.single().fileId)
+        assertEquals(0.0, segments.single().clipStart, 0.0)
+        assertEquals(100.0, segments.single().clipEnd, 0.0)
+      }
+      assertEquals(1, result.startIndex)
+      assertEquals(70000, result.startPositionMs)
+    }
+
+  @Test
+  fun onSetMediaItems_andPlaybackResumption_resolveTheSameQueue() =
+    runBlocking {
+      val book = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      every { preferences.getLastPlayingItem() } returns book
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(book)
+
+      val mediaItem = MediaItem.Builder().setMediaId(MediaLibraryTree.bookPath("book-1")).build()
+      val setItemsResult =
+        callback
+          .onSetMediaItems(session, controller, listOf(mediaItem), C.INDEX_UNSET, C.TIME_UNSET)
+          .get(5, TimeUnit.SECONDS)
+      val resumptionResult =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = false)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(setItemsResult.mediaItems.map { it.mediaId }, resumptionResult.mediaItems.map { it.mediaId })
+      assertEquals(setItemsResult.startIndex, resumptionResult.startIndex)
+      assertEquals(setItemsResult.startPositionMs, resumptionResult.startPositionMs)
+    }
+
+  @Test
   fun onSetMediaItems_bookFetchFails_returnsEmptyList() =
     runBlocking {
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns

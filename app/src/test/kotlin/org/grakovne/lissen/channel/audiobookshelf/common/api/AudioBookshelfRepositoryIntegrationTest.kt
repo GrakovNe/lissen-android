@@ -16,6 +16,7 @@ import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
@@ -119,6 +120,79 @@ class AudioBookshelfRepositoryIntegrationTest {
       assertEquals(OperationResult.Error<LibrariesResponse>(OperationError.NotFoundError), repository.fetchLibraries())
       assertEquals(OperationResult.Error<LibrariesResponse>(OperationError.InternalError), repository.fetchLibraries())
       assertEquals(OperationResult.Error<LibrariesResponse>(OperationError.Unauthorized), repository.fetchLibraries())
+    }
+
+  @Test
+  fun `fetchBook keeps server chapters even when they disagree with the files`() =
+    runBlocking {
+      server.enqueue(
+        json(
+          """
+          {
+            "id": "book-1", "ino": "ino-1", "libraryId": "lib-1", "addedAt": 1000, "ctimeMs": 2000,
+            "media": {
+              "duration": 16.0,
+              "metadata": { "title": "Broken Chapters Book", "titleIgnorePrefix": "broken" },
+              "audioFiles": [
+                { "index": 0, "ino": "ino-a", "duration": 5.0, "mimeType": "audio/wav",
+                  "metadata": { "filename": "t1.wav", "ext": ".wav", "size": 100 }, "metaTags": null },
+                { "index": 1, "ino": "ino-b", "duration": 8.0, "mimeType": "audio/wav",
+                  "metadata": { "filename": "t2.wav", "ext": ".wav", "size": 100 }, "metaTags": null },
+                { "index": 2, "ino": "ino-c", "duration": 3.0, "mimeType": "audio/wav",
+                  "metadata": { "filename": "t3.wav", "ext": ".wav", "size": 100 }, "metaTags": null }
+              ],
+              "chapters": [
+                { "id": 0, "start": 0.0, "end": 8.0, "title": "Broken One" },
+                { "id": 1, "start": 8.0, "end": 16.0, "title": "Broken Two" },
+                { "id": 2, "start": 16.0, "end": 24.0, "title": "Broken Three" }
+              ]
+            }
+          }
+          """.trimIndent(),
+        ),
+      )
+
+      val result = repository.fetchBook("book-1")
+      val response = (result as OperationResult.Success).data
+
+      val item = BookResponseConverter().apply(response)
+      assertEquals(listOf("Broken One", "Broken Two", "Broken Three"), item.chapters.map { it.title })
+      assertEquals(listOf(8.0, 16.0, 24.0), item.chapters.map { it.end })
+    }
+
+  @Test
+  fun `fetchBook with no chapters at all plays the book as files`() =
+    runBlocking {
+      server.enqueue(
+        json(
+          """
+          {
+            "id": "book-1", "ino": "ino-1", "libraryId": "lib-1", "addedAt": 1000, "ctimeMs": 2000,
+            "media": {
+              "duration": 16.0,
+              "metadata": { "title": "Chapterless Book" },
+              "audioFiles": [
+                { "index": 0, "ino": "ino-a", "duration": 5.0, "mimeType": "audio/wav",
+                  "metadata": { "filename": "t1.wav", "ext": ".wav", "size": 100 }, "metaTags": null },
+                { "index": 1, "ino": "ino-b", "duration": 8.0, "mimeType": "audio/wav",
+                  "metadata": { "filename": "t2.wav", "ext": ".wav", "size": 100 }, "metaTags": null },
+                { "index": 2, "ino": "ino-c", "duration": 3.0, "mimeType": "audio/wav",
+                  "metadata": { "filename": "t3.wav", "ext": ".wav", "size": 100 }, "metaTags": null }
+              ],
+              "chapters": null
+            }
+          }
+          """.trimIndent(),
+        ),
+      )
+
+      val result = repository.fetchBook("book-1")
+      val response = (result as OperationResult.Success).data
+
+      val item = BookResponseConverter().apply(response)
+      assertEquals(listOf("t1", "t2", "t3"), item.chapters.map { it.title })
+      assertEquals(listOf(0.0, 5.0, 13.0), item.chapters.map { it.start })
+      assertEquals(listOf(5.0, 13.0, 16.0), item.chapters.map { it.end })
     }
 
   @Test

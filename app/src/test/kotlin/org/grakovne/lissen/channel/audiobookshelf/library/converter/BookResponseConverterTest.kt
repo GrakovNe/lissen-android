@@ -235,6 +235,35 @@ class BookResponseConverterTest {
       assertEquals(120.0, item.chapters[0].end, 0.001)
       assertEquals(120.0, item.chapters[0].duration, 0.001)
     }
+
+    @Test
+    fun `server chapters are used even when they disagree with the file layout`() {
+      val item =
+        converter.apply(
+          bookResponse(
+            chapters = listOf(chapter("c1", 0.0, 8.0), chapter("c2", 8.0, 16.0), chapter("c3", 16.0, 24.0)),
+            audioFiles = listOf(audioFile(0, 5.0), audioFile(1, 8.0), audioFile(2, 3.0)),
+          ),
+        )
+      assertEquals(listOf("c1", "c2", "c3"), item.chapters.map { it.id })
+      assertEquals(listOf(8.0, 16.0, 24.0), item.chapters.map { it.end })
+      assertEquals(listOf("c1", "c2", "c3"), item.sourceChapters.map { it.id })
+    }
+
+    @Test
+    fun `file chapters tile the audio of a chapterless book`() {
+      val item =
+        converter.apply(
+          bookResponse(
+            chapters = null,
+            audioFiles = listOf(audioFile(0, 5.0), audioFile(1, 8.0), audioFile(2, 3.0)),
+          ),
+        )
+      assertEquals(listOf("ino-0", "ino-1", "ino-2"), item.chapters.map { it.id })
+      assertEquals(listOf(0.0, 5.0, 13.0), item.chapters.map { it.start })
+      assertEquals(listOf(5.0, 13.0, 16.0), item.chapters.map { it.end })
+      assertTrue(item.sourceChapters.isEmpty())
+    }
   }
 
   @Nested

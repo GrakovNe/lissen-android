@@ -119,6 +119,22 @@ class PlayingItemPersistenceTest {
     }
 
   @Test
+  fun `playing items stored before the source chapters field existed still load`() {
+    preferLibrary("lib-1")
+    preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-1"))
+
+    val raw = fakePreferences.getString("playing_item", null)!!
+    val legacy = raw.replace(Regex("\"sourceChapters\":\\[[^]]*],?"), "")
+    fakePreferences.edit().putString("playing_item", legacy).apply()
+
+    val reopened = PlaybackPreferences(SecurePreferenceStore(context), LibraryPreferences(SecurePreferenceStore(context)))
+    val loaded = reopened.getPlayingItem()
+
+    assertEquals("book-1", loaded?.id)
+    assertEquals(loaded?.chapters, loaded?.sourceChapters)
+  }
+
+  @Test
   fun `clearing by item id removes the stored item from its own library`() {
     preferLibrary("lib-1")
     preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-1"))
