@@ -79,8 +79,6 @@ fun QuickSettingsComposable(
   val libraryType = libraryViewModel.fetchPreferredLibraryType()
   val isLibrary = libraryType == LibraryType.LIBRARY
 
-  val groupingOptions = LibraryGrouping.entries.filter { it.isAvailableIn(libraryType) }
-
   var groupingExpanded by remember { mutableStateOf(false) }
   var sortExpanded by remember { mutableStateOf(false) }
 
@@ -103,17 +101,15 @@ fun QuickSettingsComposable(
         onClick = onForceLocalToggled,
       )
 
-      if (isLibrary) {
-        val hideCompletedSupported = forceCache || grouping.supportsHideCompleted()
+      val hideCompletedSupported = isLibrary && (forceCache || grouping.supportsHideCompleted())
 
-        SettingsToggleRow(
-          title = stringResource(R.string.hide_completed_items),
-          icon = Icons.Outlined.VisibilityOff,
-          checked = hideCompleted && hideCompletedSupported,
-          enabled = hideCompletedSupported,
-          onClick = onHideCompletedToggled,
-        )
-      }
+      SettingsToggleRow(
+        title = stringResource(R.string.hide_completed_items),
+        icon = Icons.Outlined.VisibilityOff,
+        checked = hideCompleted && hideCompletedSupported,
+        enabled = hideCompletedSupported,
+        onClick = onHideCompletedToggled,
+      )
 
       Spacer(modifier = Modifier.height(8.dp))
 
@@ -134,41 +130,43 @@ fun QuickSettingsComposable(
 
       AnimatedVisibility(visible = groupingExpanded) {
         Column {
-          groupingOptions.forEach { option ->
+          LibraryGrouping.entries.forEach { option ->
             SettingsOptionRow(
               title = option.toLocalizedName(context),
               icon = option.icon(),
               selected = grouping == option,
               trailing = Icons.Outlined.Check,
+              enabled = option.isAvailableIn(libraryType),
               onClick = { onGroupingSelected(option) },
             )
           }
         }
       }
 
-      if (grouping !in NAME_SORTED_GROUPINGS) {
-        SettingsPickerRow(
-          label = stringResource(R.string.library_quick_settings_sort_title),
-          icon = Icons.AutoMirrored.Outlined.Sort,
-          value = ordering.option.toLocalizedName(context),
-          expanded = sortExpanded,
-          onClick = { sortExpanded = !sortExpanded },
-        )
+      val sortSupported = grouping !in NAME_SORTED_GROUPINGS
 
-        AnimatedVisibility(visible = sortExpanded) {
-          Column {
-            LibraryOrderingOption.entries.forEach { option ->
-              SettingsSortOptionRow(
-                title = option.toLocalizedName(context),
-                icon = option.icon(),
-                selected = ordering.option == option,
-                direction = ordering.direction,
-                onSelected = { direction ->
-                  librarySettingsViewModel.preferLibraryOrdering(LibraryOrderingConfiguration(option = option, direction = direction))
-                  onSortingChanged()
-                },
-              )
-            }
+      SettingsPickerRow(
+        label = stringResource(R.string.library_quick_settings_sort_title),
+        icon = Icons.AutoMirrored.Outlined.Sort,
+        value = ordering.option.toLocalizedName(context),
+        expanded = sortExpanded && sortSupported,
+        enabled = sortSupported,
+        onClick = { sortExpanded = !sortExpanded },
+      )
+
+      AnimatedVisibility(visible = sortExpanded && sortSupported) {
+        Column {
+          LibraryOrderingOption.entries.forEach { option ->
+            SettingsSortOptionRow(
+              title = option.toLocalizedName(context),
+              icon = option.icon(),
+              selected = ordering.option == option,
+              direction = ordering.direction,
+              onSelected = { direction ->
+                librarySettingsViewModel.preferLibraryOrdering(LibraryOrderingConfiguration(option = option, direction = direction))
+                onSortingChanged()
+              },
+            )
           }
         }
       }
