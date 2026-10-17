@@ -305,4 +305,11 @@
     <string name="rewind_on_pause_title">Premotavanje tijekom pauze</string>
     <string name="rewind_on_pause_disabled">Onemogućeno</string>
     <string name="no_playlists_yet">Još nema popisa za reprodukciju</string>
+    <string name="playing_finished_title">Završeno slušanje</string>
+    <string name="playing_finished_more_series">Sljedeće za „%1$s”</string>
+    <string name="playing_finished_more_author">Druge knjige autora %1$s</string>
+    <string name="playing_finished_more_library">Također u tvojoj knjižnici</string>
+    <string name="playing_finished_see_all_series">Više knjiga u serijalu</string>
+    <string name="playing_finished_see_all_author">Više knjiga autora</string>
+    <string name="playing_finished_see_all_library">Povratak u knjižnicu</string>
 </resources>
