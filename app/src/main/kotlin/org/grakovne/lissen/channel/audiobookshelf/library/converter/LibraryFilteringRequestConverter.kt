@@ -1,5 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.library.converter
 
+import org.grakovne.lissen.channel.audiobookshelf.common.api.encodeLibraryFilter
+import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -8,13 +10,9 @@ import javax.inject.Singleton
 class LibraryFilteringRequestConverter
   @Inject
   constructor() {
-    fun apply(preferences: LibraryPreferences): String? {
-      val hideCompleted = preferences.getHideCompleted()
-
-      if (hideCompleted) {
-        return "progress.bm90LWZpbmlzaGVk" // not-finished
+    fun apply(preferences: LibraryPreferences): String? =
+      when (preferences.getHideCompleted()) {
+        true -> encodeLibraryFilter(LibraryFilters.PROGRESS, LibraryFilters.NOT_FINISHED)
+        false -> null
       }
-
-      return null
-    }
   }

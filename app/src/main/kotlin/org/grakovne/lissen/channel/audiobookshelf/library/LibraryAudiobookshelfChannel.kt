@@ -33,6 +33,7 @@ import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.OperationResult.Success
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.supportsHideCompleted
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
@@ -153,7 +154,7 @@ class LibraryAudiobookshelfChannel
 
         else -> {
           val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
-          val filter = libraryFilteringRequestConverter.apply(preferences)
+          val filter = libraryFilteringRequestConverter.apply(preferences).takeIf { libraryGrouping.supportsHideCompleted() }
 
           dataRepository
             .fetchLibraryItems(

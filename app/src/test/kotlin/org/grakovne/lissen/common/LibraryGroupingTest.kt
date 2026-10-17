@@ -29,4 +29,9 @@ class LibraryGroupingTest {
     assertEquals(LibraryGrouping.SERIES, LibraryGrouping.SERIES.effectiveIn(LibraryType.LIBRARY))
     assertFalse(LibraryGrouping.GENRE.isAvailableIn(null))
   }
+
+  @Test
+  fun `only a plain list hides completed books online`() {
+    assertEquals(listOf(LibraryGrouping.NONE), LibraryGrouping.entries.filter { it.supportsHideCompleted() })
+  }
 }

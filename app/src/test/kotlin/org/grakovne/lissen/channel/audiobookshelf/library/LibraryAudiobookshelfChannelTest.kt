@@ -6,16 +6,20 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.encodeLibraryFilter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryFilteringRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItem
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryMetadata
 import org.grakovne.lissen.channel.audiobookshelf.library.model.Media
+import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -44,7 +48,7 @@ class LibraryAudiobookshelfChannelTest {
       offlineSessionRequestConverter = mockk(relaxed = true),
       localSessionSyncResponseConverter = mockk(relaxed = true),
       libraryOrderingRequestConverter = LibraryOrderingRequestConverter(),
-      libraryFilteringRequestConverter = mockk(relaxed = true),
+      libraryFilteringRequestConverter = LibraryFilteringRequestConverter(),
       libraryPageResponseConverter = LibraryPageResponseConverter(),
       libraryAuthorsResponseConverter = mockk(relaxed = true),
       libraryStatsResponseConverter = mockk(relaxed = true),
@@ -132,6 +136,38 @@ class LibraryAudiobookshelfChannelTest {
       val result = channel.fetchNarratorBooks(LIBRARY, "Stephen Fry") as OperationResult.Success
 
       assertEquals(listOf("b1"), result.data.map { it.id })
+    }
+
+  @Test
+  fun `fetchLibrary without grouping and hide completed on asks the server for unfinished books`() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), any(), any()) } returns page(listOf("b1"), total = 1)
+
+      channel.fetchLibrary(LIBRARY, 20, 0, LibraryGrouping.NONE)
+
+      coVerify(exactly = 1) {
+        repository.fetchLibraryItems(
+          LIBRARY,
+          20,
+          0,
+          any(),
+          any(),
+          encodeLibraryFilter(LibraryFilters.PROGRESS, LibraryFilters.NOT_FINISHED),
+          false,
+        )
+      }
+    }
+
+  @Test
+  fun `fetchLibrary grouped by series with hide completed on collapses series and sends no progress filter`() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), any(), any()) } returns page(listOf("b1"), total = 1)
+
+      channel.fetchLibrary(LIBRARY, 20, 0, LibraryGrouping.SERIES)
+
+      coVerify(exactly = 1) { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), null, true) }
     }
 
   private fun page(
