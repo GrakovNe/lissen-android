@@ -303,4 +303,7 @@
     <string name="playing_finished_see_all_series">Altri libri nelle serie</string>
     <string name="playing_finished_see_all_author">Altri libri dell\'autore</string>
     <string name="playing_finished_see_all_library">Torna alla libreria</string>
+    <string name="playing_finished_title">Ascolto terminato</string>
+    <string name="playing_finished_more_series">Successivo in “%1$s”</string>
+    <string name="playing_finished_more_library">Altro nella tua libreria</string>
 </resources>
