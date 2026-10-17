@@ -9,4 +9,5 @@ object LibraryFilters {
   const val PROGRESS = "progress"
 
   const val NOT_STARTED = "not-started"
+  const val NOT_FINISHED = "not-finished"
 }

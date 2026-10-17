@@ -45,6 +45,7 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.isAvailableIn
+import org.grakovne.lissen.common.supportsHideCompleted
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
@@ -103,10 +104,13 @@ fun QuickSettingsComposable(
       )
 
       if (isLibrary) {
+        val hideCompletedSupported = forceCache || grouping.supportsHideCompleted()
+
         SettingsToggleRow(
           title = stringResource(R.string.hide_completed_items),
           icon = Icons.Outlined.VisibilityOff,
-          checked = hideCompleted,
+          checked = hideCompleted && hideCompletedSupported,
+          enabled = hideCompletedSupported,
           onClick = onHideCompletedToggled,
         )
       }
