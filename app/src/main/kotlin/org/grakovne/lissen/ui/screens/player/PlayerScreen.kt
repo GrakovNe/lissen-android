@@ -72,6 +72,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
 import org.grakovne.lissen.ui.adaptive.isWideLayout
+import org.grakovne.lissen.ui.components.AdaptiveHeadingText
 import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -330,11 +331,11 @@ fun PlayerScreen(
           }
         },
         title = {
-          Text(
+          AdaptiveHeadingText(
             text = screenTitle,
-            style = titleTextStyle,
+            largeStyle = titleTextStyle,
+            smallStyle = typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             color = colorScheme.onSurface,
-            maxLines = 1,
             modifier =
               Modifier
                 .fillMaxWidth()
