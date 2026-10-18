@@ -73,13 +73,13 @@ class FinishedSuggestionViewModel
       book: DetailedItem,
     ): FinishedSuggestion? {
       book.series
-        .firstOrNull { it.name.isNotBlank() }
-        ?.id
-        ?.let { seriesId ->
+        .firstOrNull { it.name.isNotBlank() && it.id != null }
+        ?.let { seriesEntry ->
+          val seriesId = seriesEntry.id!!
           val seriesBooks =
             mediaChannel
               .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId, libraryType = libraryType, includeFinished = true)
-              .fold(onSuccess = { it.sortedBySeriesPosition() }, onFailure = { emptyList() })
+              .fold(onSuccess = { it.sortedBySeriesPosition(seriesEntry.name) }, onFailure = { emptyList() })
 
           selectFinishedSuggestion(book, seriesBooks, emptyList(), emptyList())?.let { return it }
         }

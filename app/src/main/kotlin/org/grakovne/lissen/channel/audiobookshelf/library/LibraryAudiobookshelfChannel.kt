@@ -33,6 +33,7 @@ import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.OperationResult.Success
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.seriesSequence
 import org.grakovne.lissen.common.supportsHideCompleted
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -339,8 +340,8 @@ class LibraryAudiobookshelfChannel
             .distinctBy { it.id }
             .sortedWith(
               compareBy(
-                { it.series?.substringBefore("#") },
-                { it.series?.substringAfterLast("#")?.toIntOrNull() },
+                { it.series?.substringBefore("#")?.trim() },
+                { it.seriesSequence()?.toDoubleOrNull() },
                 { it.author },
                 { it.title },
               ),

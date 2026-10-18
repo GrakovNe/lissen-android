@@ -45,4 +45,42 @@ class SeriesOrderingTest {
 
     assertEquals(listOf("one", "two", "x", "y"), ordered.map { it.id })
   }
+
+  @Test
+  fun `multi-series returns number for matching series name`() {
+    val b = book("a", series = "Ryanverse #6, John Clark #1")
+    assertEquals("6", b.seriesSequence("Ryanverse"))
+    assertEquals("1", b.seriesSequence("John Clark"))
+  }
+
+  @Test
+  fun `multi-series falls back to first segment when no match`() {
+    val b = book("a", series = "Ryanverse #6, John Clark #1")
+    assertEquals("6", b.seriesSequence())
+    assertEquals("6", b.seriesSequence("Nonexistent"))
+  }
+
+  @Test
+  fun `multi-series sorting uses the number for the given series name`() {
+    val ordered =
+      listOf(
+        book("c", series = "Ryanverse #7, Jack Ryan #6"),
+        book("a", series = "Ryanverse #1, John Clark #3"),
+        book("b", series = "Ryanverse #2, Other #9"),
+      ).sortedBySeriesPosition("Ryanverse")
+
+    assertEquals(listOf("a", "b", "c"), ordered.map { it.id })
+  }
+
+  @Test
+  fun `multi-series sorting by second series name`() {
+    val ordered =
+      listOf(
+        book("c", series = "Ryanverse #7, Jack Ryan #6"),
+        book("a", series = "Ryanverse #1, John Clark #3"),
+        book("b", series = "Ryanverse #2, Other #9"),
+      ).sortedBySeriesPosition("Jack Ryan")
+
+    assertEquals(listOf("a", "b", "c"), ordered.map { it.id })
+  }
 }

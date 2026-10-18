@@ -190,7 +190,7 @@ class LibraryViewModel
         onSuccess = { books ->
           val ordered =
             when (entry) {
-              is LibraryEntry.SeriesEntry -> books.sortedBySeriesPosition()
+              is LibraryEntry.SeriesEntry -> books.sortedBySeriesPosition(entry.title)
               else -> books
             }
           _groups.update { state -> state.copy(books = state.books + (groupId to ordered)) }
