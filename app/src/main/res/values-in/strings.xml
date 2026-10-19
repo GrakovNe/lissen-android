@@ -289,4 +289,11 @@
     <string name="rewind_on_pause_title">Mundurkan saat jeda</string>
     <string name="rewind_on_pause_disabled">Nonaktif</string>
     <string name="no_playlists_yet">Belum ada playlist</string>
+    <string name="playing_finished_title">Selesai didengar</string>
+    <string name="playing_finished_more_series">Berikutnya dalam “%1$s”</string>
+    <string name="playing_finished_more_author">Buku lain oleh %1$s</string>
+    <string name="playing_finished_more_library">Juga ada di koleksi kamu</string>
+    <string name="playing_finished_see_all_series">Buku lainnya dalam seri</string>
+    <string name="playing_finished_see_all_author">Buku lainnya dari penulis</string>
+    <string name="playing_finished_see_all_library">Kembali ke koleksi</string>
 </resources>
