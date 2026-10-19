@@ -42,7 +42,7 @@ fun SeriesComposable(
     onPrefetch = onPrefetch,
     cover = { GroupCoverStack(groupId = series.id, coverItemIds = series.coverItemIds, imageLoader = imageLoader) },
     itemRows = {
-      val sequences = it.mapIndexed { index, book -> book.seriesSequence() ?: "${index + 1}" }
+      val sequences = it.mapIndexed { index, book -> book.seriesSequence(series.title) ?: "${index + 1}" }
       val widthReserve = "0".repeat(sequences.maxOfOrNull { sequence -> sequence.length } ?: 1)
 
       it.forEachIndexed { index, book ->

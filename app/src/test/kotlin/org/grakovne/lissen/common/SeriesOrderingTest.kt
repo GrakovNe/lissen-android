@@ -2,6 +2,7 @@ package org.grakovne.lissen.common
 
 import org.grakovne.lissen.domain.Book
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class SeriesOrderingTest {
@@ -44,5 +45,53 @@ class SeriesOrderingTest {
       ).sortedBySeriesPosition()
 
     assertEquals(listOf("one", "two", "x", "y"), ordered.map { it.id })
+  }
+
+  @Test
+  fun `sequence is taken from the requested series`() {
+    val book = book("remorse", series = "Ryanverse #6, John Clark #1")
+
+    assertEquals("6", book.seriesSequence("Ryanverse"))
+    assertEquals("1", book.seriesSequence("John Clark"))
+  }
+
+  @Test
+  fun `series name must match a whole entry`() {
+    val book = book("honor", series = "Ryanverse #7, Jack Ryan #6")
+
+    assertNull(book.seriesSequence("Ryan"))
+  }
+
+  @Test
+  fun `series names with separators are matched literally`() {
+    val book = book("x", series = "Star Wars: Thrawn, Book #1 #3, Other #9")
+
+    assertEquals("3", book.seriesSequence("Star Wars: Thrawn, Book #1"))
+  }
+
+  @Test
+  fun `requested series without a sequence does not borrow another one`() {
+    val book = book("x", series = "Ryanverse, Jack Ryan #6")
+
+    assertNull(book.seriesSequence("Ryanverse"))
+  }
+
+  @Test
+  fun `without a series name the last sequence is used`() {
+    val book = book("honor", series = "Ryanverse #7, Jack Ryan #6")
+
+    assertEquals("6", book.seriesSequence())
+  }
+
+  @Test
+  fun `books are ordered by their position in the requested series`() {
+    val ordered =
+      listOf(
+        book("honor", series = "Ryanverse #7, Jack Ryan #6"),
+        book("remorse", series = "Ryanverse #6, John Clark #1"),
+        book("games", series = "Ryanverse #2, Jack Ryan #2"),
+      ).sortedBySeriesPosition("Ryanverse")
+
+    assertEquals(listOf("games", "remorse", "honor"), ordered.map { it.id })
   }
 }

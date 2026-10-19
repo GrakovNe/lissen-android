@@ -74,12 +74,12 @@ class FinishedSuggestionViewModel
     ): FinishedSuggestion? {
       book.series
         .firstOrNull { it.name.isNotBlank() }
-        ?.id
-        ?.let { seriesId ->
+        ?.let { series -> series.id?.let { it to series.name } }
+        ?.let { (seriesId, seriesName) ->
           val seriesBooks =
             mediaChannel
               .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId, libraryType = libraryType, includeFinished = true)
-              .fold(onSuccess = { it.sortedBySeriesPosition() }, onFailure = { emptyList() })
+              .fold(onSuccess = { it.sortedBySeriesPosition(seriesName) }, onFailure = { emptyList() })
 
           selectFinishedSuggestion(book, seriesBooks, emptyList(), emptyList())?.let { return it }
         }
