@@ -313,4 +313,11 @@
     <string name="rewind_on_pause_title">Przewiń do tyłu po wznowieniu</string>
     <string name="rewind_on_pause_disabled">Wyłączone</string>
     <string name="no_playlists_yet">Nie ma jeszcze playlist</string>
+    <string name="playing_finished_title">Ukończono</string>
+    <string name="playing_finished_more_series">Kolejne w \"%1$s\"</string>
+    <string name="playing_finished_more_author">Inne książki od %1$s</string>
+    <string name="playing_finished_more_library">Inne w bibliotece</string>
+    <string name="playing_finished_see_all_series">Więcej książek w serii</string>
+    <string name="playing_finished_see_all_author">Więcej książek od autora</string>
+    <string name="playing_finished_see_all_library">Wróć do biblioteki</string>
 </resources>
