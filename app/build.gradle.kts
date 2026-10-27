@@ -60,8 +60,8 @@ tasks.withType<JavaCompile>().configureEach {
 configurations.all {
   // Keep the Kotlin toolchain libraries aligned when Compose Multiplatform dependencies request
   // older transitive versions. Re-check these pins when the Compose dependency graph is upgraded.
-  resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
-  resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
+  resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.21")
+  resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.12.0")
 }
 
 ksp {

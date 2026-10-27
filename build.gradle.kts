@@ -6,7 +6,7 @@ buildscript {
 	dependencies {
 		classpath("com.project.starter:easylauncher:6.4.1")
 		classpath("com.github.usefulness:webp-imageio:0.11.0")
-		classpath("com.github.ben-manes:gradle-versions-plugin:0.54.0")
+		classpath("io.github.ben-manes:gradle-versions-plugin:0.66.0")
 	}
 }
 
