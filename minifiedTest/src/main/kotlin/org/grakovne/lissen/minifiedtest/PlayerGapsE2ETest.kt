@@ -111,9 +111,16 @@ class PlayerGapsE2ETest {
     clickUntil(By.text("Speed"), By.text("Playback speed"))
     clickElement(By.text("1.5"))
     assertEquals("1.50x", speedCurrent())
+    pressBack()
+
+    // the tab label shows the speed while it is not normal, like the Timer tab's countdown
+    assertTrue("the tab label must show the raised speed", elementExists(By.text("1.50x"), 15_000))
+    clickUntil(By.text("1.50x"), By.text("Playback speed"))
     clickElement(By.text("1.0"))
     assertEquals("1.00x", speedCurrent())
     pressBack()
+
+    assertTrue("the tab label must return to Speed", elementExists(By.text("Speed"), 15_000))
   }
 
   private fun UiAutomatorTestScope.chapterNumber(): Int =
