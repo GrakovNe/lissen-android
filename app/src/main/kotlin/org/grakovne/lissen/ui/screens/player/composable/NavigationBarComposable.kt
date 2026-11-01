@@ -42,6 +42,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.playback.service.calculateChapterIndex
+import org.grakovne.lissen.ui.extensions.formatPlaybackSpeed
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -156,7 +157,7 @@ fun NavigationBarComposable(
         },
         label = {
           Text(
-            text = stringResource(R.string.player_screen_playback_speed_navigation),
+            text = provideSpeedLabel(playbackSpeed) ?: stringResource(R.string.player_screen_playback_speed_navigation),
             style = labelStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -282,6 +283,16 @@ fun NavigationBarComposable(
     }
   }
 }
+
+/**
+ * The Speed tab label: the playback speed while it differs from normal, so a changed speed shows
+ * without opening the sheet (as the Timer tab shows its countdown). Null at normal speed, where
+ * the tab keeps its plain label.
+ */
+internal fun provideSpeedLabel(speed: Float): String? =
+  speed
+    .formatPlaybackSpeed()
+    .takeIf { it != 1f.formatPlaybackSpeed() }
 
 @Composable
 private fun DownloadProgressIcon(

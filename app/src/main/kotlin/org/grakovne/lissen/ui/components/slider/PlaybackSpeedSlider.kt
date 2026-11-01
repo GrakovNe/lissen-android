@@ -2,6 +2,7 @@ package org.grakovne.lissen.ui.components.slider
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import org.grakovne.lissen.ui.extensions.formatPlaybackSpeed
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -17,7 +18,7 @@ fun PlaybackSpeedSlider(
   CommonSlider(
     internalValue = speed.toSliderValue(),
     range = sliderRange,
-    formatHeader = { String.format(Locale.US, "%.2fx", it.roundToInt().toSpeed()) },
+    formatHeader = { it.roundToInt().toSpeed().formatPlaybackSpeed() },
     formatIndex = { String.format(Locale.US, "%.2f", it.toSpeed()) },
     modifier = modifier,
     onUpdate = { onSpeedUpdate(it.toInt().toSpeed()) },
