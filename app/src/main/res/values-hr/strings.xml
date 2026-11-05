@@ -2,7 +2,7 @@
 <resources>
     <string name="library_screen_library_title">Knjižnica</string>
     <string name="library_screen_continue_listening_title">Nastavi slušati</string>
-    <string name="library_screen_preferences_menu_item">Postavke</string>
+    <string name="library_screen_preferences_menu_item">Korisničke postavke</string>
     <string name="login_screen_title">Poveži se na server</string>
     <string name="hint_server_url_input">URL poslužitelja</string>
     <string name="login_screen_login_input">Prijava</string>
@@ -15,7 +15,7 @@
     <string name="player_screen_podcast_playing_title">Reproduciranje epizoda</string>
     <string name="player_screen_now_playing_title_chapter_of">Poglavlje %1$d od %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizoda %1$d od %2$s</string>
-    <string name="settings_screen_title">Postavke</string>
+    <string name="settings_screen_title">Korisničke postavke</string>
     <string name="settings_screen_connected_as_title">Spojen kao</string>
     <string name="settings_screen_server_connection">Veza s poslužiteljem</string>
     <string name="login_error_host_is_down">Poslužitelj je nedostupan</string>
@@ -252,12 +252,12 @@
     <string name="a11y_equalizer_band">%s Hz pojas</string>
     <string name="a11y_equalizer_restore">Vrati zadane postavke ekvilajzera</string>
     <string name="config_backup_title">Sigurnosna kopija i vraćanje</string>
-    <string name="config_backup_description">Izvoz ili uvoz postavki aplikacije</string>
+    <string name="config_backup_description">Izvoz ili uvoz korisničkih postavki aplikacije</string>
     <string name="export_config_title">Izvoz konfiguracije</string>
-    <string name="export_config_description">Podijelite postavke aplikacije kao datoteku</string>
+    <string name="export_config_description">Podijelite korisničke postavke aplikacije kao datoteku</string>
     <string name="export_config_failed_toast">Nije moguće izvesti konfiguraciju</string>
     <string name="import_config_title">Uvoz konfiguracije</string>
-    <string name="import_config_description">Vraćanje postavki aplikacije iz datoteke</string>
+    <string name="import_config_description">Vraćanje korisničkih postavki aplikacije iz datoteke</string>
     <string name="import_config_failed_toast">Nije moguće uvesti konfiguraciju, datoteka možda nije valjana</string>
     <string name="download_settings_storage_title">Mjesto pohrane</string>
     <string name="download_settings_storage_unavailable">Nije dostupno</string>
@@ -312,4 +312,5 @@
     <string name="playing_finished_see_all_series">Više knjiga u serijalu</string>
     <string name="playing_finished_see_all_author">Više knjiga autora</string>
     <string name="playing_finished_see_all_library">Povratak u knjižnicu</string>
+    <string name="tree_node_new">Novo</string>
 </resources>
