@@ -8,6 +8,7 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
@@ -172,6 +173,7 @@ class LissenMediaProvider
       pageNumber: Int,
       extraFilter: Pair<String, String>? = null,
       libraryType: LibraryType? = null,
+      ordering: LibraryOrderingConfiguration? = null,
     ): OperationResult<PagedItems<Book>> {
       Timber.d("Fetching books: libraryId=$libraryId, libraryType=$libraryType, page=$pageNumber, pageSize=$pageSize")
 
@@ -186,7 +188,13 @@ class LissenMediaProvider
         },
         remote = {
           val channel = provideChannelFor(libraryType)
-          channel.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber, extraFilter)
+          channel.fetchBooks(
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+            extraFilter = extraFilter,
+            ordering = ordering,
+          )
         },
       )
     }

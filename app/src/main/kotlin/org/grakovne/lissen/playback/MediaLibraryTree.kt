@@ -20,6 +20,9 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingDirection
+import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
@@ -103,6 +106,7 @@ class MediaLibraryTree
       const val BOOK = "book"
 
       private const val RECENT = "recent"
+      private const val NEW = "new"
       private const val LIBRARY = "library"
       private const val DOWNLOADS = "downloads"
       private const val SERIES_COLLAPSED = "series_collapsed"
@@ -191,6 +195,10 @@ class MediaLibraryTree
       mediaTreeNode(folderItem(ROOT, context.getString(R.string.tree_node_root))) {
         +mediaTreeNode(folderItem("$ROOT/$RECENT", context.getString(R.string.tree_node_recent))) {
           pagedChildren { _, _, session -> recentBooksItems(session) }
+        }
+
+        +mediaTreeNode(folderItem("$ROOT/$NEW", context.getString(R.string.tree_node_new))) {
+          pagedChildren { page, pageSize, _ -> newBooksItems(page, pageSize) }
         }
 
         +mediaTreeNode(folderItem("$ROOT/$LIBRARY", context.getString(R.string.tree_node_library))) {
@@ -488,6 +496,25 @@ class MediaLibraryTree
           onSuccess = { paged -> paged.items.map { bookItem(it, libraryType) } },
           onFailure = { emptyList() },
         )
+
+    private suspend fun newBooksItems(
+      page: Int,
+      pageSize: Int,
+    ): List<MediaItem> {
+      val library = libraryPreferences.getPreferredLibrary() ?: return emptyList()
+
+      return lissenMediaProvider
+        .fetchBooks(
+          libraryId = library.id,
+          pageSize = pageSize,
+          pageNumber = page,
+          libraryType = library.type,
+          ordering = LibraryOrderingConfiguration(LibraryOrderingOption.CREATED_AT, LibraryOrderingDirection.DESCENDING),
+        ).fold(
+          onSuccess = { paged -> paged.items.map { bookItem(it, library.type) } },
+          onFailure = { emptyList() },
+        )
+    }
 
     private suspend fun collapsedSeriesItems(
       libraryId: String,

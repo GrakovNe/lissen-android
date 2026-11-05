@@ -21,6 +21,8 @@ import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingDirection
+import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -168,6 +170,62 @@ class LibraryAudiobookshelfChannelTest {
       channel.fetchLibrary(LIBRARY, 20, 0, LibraryGrouping.SERIES)
 
       coVerify(exactly = 1) { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), null, true) }
+    }
+
+  @Test
+  fun `fetchBooks with ordering override asks the server for addedAt descending`() =
+    runBlocking {
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), any(), any()) } returns page(listOf("b1"), total = 1)
+
+      channel.fetchBooks(
+        libraryId = LIBRARY,
+        pageSize = 20,
+        pageNumber = 0,
+        extraFilter = null,
+        ordering = LibraryOrderingConfiguration(LibraryOrderingOption.CREATED_AT, LibraryOrderingDirection.DESCENDING),
+      )
+
+      coVerify(exactly = 1) {
+        repository.fetchLibraryItems(LIBRARY, 20, 0, "addedAt", "1", null, false)
+      }
+    }
+
+  @Test
+  fun `fetchBooks without ordering keeps the configured ordering`() =
+    runBlocking {
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), any(), any()) } returns page(listOf("b1"), total = 1)
+
+      channel.fetchBooks(libraryId = LIBRARY, pageSize = 20, pageNumber = 0, extraFilter = null, ordering = null)
+
+      coVerify(exactly = 1) {
+        repository.fetchLibraryItems(LIBRARY, 20, 0, "media.metadata.title", "0", null, false)
+      }
+    }
+
+  @Test
+  fun `fetchBooks for a series keeps sequence sorting even with an ordering override`() =
+    runBlocking {
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), any(), any()) } returns page(listOf("b1"), total = 1)
+
+      channel.fetchBooks(
+        libraryId = LIBRARY,
+        pageSize = 20,
+        pageNumber = 0,
+        extraFilter = LibraryFilters.SERIES to "series-1",
+        ordering = LibraryOrderingConfiguration(LibraryOrderingOption.CREATED_AT, LibraryOrderingDirection.DESCENDING),
+      )
+
+      coVerify(exactly = 1) {
+        repository.fetchLibraryItems(
+          LIBRARY,
+          20,
+          0,
+          "sequence",
+          "0",
+          encodeLibraryFilter(LibraryFilters.SERIES, "series-1"),
+          false,
+        )
+      }
     }
 
   private fun page(
