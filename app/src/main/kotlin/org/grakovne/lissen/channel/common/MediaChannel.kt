@@ -4,6 +4,7 @@ import android.net.Uri
 import okhttp3.OkHttpClient
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CreateBookmarkRequest
@@ -56,6 +57,7 @@ interface MediaChannel {
     pageSize: Int,
     pageNumber: Int,
     extraFilter: Pair<String, String>? = null,
+    ordering: LibraryOrderingConfiguration? = null,
   ): OperationResult<PagedItems<Book>>
 
   suspend fun fetchLibrary(

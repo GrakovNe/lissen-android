@@ -22,6 +22,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastRespo
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
@@ -88,8 +89,9 @@ class PodcastAudiobookshelfChannel
       pageSize: Int,
       pageNumber: Int,
       extraFilter: Pair<String, String>?,
+      ordering: LibraryOrderingConfiguration?,
     ): OperationResult<PagedItems<Book>> {
-      val (option, direction) = podcastOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+      val (option, direction) = podcastOrderingRequestConverter.apply(ordering ?: preferences.getLibraryOrdering())
 
       return dataRepository
         .fetchPodcastItems(

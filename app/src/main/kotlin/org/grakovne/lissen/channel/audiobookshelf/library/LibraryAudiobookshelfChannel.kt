@@ -33,6 +33,7 @@ import org.grakovne.lissen.channel.common.LibraryFilters
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.OperationResult.Success
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.supportsHideCompleted
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -95,12 +96,13 @@ class LibraryAudiobookshelfChannel
       pageSize: Int,
       pageNumber: Int,
       extraFilter: Pair<String, String>?,
+      ordering: LibraryOrderingConfiguration?,
     ): OperationResult<PagedItems<Book>> {
       val (option, direction) =
         if (extraFilter?.first == LibraryFilters.SERIES) {
           "sequence" to "0"
         } else {
-          libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+          libraryOrderingRequestConverter.apply(ordering ?: preferences.getLibraryOrdering())
         }
       val filter =
         if (extraFilter != null) {
