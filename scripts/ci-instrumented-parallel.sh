@@ -275,6 +275,11 @@ run_instrumentation() {
       sed -E 's/^(Error|Failure) in ([^(]+)\(([^)]+)\)/\3#\2/' | sort -u | paste -sd, -)"
     if [ -n "$failed" ]; then
       log "WARN $(basename "$out"): re-running failures once: $failed"
+      # a launcher wedged for the whole session would swallow the retry's
+      # gestures exactly like the first round's; make it start fresh
+      $ADB -s "$serial" shell am force-stop com.google.android.apps.nexuslauncher >/dev/null 2>&1 || true
+      $ADB -s "$serial" shell input keyevent KEYCODE_HOME >/dev/null 2>&1 || true
+      sleep 5
       timeout --kill-after=60s "$TEST_TIMEOUT" \
         $ADB -s "$serial" shell am instrument -w -e class "$failed" "$component" \
         >"$out.retry" 2>&1

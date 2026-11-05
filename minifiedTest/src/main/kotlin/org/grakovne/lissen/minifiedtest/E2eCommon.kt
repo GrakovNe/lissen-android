@@ -190,7 +190,14 @@ fun UiAutomatorTestScope.scrollUntilVisible(
       10,
     )
   }
-  return waitForElement(selector)
+  val found = runCatching { waitForElement(selector) }
+  if (found.isFailure) {
+    // record what the device was actually showing; without this a gesture
+    // swallowed by a wedged launcher looks the same as a missing element
+    Log.w(E2E_TAG, "scrolling never revealed $selector, recording the screen")
+    dumpScreen("e2e-scroll-miss")
+  }
+  return found.getOrThrow()
 }
 
 const val TARGET_PACKAGE = "org.grakovne.lissen.minified"

@@ -1,26 +1,42 @@
 package org.grakovne.lissen.minifiedtest
 
+import android.util.Log
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiAutomatorTestScope
 import androidx.test.uiautomator.UiObject2
 
 const val LAUNCHER_WAIT_MS = 10_000L
 const val WIDGET_WAIT_MS = 30_000L
+const val LAUNCHER_PACKAGE = "com.google.android.apps.nexuslauncher"
 
 const val STATE_WIDGET_LABEL = "Now playing"
 const val COVER_WIDGET_LABEL = "Now playing (cover)"
 
-// The swipe must be fast or the gesture system treats it as a home swipe
+private fun UiAutomatorTestScope.drawerOpen(): Boolean =
+  device.findObject(By.clazz("android.widget.GridView")) != null ||
+    device.findObject(By.desc("Search apps")) != null
+
+// The swipe must be fast or the gesture system treats it as a home swipe.
+// Under CI load the launcher sometimes keeps the home task in the foreground
+// but stops acting on any gesture; it recovers only after a restart, so the
+// drawer is chased through one launcher restart before the failure is raised.
 fun UiAutomatorTestScope.openAppDrawer() {
-  val allApps = By.clazz("android.widget.GridView")
-  repeat(3) {
-    device.executeShellCommand(
-      "input swipe ${device.displayWidth / 2} ${device.displayHeight - 100} " +
-        "${device.displayWidth / 2} ${device.displayHeight / 3} 200",
-    )
-    Thread.sleep(1_500)
-    if (device.findObject(allApps) != null) return
+  repeat(2) { round ->
+    repeat(3) {
+      device.executeShellCommand(
+        "input swipe ${device.displayWidth / 2} ${device.displayHeight - 100} " +
+          "${device.displayWidth / 2} ${device.displayHeight / 3} 200",
+      )
+      Thread.sleep(1_500)
+      if (drawerOpen()) return
+    }
+    Log.w(E2E_TAG, "app drawer did not open (round $round), restarting launcher")
+    device.executeShellCommand("am force-stop $LAUNCHER_PACKAGE")
+    device.pressHome()
+    Thread.sleep(3_000)
   }
+  dumpScreen("e2e-drawer-wedged")
+  throw AssertionError("app drawer never opened, launcher is wedged")
 }
 
 // Injected as a zero-distance swipe because launcher icons ignore
