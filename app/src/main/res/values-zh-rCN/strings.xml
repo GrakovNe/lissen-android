@@ -296,4 +296,5 @@
     <string name="playing_finished_see_all_series">系列更多作品</string>
     <string name="playing_finished_see_all_author">作者更多作品</string>
     <string name="playing_finished_see_all_library">返回媒体库</string>
+    <string name="tree_node_new">新</string>
 </resources>
