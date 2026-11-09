@@ -191,4 +191,56 @@
         <item quantity="one">%d saat</item>
         <item quantity="other">%d saat</item>
     </plurals>
+    <string name="a11y_rewind">Geri sar</string>
+    <string name="a11y_fast_forward">İrəli sarımaq</string>
+    <string name="library_quick_settings_grouping_title">Qruplaşdırma</string>
+    <string name="library_grouping_disabled">Deaktiv</string>
+    <string name="library_grouping_series">Seriyalar üzrə</string>
+    <string name="library_grouping_author">Müəllif üzrə</string>
+    <string name="library_grouping_genre">Janr üzrə</string>
+    <string name="library_grouping_narrator">Səsləndirən üzrə</string>
+    <string name="library_grouping_playlist">Pleylist üzrə</string>
+    <plurals name="playlist_items_count">
+        <item quantity="one">%d element</item>
+        <item quantity="other">%d element</item>
+    </plurals>
+    <plurals name="series_books_count">
+        <item quantity="one">%d kitab</item>
+        <item quantity="other">%d kitab</item>
+    </plurals>
+    <string name="library_quick_settings_filters_title">Filtrlər</string>
+    <string name="library_quick_settings_sort_title">Çeşidləmə</string>
+    <string name="no_playlists_yet">Hələ heç bir pleylist yoxdur</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="one">%d saniyə</item>
+        <item quantity="other">%d saniyə</item>
+    </plurals>
+    <plurals name="fade_duration_seconds">
+        <item quantity="one">%d saniyə</item>
+        <item quantity="other">%d saniyə</item>
+    </plurals>
+    <string name="player_state_widget_label">İndi səslənir</string>
+    <string name="player_cover_widget_label">Hazırda səslənir (Qapaq)</string>
+    <string name="episode_ordering_published_at_option">Dərc tarixi</string>
+    <string name="episode_ordering_season_option">Fəsil</string>
+    <string name="episode_ordering_episode_option">Epizod</string>
+    <string name="episode_ordering_file_name_option">Fayl adı</string>
+    <string name="episode_ordering_ascending">Yüksələn</string>
+    <string name="episode_ordering_descending">Azalan</string>
+    <string name="player_settings_auto_skip">Avtomatik keçid</string>
+    <string name="player_settings_skip_disabled">Deaktiv</string>
+    <string name="player_settings_intro_value">Giriş %1$s</string>
+    <string name="player_settings_outro_value">Yekun %1$s</string>
+    <string name="downloads_menu_download_option_decrease">Sayını azalt</string>
+    <string name="downloads_menu_download_option_increase">Sayını artır</string>
+    <string name="playing_finished_title">Dinləyib bitirdim</string>
+    <string name="playing_finished_more_series">Növbəti “%1$s”</string>
+    <string name="playing_finished_more_author">%1$s tərəfindən yazılmış digər kitablar</string>
+    <string name="playing_finished_more_library">Həmçinin kitabxananızda</string>
+    <string name="playing_finished_see_all_series">Seriyadakı digər kitablar</string>
+    <string name="playing_finished_see_all_author">Müəllifin digər kitabları</string>
+    <string name="playing_finished_see_all_library">Kitabxanaya qayıt</string>
+    <string name="settings_screen_default_sleep_timer_title">Səsləndirmə zamanı standart yuxu taymeri</string>
+    <string name="sleep_timer_settings_title">Taymer tənzimləmələri</string>
+    <string name="sleep_timer_settings_description">Taymer idarəetmələrini konfiqurasiya edin</string>
 </resources>
