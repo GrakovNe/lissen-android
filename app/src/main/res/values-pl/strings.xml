@@ -320,4 +320,5 @@
     <string name="playing_finished_see_all_series">Więcej książek w serii</string>
     <string name="playing_finished_see_all_author">Więcej książek od autora</string>
     <string name="playing_finished_see_all_library">Wróć do biblioteki</string>
+    <string name="tree_node_new">Nowe</string>
 </resources>
