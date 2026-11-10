@@ -280,4 +280,27 @@
     <string name="episode_ordering_episode_option">Episode</string>
     <string name="episode_ordering_file_name_option">Dateiname</string>
     <string name="episode_ordering_ascending">Aufsteigend</string>
+    <string name="tree_node_new">Neu</string>
+    <string name="library_grouping_genre">Nach Genre</string>
+    <string name="library_grouping_narrator">Nach Erzähler:in</string>
+    <string name="library_grouping_playlist">Nach Playlist</string>
+    <plurals name="playlist_items_count">
+        <item quantity="one">%d Element</item>
+        <item quantity="other">%d Elemente</item>
+    </plurals>
+    <string name="no_playlists_yet">Noch keine Playlist</string>
+    <string name="player_settings_auto_skip">Automatisches Überspringen</string>
+    <string name="player_settings_skip_disabled">Deaktiviert</string>
+    <string name="player_settings_intro_value">Einleitung %1$s</string>
+    <string name="player_settings_outro_value">Outro %1$s</string>
+    <string name="playing_finished_title">Anhören abgeschlossen</string>
+    <string name="playing_finished_more_series">Nächstes in “%1$s”</string>
+    <string name="playing_finished_more_author">Weitere Bücher von %1$s</string>
+    <string name="playing_finished_more_library">Ebenfalls in deiner Bibliothek</string>
+    <string name="playing_finished_see_all_series">Weitere Bücher der Reihe</string>
+    <string name="playing_finished_see_all_author">Weitere Bücher dieses Autors</string>
+    <string name="playing_finished_see_all_library">Zurück zur Bibliothek</string>
+    <string name="sleep_timer_fade_disabled">Deaktiviert</string>
+    <string name="rewind_on_pause_title">Zurückspulen bei Pause</string>
+    <string name="rewind_on_pause_disabled">Deaktiviert</string>
 </resources>
