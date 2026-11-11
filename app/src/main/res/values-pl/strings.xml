@@ -152,7 +152,7 @@
     <string name="bookmarks_title">Zakładki</string>
     <string name="hide_completed_items">Ukryj ukończone</string>
     <string name="application_settings">Ustawienia aplikacji</string>
-    <string name="tree_node_recent">Najnowsze</string>
+    <string name="tree_node_recent">Ostatnie</string>
     <string name="tree_node_library">Biblioteka</string>
     <string name="tree_node_downloads">Pobrane</string>
     <string name="tree_node_root">Główny</string>
