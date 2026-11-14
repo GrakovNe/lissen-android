@@ -1,0 +1,20 @@
+{
+  "name": "Lissen Android",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "runServices": ["dev", "audiobookshelf"],
+  "workspaceFolder": "/workspaces/lissen-android",
+  "shutdownAction": "stopCompose",
+  "initializeCommand": "mkdir -p .devcontainer/.data/abs/config .devcontainer/.data/abs/metadata .devcontainer/.data/audiobooks",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": false,
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "vscjava.vscode-gradle"
+      ]
+    }
+  }
+}

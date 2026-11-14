@@ -174,7 +174,7 @@
     <string name="notification_content_caching_channel">Content Caching</string>
     <string name="notification_content_caching_title">Content is caching</string>
     <string name="notification_content_caching_error_title">Caching failed</string>
-    <string name="notification_content_caching_error_description">A few files weren’t saved</string>
+    <string name="notification_content_caching_error_description">A few files weren\'t saved</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">The scheme %1$s://%2$s is not allowed in the server\'s redirect URI settings</string>
     <string name="login_error_lissen_auth_failed">Could not authorize. Please check your server settings</string>
     <string name="login_error_lissen_not_found">URL is not found. Check your Server settings</string>
@@ -220,6 +220,12 @@
     <string name="settings_screen_crash_report_description">Send reports if the app crashes</string>
     <string name="settings_screen_software_codecs_enabled_title">Force software decoding</string>
     <string name="settings_screen_software_codecs_enabled_description">Use software codecs for audio playback</string>
+    <string name="settings_screen_auto_resume_on_reconnect_title">Resume when the server is back</string>
+    <string name="settings_screen_auto_resume_on_reconnect_description">Continue playback once the server is again reachable</string>
+    <string name="notification_playback_interrupted_channel">Playback interruptions</string>
+    <string name="notification_playback_interrupted_title">Playback stopped: server unreachable</string>
+    <string name="notification_playback_interrupted_manual_description">Can\'t reach your server. Press play to try again once you\'re connected.</string>
+    <string name="notification_playback_interrupted_auto_description">Can\'t reach your server. Playback will continue when it\'s reachable again.</string>
     <string name="settings_screen_audio_focus_loss_policy_title">Playback on notification</string>
     <string name="settings_screen_audio_focus_loss_policy_option_pause">Pause</string>
     <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Lower volume</string>
@@ -239,9 +245,9 @@
     <string name="library_type_library">Books</string>
     <string name="library_type_podcast">Podcasts</string>
     <string name="settings_screen_internal_connection_url_title">Local network server address</string>
-    <string name="settings_screen_internal_connection_url_description">Define server access for home Wi‑Fi</string>
+    <string name="settings_screen_internal_connection_url_description">Define server access for home Wi-Fi</string>
     <string name="local_url_hint_ssid_name">WiFi network name</string>
-    <string name="location_permission_request_hint">The app needs location access to detect Wi‑Fi name</string>
+    <string name="location_permission_request_hint">The app needs location access to detect Wi-Fi name</string>
     <string name="local_network_permission_request_hint">The app needs local network access to connect to nearby servers</string>
     <string name="permission_request_grant_button">Allow</string>
     <string name="settings_screen_clear_thumbnail_cache_title">Clear thumbnail cache</string>

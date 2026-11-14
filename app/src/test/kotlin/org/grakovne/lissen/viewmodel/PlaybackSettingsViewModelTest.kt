@@ -213,5 +213,15 @@ class PlaybackSettingsViewModelTest {
       assertFalse(viewModel.softwareCodecsEnabledOnStart)
       verify { playback.saveSoftwareCodecsEnabled(true) }
     }
+
+    @Test
+    fun `preferAutoResumeOnReconnect updates StateFlow and preferences`() {
+      assertFalse(viewModel.autoResumeOnReconnect.value)
+
+      viewModel.preferAutoResumeOnReconnect(true)
+
+      assertTrue(viewModel.autoResumeOnReconnect.value)
+      verify { playback.saveAutoResumeOnReconnect(true) }
+    }
   }
 }

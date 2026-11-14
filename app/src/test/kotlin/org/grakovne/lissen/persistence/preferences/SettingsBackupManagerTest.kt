@@ -102,6 +102,7 @@ class SettingsBackupManagerTest {
     fun `maps audio focus policy, software codecs, hide completed and library grouping`() {
       every { sharedPreferences.getString("audio_focus_loss_policy", any()) } returns "PAUSE"
       every { sharedPreferences.getBoolean("software_codecs", false) } returns true
+      every { sharedPreferences.getBoolean("auto_resume_on_reconnect", false) } returns true
       every { sharedPreferences.getBoolean("hide_completed", false) } returns true
       every { sharedPreferences.getString("library_grouping", any()) } returns "AUTHOR"
 
@@ -109,6 +110,7 @@ class SettingsBackupManagerTest {
 
       assertEquals("PAUSE", backup.audioFocusLossPolicy)
       assertTrue(backup.softwareCodecsEnabled == true)
+      assertTrue(backup.autoResumeOnReconnect == true)
       assertTrue(backup.hideCompleted == true)
       assertEquals("AUTHOR", backup.libraryGrouping)
     }
@@ -370,6 +372,7 @@ class SettingsBackupManagerTest {
           playbackSpeed = 1.75f,
           volumeBoost = 5,
           softwareCodecsEnabled = true,
+          autoResumeOnReconnect = true,
           hideCompleted = true,
           autoDownloadDelayed = true,
           downloadChaptersCount = 12,
@@ -384,6 +387,7 @@ class SettingsBackupManagerTest {
       verify { editor.putFloat("preferred_playback_speed", 1.75f) }
       verify { editor.putInt("volume_boost", 5) }
       verify { editor.putBoolean("software_codecs", true) }
+      verify { editor.putBoolean("auto_resume_on_reconnect", true) }
       verify { editor.putBoolean("hide_completed", true) }
       verify { editor.putBoolean("auto_download_delayed", true) }
       verify { editor.putInt("download_chapters_count", 12) }

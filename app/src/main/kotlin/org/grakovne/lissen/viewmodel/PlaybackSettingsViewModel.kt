@@ -54,6 +54,9 @@ class PlaybackSettingsViewModel
     val softwareCodecsEnabled: StateFlow<Boolean> = _softwareCodecsEnabled.asStateFlow()
     val softwareCodecsEnabledOnStart: Boolean = playback.getSoftwareCodecsEnabled()
 
+    private val _autoResumeOnReconnect = MutableStateFlow(playback.getAutoResumeOnReconnect())
+    val autoResumeOnReconnect: StateFlow<Boolean> = _autoResumeOnReconnect.asStateFlow()
+
     private val _audioFocusLossPolicy = MutableStateFlow(playback.getAudioFocusLossPolicy())
     val audioFocusLossPolicy: StateFlow<AudioFocusLossPolicy> = _audioFocusLossPolicy.asStateFlow()
 
@@ -126,6 +129,12 @@ class PlaybackSettingsViewModel
       Timber.d("User action: preferSoftwareCodecsEnabled $value")
       _softwareCodecsEnabled.value = value
       playback.saveSoftwareCodecsEnabled(value)
+    }
+
+    fun preferAutoResumeOnReconnect(value: Boolean) {
+      Timber.d("User action: preferAutoResumeOnReconnect $value")
+      _autoResumeOnReconnect.value = value
+      playback.saveAutoResumeOnReconnect(value)
     }
 
     fun preferAudioFocusLossPolicy(policy: AudioFocusLossPolicy) {

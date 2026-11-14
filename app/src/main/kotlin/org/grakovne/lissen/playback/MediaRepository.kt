@@ -143,6 +143,10 @@ class MediaRepository
           _isPlaying.value = false
           playWhenReady = false
           queueBuildingItemId = null
+
+          // a lost server interrupts a book that is ready: it stays loaded, so playback can continue where it stopped
+          if (_isPlaybackReady.value && error.isServerUnreachable()) return
+
           _mediaPreparingError.value = true
         }
       }

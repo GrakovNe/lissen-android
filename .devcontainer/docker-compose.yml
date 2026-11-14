@@ -1,0 +1,35 @@
+# Podman (rootless) stack: the build container plus a throwaway Audiobookshelf server to
+# test against. `userns_mode: keep-id` is Podman-only; remove it to use Docker.
+name: lissen-android-devcontainer
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lissen-dev
+    # the host network shares the container's adb server (127.0.0.1:5037) and the emulator
+    # with the host, so scrcpy on the host can show it; Audiobookshelf is on localhost:13378
+    network_mode: host
+    userns_mode: keep-id
+    devices:
+      - /dev/kvm
+    volumes:
+      - ..:/workspaces/lissen-android:cached
+      - gradle-cache:/home/vscode/.gradle
+      - android-home:/home/vscode/.android
+    command: sleep infinity
+
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: lissen-abs
+    ports:
+      - "13378:80"
+    volumes:
+      - ./.data/abs/config:/config
+      - ./.data/abs/metadata:/metadata
+      - ./.data/audiobooks:/audiobooks
+
+volumes:
+  gradle-cache:
+  android-home:

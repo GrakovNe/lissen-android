@@ -424,6 +424,36 @@ class MediaRepositoryTest {
       }
 
     @Test
+    fun `a lost server interrupts a ready book without failing its preparation`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)), playing = true)
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
+        assertTrue(repository.isPlaybackReady.value)
+
+        player.listener.onError(serverUnreachable())
+
+        assertFalse(repository.mediaPreparingError.value)
+        assertFalse(repository.isPlaying.value)
+        assertFalse(mainThread.polling)
+        assertEquals("podcast", repository.playingBook.value?.id)
+      }
+
+    @Test
+    fun `a lost server while preparing still fails the preparation`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)))
+        repository.clearPreparedItem()
+        repository.prepareAndPlay(podcast(id = "next"))
+
+        player.listener.onError(serverUnreachable())
+
+        assertTrue(repository.mediaPreparingError.value)
+      }
+
+    // errorCode is a field mockk cannot stub, so the cause carries the failure
+    private fun serverUnreachable() = mockk<PlaybackException>(relaxed = true) { every { cause } returns java.net.UnknownHostException("offline") }
+
+    @Test
     fun `clearing the prepared item drops the deferred autoplay and the error`() =
       runTest {
         playing(podcast(progress = progress(35.0)))
