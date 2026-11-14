@@ -51,6 +51,10 @@ class PlaybackPreferences
 
     fun saveSoftwareCodecsEnabled(value: Boolean) = store.putBoolean(KEY_SOFTWARE_CODECS, value)
 
+    fun getAutoResumeOnReconnect(): Boolean = store.getBoolean(KEY_AUTO_RESUME_ON_RECONNECT, false)
+
+    fun saveAutoResumeOnReconnect(value: Boolean) = store.putBoolean(KEY_AUTO_RESUME_ON_RECONNECT, value)
+
     fun getAudioFocusLossPolicy(): AudioFocusLossPolicy =
       store
         .getString(KEY_AUDIO_FOCUS_LOSS_POLICY)
@@ -242,6 +246,7 @@ class PlaybackPreferences
       private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
       private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
       private const val KEY_SOFTWARE_CODECS = "software_codecs"
+      private const val KEY_AUTO_RESUME_ON_RECONNECT = "auto_resume_on_reconnect"
       private const val KEY_AUDIO_FOCUS_LOSS_POLICY = "audio_focus_loss_policy"
       private const val KEY_EQUALIZER = "equalizer"
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"

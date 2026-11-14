@@ -103,6 +103,98 @@ class AudiobookshelfHostProviderTest {
     assertEquals(Host("https://external.example", HostType.EXTERNAL), provider.provideHost())
   }
 
+  @Test
+  fun `offers the local routes when the wifi name is hidden`() {
+    givenUnnamedWifi(handle = 1L)
+    every { connection.getLocalUrls() } returns
+      listOf(localUrl("HomeWiFi", "http://local.example"), localUrl("Office", "http://office.example"))
+
+    assertEquals(listOf("http://local.example", "http://office.example"), provider.routesForUnnamedWifi())
+  }
+
+  @Test
+  fun `offers no local routes when the wifi name is known`() {
+    givenUnnamedWifi(handle = 1L)
+    every { networkService.getCurrentWifiSSID() } returns "OtherNet"
+
+    assertEquals(emptyList<String>(), provider.routesForUnnamedWifi())
+  }
+
+  @Test
+  fun `offers no local routes over cellular`() {
+    givenUnnamedWifi(handle = 1L)
+    every { networkService.getCurrentNetworkType() } returns NetworkType.CELLULAR
+
+    assertEquals(emptyList<String>(), provider.routesForUnnamedWifi())
+  }
+
+  @Test
+  fun `offers no local routes without the local network permission`() {
+    givenUnnamedWifi(handle = 1L)
+    every { hasLocalNetworkPermission(any()) } returns false
+
+    assertEquals(emptyList<String>(), provider.routesForUnnamedWifi())
+  }
+
+  @Test
+  fun `serves a confirmed route while the wifi name is hidden`() {
+    givenUnnamedWifi(handle = 1L)
+
+    provider.confirmRoute("http://local.example")
+
+    assertEquals(Host("http://local.example", HostType.INTERNAL), provider.provideHost())
+  }
+
+  @Test
+  fun `forgets a confirmed route on another network`() {
+    givenUnnamedWifi(handle = 1L)
+    provider.confirmRoute("http://local.example")
+
+    every { networkService.getCurrentNetworkHandle() } returns 2L
+
+    assertEquals(Host("https://external.example", HostType.EXTERNAL), provider.provideHost())
+  }
+
+  @Test
+  fun `ignores a confirmed route that is no longer registered`() {
+    givenUnnamedWifi(handle = 1L)
+    provider.confirmRoute("http://local.example")
+
+    every { connection.getLocalUrls() } returns listOf(localUrl("HomeWiFi", "http://moved.example"))
+
+    assertEquals(Host("https://external.example", HostType.EXTERNAL), provider.provideHost())
+  }
+
+  @Test
+  fun `serves the external host once the confirmed route is cleared`() {
+    givenUnnamedWifi(handle = 1L)
+    provider.confirmRoute("http://local.example")
+
+    provider.confirmRoute(null)
+
+    assertEquals(Host("https://external.example", HostType.EXTERNAL), provider.provideHost())
+  }
+
+  @Test
+  fun `prefers the route matching a known wifi name over a confirmed one`() {
+    givenUnnamedWifi(handle = 1L)
+    every { connection.getLocalUrls() } returns
+      listOf(localUrl("HomeWiFi", "http://local.example"), localUrl("Office", "http://office.example"))
+    provider.confirmRoute("http://local.example")
+
+    every { networkService.getCurrentWifiSSID() } returns "Office"
+
+    assertEquals(Host("http://office.example", HostType.INTERNAL), provider.provideHost())
+  }
+
+  private fun givenUnnamedWifi(handle: Long) {
+    every { session.getHost() } returns "https://external.example"
+    every { connection.getLocalUrls() } returns listOf(localUrl("HomeWiFi", "http://local.example"))
+    every { networkService.getCurrentNetworkType() } returns NetworkType.WIFI
+    every { networkService.getCurrentWifiSSID() } returns null
+    every { networkService.getCurrentNetworkHandle() } returns handle
+  }
+
   private fun localUrl(
     ssid: String,
     route: String,

@@ -102,6 +102,8 @@ class NetworkService
       }
     }
 
+    fun getCurrentNetworkHandle(): Long? = connectivityManager.activeNetwork?.networkHandle
+
     fun getCurrentWifiSSID(): String? {
       val network = connectivityManager.activeNetwork ?: return null
       val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return null

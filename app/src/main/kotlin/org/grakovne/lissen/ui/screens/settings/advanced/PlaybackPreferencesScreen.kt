@@ -50,6 +50,7 @@ fun PlaybackPreferencesScreen(
   val viewModel: PlaybackSettingsViewModel = hiltViewModel()
   val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.collectAsState()
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
+  val autoResumeOnReconnect by viewModel.autoResumeOnReconnect.collectAsState()
   val context = LocalContext.current
 
   Scaffold(
@@ -101,6 +102,12 @@ fun PlaybackPreferencesScreen(
           description = stringResource(R.string.settings_screen_software_codecs_enabled_description),
           initialState = softwareCodecsEnabled,
         ) { viewModel.preferSoftwareCodecsEnabled(it) }
+
+        SettingsToggleItem(
+          title = stringResource(R.string.settings_screen_auto_resume_on_reconnect_title),
+          description = stringResource(R.string.settings_screen_auto_resume_on_reconnect_description),
+          initialState = autoResumeOnReconnect,
+        ) { viewModel.preferAutoResumeOnReconnect(it) }
 
         AudioFocusLossPolicyComposable(viewModel)
       }

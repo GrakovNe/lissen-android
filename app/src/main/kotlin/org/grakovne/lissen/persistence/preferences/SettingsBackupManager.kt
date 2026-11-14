@@ -34,6 +34,7 @@ class SettingsBackupManager
         equalizer = playback.getEqualizer(),
         audioFocusLossPolicy = playback.getAudioFocusLossPolicy().name,
         softwareCodecsEnabled = playback.getSoftwareCodecsEnabled(),
+        autoResumeOnReconnect = playback.getAutoResumeOnReconnect(),
         hideCompleted = library.getHideCompleted(),
         libraryGrouping = library.getLibraryGrouping(library.activeLibraryId()).name,
         libraryGroupings = library.getLibraryGroupings().mapValues { (_, grouping) -> grouping.name },
@@ -73,6 +74,7 @@ class SettingsBackupManager
         ?.let { playback.saveAudioFocusLossPolicy(it) }
 
       backup.softwareCodecsEnabled?.let { playback.saveSoftwareCodecsEnabled(it) }
+      backup.autoResumeOnReconnect?.let { playback.saveAutoResumeOnReconnect(it) }
       backup.hideCompleted?.let { library.saveHideCompleted(it) }
 
       val restoredGroupings =
