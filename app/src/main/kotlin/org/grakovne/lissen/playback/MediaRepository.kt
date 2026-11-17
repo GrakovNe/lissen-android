@@ -301,6 +301,13 @@ class MediaRepository
       }
     }
 
+    /**
+     * Sends a play request to the session even when no book is loaded here. On an empty player the
+     * session resumes the last played book itself (MediaLibrarySessionCallback.onPlaybackResumption),
+     * the same way it does for a headset or Bluetooth play button.
+     */
+    fun requestSessionPlayback() = play()
+
     fun setPlaybackSpeed(factor: Float) {
       Timber.d("Setting playback speed to $factor")
       val speed = PlaybackGeometry.clampPlaybackSpeed(factor)
