@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.RewindOnPauseSettings
@@ -40,6 +41,11 @@ class PlaybackSettingsViewModel
 
     private val _seekTime = MutableStateFlow(playback.getSeekTime())
     val seekTime: StateFlow<SeekTime> = _seekTime.asStateFlow()
+
+    init {
+      // Each screen gets its own instance; follow the stored value so a change made in settings reaches the player.
+      viewModelScope.launch { playback.seekTimeFlow.collect { _seekTime.value = it } }
+    }
 
     private val _rewindOnPause = MutableStateFlow(playback.getRewindOnPause().secondsOrNull())
     val rewindOnPause: StateFlow<Int?> = _rewindOnPause.asStateFlow()

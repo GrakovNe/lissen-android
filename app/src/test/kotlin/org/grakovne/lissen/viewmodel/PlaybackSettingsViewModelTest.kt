@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -32,6 +33,7 @@ class PlaybackSettingsViewModelTest {
   private val playback = mockk<PlaybackPreferences>(relaxed = true)
   private val equalizerBandProvider = mockk<EqualizerBandProvider>(relaxed = true)
   private lateinit var viewModel: PlaybackSettingsViewModel
+  private val storedSeekTime = MutableStateFlow(SeekTime.Default)
 
   @BeforeEach
   fun setup() {
@@ -39,6 +41,7 @@ class PlaybackSettingsViewModelTest {
 
     every { playback.getPlaybackVolumeBoost() } returns 0
     every { playback.getSeekTime() } returns SeekTime.Default
+    every { playback.seekTimeFlow } returns storedSeekTime
     every { playback.getSleepTimerSettings() } returns SleepTimerSettings.Default
     every { playback.getRewindOnPause() } returns RewindOnPauseSettings.Default
     every { playback.getEqualizer() } returns EqualizerSettings.Default
@@ -116,6 +119,12 @@ class PlaybackSettingsViewModelTest {
     fun `preferRewind preserves forward value`() {
       viewModel.preferRewind(10)
       assertEquals(SeekTime.Default.forward, viewModel.seekTime.value.forward)
+    }
+
+    @Test
+    fun `follows seek time saved by another instance`() {
+      storedSeekTime.value = SeekTime(rewind = 30, forward = 5)
+      assertEquals(SeekTime(rewind = 30, forward = 5), viewModel.seekTime.value)
     }
 
     @Test
