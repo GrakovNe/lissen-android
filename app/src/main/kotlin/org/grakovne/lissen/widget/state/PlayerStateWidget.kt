@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -43,6 +44,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.media3.session.R
 import org.grakovne.lissen.R.drawable
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.ui.theme.MediumBackground
 import org.grakovne.lissen.widget.bitmapFromFile
@@ -89,6 +91,8 @@ class PlayerStateWidget : GlanceAppWidget() {
           }
 
       val isPlaying = state[isPlaying] ?: false
+      val rewindIcon = rewindIcon(state[rewindSeconds] ?: SeekTime.Default.rewind)
+      val forwardIcon = forwardIcon(state[forwardSeconds] ?: SeekTime.Default.forward)
 
       Column(
         modifier =
@@ -255,8 +259,19 @@ class PlayerStateWidget : GlanceAppWidget() {
       ?: this
 
   companion object {
-    val rewindIcon = R.drawable.media3_icon_rewind
-    val forwardIcon = R.drawable.media3_icon_fast_forward
+    fun rewindIcon(seconds: Int) =
+      when (SeekTime.snap(seconds)) {
+        5 -> R.drawable.media3_icon_skip_back_5
+        10 -> R.drawable.media3_icon_skip_back_10
+        else -> R.drawable.media3_icon_skip_back_30
+      }
+
+    fun forwardIcon(seconds: Int) =
+      when (SeekTime.snap(seconds)) {
+        5 -> R.drawable.media3_icon_skip_forward_5
+        10 -> R.drawable.media3_icon_skip_forward_10
+        else -> R.drawable.media3_icon_skip_forward_30
+      }
 
     val bookIdKey = ActionParameters.Key<String>("book_id")
 
@@ -266,6 +281,8 @@ class PlayerStateWidget : GlanceAppWidget() {
     val chapterTitle = stringPreferencesKey("player_widget_key_chapter_title")
 
     val isPlaying = booleanPreferencesKey("player_widget_key_is_playing")
+    val rewindSeconds = intPreferencesKey("player_widget_key_rewind_seconds")
+    val forwardSeconds = intPreferencesKey("player_widget_key_forward_seconds")
   }
 }
 

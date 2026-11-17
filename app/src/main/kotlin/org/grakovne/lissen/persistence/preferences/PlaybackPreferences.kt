@@ -107,7 +107,7 @@ class PlaybackPreferences
     fun getSeekTime(): SeekTime {
       val json = store.getString(KEY_PREFERRED_SEEK_TIME) ?: return SeekTime.Default
       return try {
-        moshi.adapter(SeekTime::class.java).fromJson(json) ?: SeekTime.Default
+        moshi.adapter(SeekTime::class.java).fromJson(json)?.normalized() ?: SeekTime.Default
       } catch (e: com.squareup.moshi.JsonDataException) {
         Timber.w("Stored seek time is malformed, resetting due to: ${e.message}")
         store.remove(KEY_PREFERRED_SEEK_TIME, commit = true)

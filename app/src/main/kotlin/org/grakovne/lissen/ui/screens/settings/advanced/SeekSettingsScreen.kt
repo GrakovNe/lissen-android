@@ -41,8 +41,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.RewindOnPauseSettings
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
-import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
 import org.grakovne.lissen.ui.screens.settings.composable.DisableableTimeBottomSheet
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
@@ -141,7 +141,6 @@ private fun SeekTimeBottomSheet(
   onUpdate: (Int) -> Unit,
 ) {
   val view: View = LocalView.current
-  val context = LocalContext.current
   var selectedSeconds by remember { mutableIntStateOf(currentSeconds) }
 
   LissenModalBottomSheet(
@@ -159,26 +158,14 @@ private fun SeekTimeBottomSheet(
         Text(
           text = title,
           style = typography.bodyLarge,
-        )
-
-        SeekTimeSlider(
-          context = context,
-          seconds = selectedSeconds,
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .padding(vertical = 16.dp),
-          onUpdate = {
-            selectedSeconds = it
-            onUpdate(it)
-          },
+          modifier = Modifier.padding(bottom = 16.dp),
         )
 
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-          seekTimePresets.forEach { preset ->
+          SeekTime.ALLOWED_SECONDS.forEach { preset ->
             FilledTonalButton(
               onClick = {
                 withHaptic(view) {
@@ -218,5 +205,4 @@ private fun SeekTimeBottomSheet(
 
 private fun Context.seconds(seconds: Int): String = resources.getQuantityString(R.plurals.seek_interval_seconds, seconds, seconds)
 
-private val seekTimePresets = listOf(5, 10, 15, 30, 60)
 private val rewindOnPausePresets = listOf(1, 3, 5, 10)

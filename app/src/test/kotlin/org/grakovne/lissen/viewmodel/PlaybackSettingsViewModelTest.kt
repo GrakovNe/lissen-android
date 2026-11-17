@@ -96,8 +96,8 @@ class PlaybackSettingsViewModelTest {
   inner class SeekTimePreference {
     @Test
     fun `preferForward updates seek forward`() {
-      viewModel.preferForward(60)
-      assertEquals(60, viewModel.seekTime.value.forward)
+      viewModel.preferForward(5)
+      assertEquals(5, viewModel.seekTime.value.forward)
     }
 
     @Test
@@ -108,7 +108,7 @@ class PlaybackSettingsViewModelTest {
 
     @Test
     fun `preferForward preserves rewind value`() {
-      viewModel.preferForward(60)
+      viewModel.preferForward(5)
       assertEquals(SeekTime.Default.rewind, viewModel.seekTime.value.rewind)
     }
 
@@ -116,6 +116,13 @@ class PlaybackSettingsViewModelTest {
     fun `preferRewind preserves forward value`() {
       viewModel.preferRewind(10)
       assertEquals(SeekTime.Default.forward, viewModel.seekTime.value.forward)
+    }
+
+    @Test
+    fun `intervals outside the allowed set snap to the nearest one`() {
+      viewModel.preferForward(60)
+      viewModel.preferRewind(15)
+      assertEquals(SeekTime(rewind = 10, forward = 30), viewModel.seekTime.value)
     }
   }
 

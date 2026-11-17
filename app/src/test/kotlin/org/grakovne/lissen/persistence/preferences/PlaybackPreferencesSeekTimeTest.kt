@@ -37,8 +37,15 @@ class PlaybackPreferencesSeekTimeTest {
     @Test
     fun `returns parsed value for current int format`() {
       every { sharedPreferences.getString("preferred_seek_time", null) } returns
-        """{"rewind":15,"forward":45}"""
-      assertEquals(SeekTime(rewind = 15, forward = 45), preferences.getSeekTime())
+        """{"rewind":5,"forward":10}"""
+      assertEquals(SeekTime(rewind = 5, forward = 10), preferences.getSeekTime())
+    }
+
+    @Test
+    fun `snaps stored intervals outside the allowed set to the nearest one`() {
+      every { sharedPreferences.getString("preferred_seek_time", null) } returns
+        """{"rewind":15,"forward":60}"""
+      assertEquals(SeekTime(rewind = 10, forward = 30), preferences.getSeekTime())
     }
 
     @Test

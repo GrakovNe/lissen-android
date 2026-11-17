@@ -81,11 +81,11 @@ class SettingsBackupManagerTest {
     @Test
     fun `maps seek time from stored json`() {
       every { sharedPreferences.getString("preferred_seek_time", null) } returns
-        """{"rewind":15,"forward":45}"""
+        """{"rewind":5,"forward":10}"""
 
       val backup = preferences.exportSettings()
 
-      assertEquals(SeekTime(rewind = 15, forward = 45), backup.seekTime)
+      assertEquals(SeekTime(rewind = 5, forward = 10), backup.seekTime)
     }
 
     @Test

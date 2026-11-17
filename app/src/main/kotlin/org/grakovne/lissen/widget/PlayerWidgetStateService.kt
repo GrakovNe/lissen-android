@@ -17,6 +17,8 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.widget.cover.PlayerCoverWidget
 import org.grakovne.lissen.widget.state.PlayerStateWidget
@@ -33,6 +35,7 @@ class PlayerWidgetStateService
     @param:ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
+    private val preferences: PlaybackPreferences,
   ) : RunningComponent {
     private val scope =
       CoroutineScope(
@@ -48,7 +51,8 @@ class PlayerWidgetStateService
           mediaRepository.playingBook,
           mediaRepository.isPlaying,
           mediaRepository.currentChapterIndex,
-        ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int ->
+          preferences.seekTimeFlow,
+        ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int, seekTime: SeekTime ->
           val chapterTitle = provideChapterTitle(playingItem, chapterIndex)
 
           val maybeCover =
@@ -62,6 +66,7 @@ class PlayerWidgetStateService
             chapterTitle = chapterTitle,
             isPlaying = isPlaying,
             coverFile = maybeCover,
+            seekTime = seekTime,
           )
         }.collect { playingItemState ->
           updatePlayingItem(playingItemState)
@@ -131,6 +136,8 @@ class PlayerWidgetStateService
               prefs[PlayerStateWidget.title] = state.title
               prefs[PlayerStateWidget.chapterTitle] = state.chapterTitle ?: ""
               prefs[PlayerStateWidget.isPlaying] = state.isPlaying
+              prefs[PlayerStateWidget.rewindSeconds] = state.seekTime.rewind
+              prefs[PlayerStateWidget.forwardSeconds] = state.seekTime.forward
             }
 
             is PlayerCoverWidget -> {
@@ -152,4 +159,5 @@ data class PlayingItemState(
   val chapterTitle: String?,
   val isPlaying: Boolean = false,
   val coverFile: File?,
+  val seekTime: SeekTime = SeekTime.Default,
 )

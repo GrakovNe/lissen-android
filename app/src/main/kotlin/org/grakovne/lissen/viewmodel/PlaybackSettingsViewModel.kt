@@ -87,12 +87,12 @@ class PlaybackSettingsViewModel
 
     fun preferForward(seconds: Int) {
       Timber.d("User action: preferForward $seconds")
-      saveSeekTime(_seekTime.value.copy(forward = seconds))
+      saveSeekTime(_seekTime.value.copy(forward = SeekTime.snap(seconds)))
     }
 
     fun preferRewind(seconds: Int) {
       Timber.d("User action: preferRewind $seconds")
-      saveSeekTime(_seekTime.value.copy(rewind = seconds))
+      saveSeekTime(_seekTime.value.copy(rewind = SeekTime.snap(seconds)))
     }
 
     private fun saveSeekTime(seekTime: SeekTime) {
