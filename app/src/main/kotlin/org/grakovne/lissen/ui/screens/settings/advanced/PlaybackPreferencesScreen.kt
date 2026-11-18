@@ -50,6 +50,7 @@ fun PlaybackPreferencesScreen(
   val viewModel: PlaybackSettingsViewModel = hiltViewModel()
   val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.collectAsState()
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
+  val syncProgressOnOpen by viewModel.syncProgressOnOpen.collectAsState()
   val context = LocalContext.current
 
   Scaffold(
@@ -95,6 +96,12 @@ fun PlaybackPreferencesScreen(
           description = stringResource(R.string.sleep_timer_settings_description),
           onclick = { navController.showSleepTimerSettings() },
         )
+
+        SettingsToggleItem(
+          title = stringResource(R.string.settings_screen_sync_progress_on_open_title),
+          description = stringResource(R.string.settings_screen_sync_progress_on_open_description),
+          initialState = syncProgressOnOpen,
+        ) { viewModel.preferSyncProgressOnOpen(it) }
 
         SettingsToggleItem(
           title = stringResource(R.string.settings_screen_software_codecs_enabled_title),
