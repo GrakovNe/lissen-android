@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.ordering.ReorderPlanner
@@ -30,6 +31,7 @@ import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.abs
 
 @UnstableApi
 @Singleton
@@ -443,6 +445,41 @@ class MediaRepository
       }
     }
 
+    /**
+     * Pulls the latest progress for the already-loaded, paused book and seeks to it.
+     *
+     * The player keeps the book in memory as long as the process lives, so without this the app
+     * would resume from its own stale position even if the book was listened to elsewhere
+     * (e.g. the web client) in the meantime.
+     */
+    suspend fun refreshPlayingProgress() {
+      if (preferences.getSyncProgressOnOpen().not()) return
+
+      val book = _playingBook.value ?: return
+      if (isPlaying.value || isPlaybackReady.value.not() || queueRebuildInFlight) return
+
+      val refreshed =
+        withTimeoutOrNull(PROGRESS_REFRESH_TIMEOUT_MS) {
+          withContext(ioDispatcher) { mediaChannel.fetchBook(book.id, book.libraryType) }
+        } ?: return
+
+      val position =
+        refreshed.fold(
+          onSuccess = { it.progress?.currentTime },
+          onFailure = { null },
+        ) ?: return
+
+      withContext(Dispatchers.Main.immediate) {
+        val current = _playingBook.value
+        if (current?.id != book.id || isPlaying.value || queueRebuildInFlight) return@withContext
+
+        if (abs(position - totalPosition.value) < PROGRESS_REFRESH_THRESHOLD_S) return@withContext
+
+        Timber.d("Refreshing progress of ${book.id}: ${totalPosition.value.toInt()}s -> ${position.toInt()}s")
+        seekTo(position)
+      }
+    }
+
     suspend fun createBookmark(title: String? = null): Bookmark? =
       withContext(Dispatchers.Main.immediate) {
         val book = _playingBook.value ?: return@withContext null
@@ -567,6 +604,8 @@ class MediaRepository
 
     private companion object {
       private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
+      private const val PROGRESS_REFRESH_TIMEOUT_MS = 5_000L
+      private const val PROGRESS_REFRESH_THRESHOLD_S = 2.0
 
       private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L
     }

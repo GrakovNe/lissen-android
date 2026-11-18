@@ -14,13 +14,17 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.persistence.preferences.AppearancePreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
+import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.ui.navigation.AppLaunchAction
 import org.grakovne.lissen.ui.navigation.AppNavHost
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -30,6 +34,7 @@ import org.grakovne.lissen.ui.theme.LissenTheme
 import timber.log.Timber
 import javax.inject.Inject
 
+@UnstableApi
 @AndroidEntryPoint
 class AppActivity : ComponentActivity() {
   @Inject
@@ -46,6 +51,9 @@ class AppActivity : ComponentActivity() {
 
   @Inject
   lateinit var networkService: NetworkService
+
+  @Inject
+  lateinit var mediaRepository: MediaRepository
 
   private lateinit var appNavigationService: AppNavigationService
 
@@ -86,6 +94,13 @@ class AppActivity : ComponentActivity() {
         }
       }
     }
+  }
+
+  override fun onStart() {
+    super.onStart()
+    // The process (and the loaded book) may have survived in the background while the book
+    // was listened to on another device. Pick up that progress before the user resumes.
+    lifecycleScope.launch { mediaRepository.refreshPlayingProgress() }
   }
 
   override fun onNewIntent(intent: Intent) {
