@@ -7,8 +7,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,6 +71,14 @@ class MediaRepository
 
     private val _finishedBook = MutableStateFlow<DetailedItem?>(null)
     val finishedBook: StateFlow<DetailedItem?> = _finishedBook.asStateFlow()
+
+    private val _playbackResumptions = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
+
+    /**
+     * One value per finished session playback resumption: true when it produced a queue to play,
+     * false when it failed. A failed resumption plays nothing and raises no player error.
+     */
+    val playbackResumptions: SharedFlow<Boolean> = _playbackResumptions.asSharedFlow()
 
     private val _mediaPreparingError = MutableStateFlow(false)
     val mediaPreparingError: StateFlow<Boolean> = _mediaPreparingError.asStateFlow()
@@ -307,6 +318,11 @@ class MediaRepository
      * the same way it does for a headset or Bluetooth play button.
      */
     fun requestSessionPlayback() = play()
+
+    /** Called by the session when a playback resumption has produced a queue or failed. */
+    fun onPlaybackResumptionFinished(succeeded: Boolean) {
+      _playbackResumptions.tryEmit(succeeded)
+    }
 
     fun setPlaybackSpeed(factor: Float) {
       Timber.d("Setting playback speed to $factor")

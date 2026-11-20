@@ -4,8 +4,11 @@ import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
@@ -90,24 +93,36 @@ class WidgetPlaybackController
     private var resumingThroughSession = false
 
     /**
-     * Keeps the widget action (and so the process) alive until the session has started playing,
-     * bounded so a failed resumption doesn't hold the broadcast forever. Play taps during that
-     * window are ignored, so a quick double tap can't resume twice or pause what is just starting.
+     * Keeps the widget action (and so the process) alive until the session has finished resuming:
+     * it produced a queue, it failed, or the player was already playing. Play taps during that
+     * window are ignored, so a quick double tap can't resume twice. Once resumption has finished,
+     * the book is registered (or nothing is), and the next tap toggles or retries as usual.
      */
     private suspend fun resumeThroughSession() {
       resumingThroughSession = true
 
       try {
-        mediaRepository.requestSessionPlayback()
+        val succeeded =
+          withTimeoutOrNull(RESUMPTION_TIMEOUT) {
+            merge(
+              // request only once subscribed, so an outcome can't be emitted before it is awaited
+              mediaRepository.playbackResumptions.onSubscription { mediaRepository.requestSessionPlayback() },
+              mediaRepository.isPlaying.filter { it },
+            ).first()
+          }
 
-        val started = withTimeoutOrNull(RESUMPTION_TIMEOUT) { mediaRepository.isPlaying.first { it } }
-        if (started == null) Timber.w("Widget playback resumption did not start playback in time")
+        when (succeeded) {
+          true -> Unit
+          false -> Timber.w("Widget playback resumption failed")
+          null -> Timber.w("Widget playback resumption got no answer from the session in time")
+        }
       } finally {
         resumingThroughSession = false
       }
     }
 
     private companion object {
+      /** Only a safety net for a session that never answers; a resumption reports its own outcome. */
       val RESUMPTION_TIMEOUT = 8.seconds
     }
   }
