@@ -19,7 +19,7 @@ class PlayerWidgetStateServiceCoverTest {
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val mediaProvider = mockk<LissenMediaProvider>()
 
-  private val service = PlayerWidgetStateService(context, mediaRepository, mediaProvider)
+  private val service = PlayerWidgetStateService(context, mediaRepository, mediaProvider, mockk(relaxed = true))
 
   @Test
   fun `cover is fetched once per book across repeated state updates`() =

@@ -377,24 +377,36 @@ class MediaLibrarySessionCallback
         .listenableFuture {
           Timber.d("Resuming playback for: $controller (isForPlayback=$isForPlayback)")
 
-          val storedBook =
-            preferences.getLastPlayingItem()
-              ?: throw IllegalStateException("No last played book stored")
-
-          val refreshedBook = refreshBookForResumption(storedBook)
-          val book = refreshedBook ?: storedBookWithLatestProgress(storedBook)
-
-          if (book.canProducePlaybackQueue().not()) {
-            throw IllegalStateException("Book can't produce a playback queue (bookId=${book.id})")
+          // a failed resumption plays nothing and raises no player error, so whoever asked to play
+          // (e.g. the widget) learns the outcome only from here
+          try {
+            resumptionQueue(isForPlayback)
+              .also { if (isForPlayback) mediaRepository.onPlaybackResumptionFinished(succeeded = true) }
+          } catch (e: Throwable) {
+            if (isForPlayback) mediaRepository.onPlaybackResumptionFinished(succeeded = false)
+            throw e
           }
-
-          if (isForPlayback) {
-            refreshedBook?.let { preferences.savePlayingItem(it) }
-            registerPlayback(book)
-          }
-
-          PlaybackService.bookToChapterMediaItems(book)
         }
+
+    private suspend fun resumptionQueue(isForPlayback: Boolean): MediaItemsWithStartPosition {
+      val storedBook =
+        preferences.getLastPlayingItem()
+          ?: throw IllegalStateException("No last played book stored")
+
+      val refreshedBook = refreshBookForResumption(storedBook)
+      val book = refreshedBook ?: storedBookWithLatestProgress(storedBook)
+
+      if (book.canProducePlaybackQueue().not()) {
+        throw IllegalStateException("Book can't produce a playback queue (bookId=${book.id})")
+      }
+
+      if (isForPlayback) {
+        refreshedBook?.let { preferences.savePlayingItem(it) }
+        registerPlayback(book)
+      }
+
+      return PlaybackService.bookToChapterMediaItems(book)
+    }
 
     private suspend fun registerPlayback(book: DetailedItem) =
       withContext(Dispatchers.Main.immediate) {
