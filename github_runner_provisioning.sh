@@ -17,7 +17,7 @@ set -euo pipefail
 RUNNER_USER="actions-runner"
 RUNNER_HOME="/home/${RUNNER_USER}"
 RUNNER_DIR="${RUNNER_HOME}/actions-runner"
-RUNNER_VERSION="2.335.1"
+RUNNER_VERSION="2.338.2"
 REPO_URL="https://github.com/GrakovNe/lissen-android"
 RUNNER_NAME="${RUNNER_NAME:-lissen-local}"
 RUNNER_LABELS="self-hosted,linux,x64"
@@ -25,7 +25,7 @@ RUNNER_LABELS="self-hosted,linux,x64"
 ANDROID_HOME="/opt/android-sdk"
 CMDLINE_TOOLS_ZIP="commandlinetools-linux-13114758_latest.zip"
 # Keep these in sync with app/build.gradle.kts (compileSdk / buildToolsVersion)
-SDK_PACKAGES=("platform-tools" "platforms;android-37.0" "build-tools;36.0.0" "cmdline-tools;latest")
+SDK_PACKAGES=("platform-tools" "platforms;android-37.0" "build-tools;37.0.0" "cmdline-tools;latest")
 
 # ---- 0. must be root ---------------------------------------------------------
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
