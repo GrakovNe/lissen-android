@@ -179,6 +179,11 @@ private class SilenceByUriFactory : MediaSource.Factory {
 
   override fun createMediaSource(mediaItem: MediaItem): MediaSource {
     val uri = requireNotNull(mediaItem.localConfiguration?.uri) { "the queue items must carry a uri" }
-    return SilenceMediaSource(uri.toString().removePrefix("silence:").toLong() * 1_000L)
+    val durationUs = uri.toString().removePrefix("silence:").toLong() * 1_000L
+    // SilenceMediaSource ignores the media item it was built for and serves its own placeholder
+    // (mediaId "SilenceMediaSource", no tag, no requestMetadata) into the timeline window, and
+    // ExoPlayer only calls updateMediaItem from replaceMediaItems, not setMediaItems. Without
+    // this the service sees a null tag and returns before it can skip anything.
+    return SilenceMediaSource(durationUs).apply { updateMediaItem(mediaItem) }
   }
 }

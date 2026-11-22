@@ -82,6 +82,14 @@ Integration (`app/src/androidTest`):
   service parses, so this scenario uses its own silence factory that reads the duration from
   the uri — the shared `SilenceFactory` reads it from the media id and would throw.
 
+  That factory has to call `updateMediaItem(mediaItem)` on the `SilenceMediaSource` it returns.
+  The source ignores the item it was built for and publishes its own placeholder (mediaId
+  `"SilenceMediaSource"`, no tag, no requestMetadata) into the timeline window, and ExoPlayer
+  only calls `updateMediaItem` from `replaceMediaItems`, never from `setMediaItems`. Without the
+  call the service reads a null tag off `currentMediaItem`, returns at its first guard, and skips
+  nothing — the forward test then walks into chapter 3 on its own and fails the seek assertion,
+  the backward test waits for chapter 0 until it times out, and the wrap test ends on index 3.
+
   One behaviour is asserted as-is rather than as-specified: when the search wraps around the
   queue, the service seeks to the wrapped chapter *and then* pauses, so the listener ends up
   paused at the start of the book instead of where they stopped. That may well be wrong —
