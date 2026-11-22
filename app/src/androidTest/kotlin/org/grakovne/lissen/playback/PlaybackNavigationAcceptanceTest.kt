@@ -97,8 +97,11 @@ class PlaybackNavigationAcceptanceTest : RealPlayerTest() {
 
     awaitOnMain("the step to land past the missing chapter") { player.currentMediaItemIndex == 3 }
     onMain {
-      assertTrue("playback must continue, the queue still has playable chapters", player.isPlaying)
+      // playWhenReady, not isPlaying: seeking re-buffers the new period, during which isPlaying
+      // is false even though nothing paused. playWhenReady is what the service would flip.
+      assertTrue("the service must not pause, the queue still has playable chapters", player.playWhenReady)
     }
+    awaitOnMain("playback to continue on chapter 3") { player.isPlaying }
     assertTrue(
       "the service must park the listener at the start of chapter 3: $discontinuities",
       discontinuities.any { it.isSeek(from = 2, to = 3 to 0L) },
@@ -120,8 +123,9 @@ class PlaybackNavigationAcceptanceTest : RealPlayerTest() {
 
     awaitOnMain("the step to land before the missing chapter") { player.currentMediaItemIndex == 0 }
     onMain {
-      assertTrue("playback must continue, the queue still has playable chapters", player.isPlaying)
+      assertTrue("the service must not pause, the queue still has playable chapters", player.playWhenReady)
     }
+    awaitOnMain("playback to continue on chapter 0") { player.isPlaying }
     assertTrue(
       "the service must park the listener at the start of chapter 0: $discontinuities",
       discontinuities.any { it.isSeek(from = 1, to = 0 to 0L) },
@@ -145,7 +149,9 @@ class PlaybackNavigationAcceptanceTest : RealPlayerTest() {
       inChapter(2, 0L..5_000L) { player.seekToNextMediaItem() }
     }
 
-    awaitOnMain("the player to pause") { !player.isPlaying }
+    // !playWhenReady, not !isPlaying: the seek into the missing chapter makes isPlaying false on
+    // its own while buffering, so waiting on it would return before the service has paused.
+    awaitOnMain("the service to pause playback") { !player.playWhenReady }
     onMain {
       assertEquals("the wrap search lands on the first playable chapter", 0, player.currentMediaItemIndex)
     }

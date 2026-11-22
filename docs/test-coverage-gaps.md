@@ -94,6 +94,11 @@ Integration (`app/src/androidTest`):
   never inline in a test body — or ExoPlayer throws "Player is accessed on the wrong thread".
   `discontinuities` is a `CopyOnWriteArrayList` and is safe to read from the test thread.
 
+  Asserting "still playing" needs care: `isPlaying` is false while a seek re-buffers, so checking
+  it right after the index lands fails, and waiting for `!isPlaying` passes before the service has
+  paused. `playWhenReady` is the signal the service actually flips — assert that for "did not
+  pause" / "did pause", and await `isPlaying` separately once the seek has settled.
+
   One behaviour is asserted as-is rather than as-specified: when the search wraps around the
   queue, the service seeks to the wrapped chapter *and then* pauses, so the listener ends up
   paused at the start of the book instead of where they stopped. That may well be wrong —
