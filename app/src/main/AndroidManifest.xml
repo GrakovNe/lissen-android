@@ -16,6 +16,30 @@
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="32" />
 
+    <!--
+      Play derives these three as required from elsewhere in the manifest, which hides the app
+      on devices that lack them. None is a hard requirement: AppActivity rotates freely and only
+      the OAuth callback locks itself; without Wi-Fi the host provider falls back to the external
+      URL; and location is requested solely so WifiManager can report the SSID for local routes.
+      An explicit android:required="false" overrides the implied value.
+
+      Verified against the release APK with `aapt2 dump badging`, which reported exactly:
+      faketouch (default for all apps, kept required - the UI needs pointer input), location,
+      screen.portrait and wifi. After this change the last three report as
+      uses-feature-not-required.
+    -->
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
+
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+
+    <uses-feature
+        android:name="android.hardware.location"
+        android:required="false" />
+
     <application
         android:name=".LissenApplication"
         android:allowBackup="true"
