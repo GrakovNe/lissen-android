@@ -1,0 +1,143 @@
+package org.grakovne.lissen.ui.components.slider
+
+import androidx.compose.runtime.BroadcastFrameClock
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+
+/**
+ * The state behind every settings slider (speed, seek, volume boost, equalizer). Animations
+ * need a [BroadcastFrameClock] in the context, so [runWithFrames] drives one by hand until the
+ * block finishes; `snapTo` needs no frames at all.
+ */
+class SliderStateTest {
+  private fun state(
+    current: Int,
+    bounds: ClosedRange<Int>,
+    onUpdate: (Float) -> Unit = {},
+  ) = SliderState(current, bounds, onUpdate)
+
+  private fun runWithFrames(
+    timeoutMs: Long = 10_000,
+    block: suspend () -> Unit,
+  ) {
+    val clock = BroadcastFrameClock()
+    runBlocking {
+      val job = launch { withContext(clock) { block() } }
+      val deadline = System.currentTimeMillis() + timeoutMs
+      var frameNanos = 0L
+      while (job.isActive && System.currentTimeMillis() < deadline) {
+        clock.sendFrame(frameNanos)
+        frameNanos += 50_000_000L
+        delay(2)
+      }
+      withTimeout(timeoutMs) { job.join() }
+    }
+  }
+
+  @Test
+  fun `snapTo clamps above the upper bound and reports the clamped value`() {
+    val updates = mutableListOf<Float>()
+    val state = state(current = 0, bounds = 0..10, onUpdate = { updates += it })
+
+    runBlocking { state.snapTo(42f) }
+
+    assertEquals(10f, state.current)
+    assertEquals(listOf(10f), updates)
+  }
+
+  @Test
+  fun `snapTo clamps below the lower bound and reports the clamped value`() {
+    val updates = mutableListOf<Float>()
+    val state = state(current = 5, bounds = 2..8, onUpdate = { updates += it })
+
+    runBlocking { state.snapTo(-100f) }
+
+    assertEquals(2f, state.current)
+    assertEquals(listOf(2f), updates)
+  }
+
+  @Test
+  fun `snapTo inside the bounds passes the value through`() {
+    val updates = mutableListOf<Float>()
+    val state = state(current = 0, bounds = 0..10, onUpdate = { updates += it })
+
+    runBlocking { state.snapTo(3.5f) }
+
+    assertEquals(3.5f, state.current)
+    assertEquals(listOf(3.5f), updates)
+  }
+
+  @Test
+  fun `snapToNearest rounds down to the nearest integer`() =
+    runWithFrames {
+      val updates = mutableListOf<Float>()
+      val state = state(current = 0, bounds = 0..10, onUpdate = { updates += it })
+      state.snapTo(6.4f)
+      updates.clear()
+
+      state.snapToNearest()
+
+      assertEquals(6f, state.current)
+      assertEquals(listOf(6f), updates)
+    }
+
+  @Test
+  fun `snapToNearest rounds halves up`() =
+    runWithFrames {
+      val state = state(current = 0, bounds = 0..10)
+      state.snapTo(7.5f)
+
+      state.snapToNearest()
+
+      assertEquals(8f, state.current)
+    }
+
+  @Test
+  fun `snapToNearest never leaves the bounds when rounding a dragged value`() =
+    runWithFrames {
+      val updates = mutableListOf<Float>()
+      val state = state(current = 0, bounds = 0..10, onUpdate = { updates += it })
+      state.snapTo(9.8f)
+
+      state.snapToNearest()
+
+      assertEquals(10f, state.current)
+      assertEquals(10f, updates.last())
+    }
+
+  @Test
+  fun `animateDecayTo clamps a target past the upper bound`() =
+    runWithFrames {
+      val state = state(current = 3, bounds = 0..10)
+
+      state.animateDecayTo(99f)
+
+      assertEquals(10f, state.current)
+    }
+
+  @Test
+  fun `animateDecayTo clamps a target below the lower bound`() =
+    runWithFrames {
+      val state = state(current = 3, bounds = 0..10)
+
+      state.animateDecayTo(-40f)
+
+      assertEquals(0f, state.current)
+    }
+
+  @Test
+  fun `animateDecayTo lands on a target inside the bounds`() =
+    runWithFrames {
+      val state = state(current = 2, bounds = 0..10)
+
+      state.animateDecayTo(8f)
+
+      assertEquals(8f, state.current)
+    }
+}

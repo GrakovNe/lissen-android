@@ -461,6 +461,154 @@ class LocalCacheStorageMigrationTest {
     }
   }
 
+  @Test
+  fun migrate20To21_createsLibraryAndSeriesIndexes_usedByQueries() {
+    helper.createDatabase(TEST_DB, 20).close()
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 21, true, MIGRATION_20_21)
+
+    // the migration is only worth its name if the planner actually uses the new indexes
+    db.query("PRAGMA index_list(detailed_books)").use { cursor ->
+      val indexes = mutableSetOf<String>()
+      while (cursor.moveToNext()) {
+        indexes += cursor.getString(cursor.getColumnIndexOrThrow("name"))
+      }
+      assertTrue("libraryId index missing: $indexes", indexes.contains("index_detailed_books_libraryId"))
+      assertTrue("seriesId index missing: $indexes", indexes.contains("index_detailed_books_seriesId"))
+    }
+
+    db.execSQL(
+      """
+      INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt, libraryId, seriesId)
+      VALUES ('b1', 'Dune', 0, 0, 0, 'lib-1', 's1')
+      """.trimIndent(),
+    )
+    db.query("EXPLAIN QUERY PLAN SELECT * FROM detailed_books WHERE libraryId = 'lib-1'").use { cursor ->
+      val plan = StringBuilder()
+      while (cursor.moveToNext()) {
+        plan.append(cursor.getString(cursor.getColumnIndexOrThrow("detail")))
+      }
+      assertTrue("planner ignores the new index: $plan", plan.contains("index_detailed_books_libraryId"))
+    }
+  }
+
+  @Test
+  fun migrateFrom20To26_carriesBooksThroughEveryStep() {
+    helper.createDatabase(TEST_DB, 20).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt, libraryId)
+        VALUES
+          ('book-1', 'Dune', 100, 0, 0, 'lib-1'),
+          ('book-2', 'Emma', 200, 0, 0, 'lib-1')
+        """.trimIndent(),
+      )
+      db.execSQL(
+        """
+        INSERT INTO book_chapters (id, bookChapterId, duration, start, end, title, bookId, isCached)
+        VALUES
+          (1, 'c1', 50.0, 0.0, 50.0, 'One', 'book-1', 0),
+          (2, 'c1', 50.0, 0.0, 50.0, 'One duplicate', 'book-1', 1),
+          (3, 'c2', 50.0, 50.0, 100.0, 'Two', 'book-1', 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db =
+      helper.runMigrationsAndValidate(
+        TEST_DB,
+        26,
+        true,
+        MIGRATION_20_21,
+        MIGRATION_21_22,
+        MIGRATION_22_23,
+        MIGRATION_23_24,
+        MIGRATION_24_25,
+        MIGRATION_25_26,
+      )
+
+    db.query("SELECT COUNT(*) FROM detailed_books").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(2, cursor.getInt(0))
+    }
+
+    // v21->v22 collapses the duplicate chapter and backfills the per-book index
+    db.query("SELECT id, bookChapterId, chapterIndex FROM book_chapters WHERE bookId = 'book-1' ORDER BY chapterIndex").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(2, cursor.getInt(cursor.getColumnIndexOrThrow("id")))
+      assertEquals("c1", cursor.getString(cursor.getColumnIndexOrThrow("bookChapterId")))
+      assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("chapterIndex")))
+      assertTrue(cursor.moveToNext())
+      assertEquals(3, cursor.getInt(cursor.getColumnIndexOrThrow("id")))
+      assertEquals(1, cursor.getInt(cursor.getColumnIndexOrThrow("chapterIndex")))
+      assertTrue(!cursor.moveToNext())
+    }
+
+    // the tables created along the chain accept the app's writes
+    db.execSQL("PRAGMA foreign_keys = ON")
+    db.execSQL("INSERT INTO book_genres (bookId, genre) VALUES ('book-1', 'Sci-Fi')")
+    db.execSQL(
+      """
+      INSERT INTO book_playlists (bookId, playlistId, playlistName, episodeId, position)
+      VALUES ('book-1', 'pl-1', 'Favourites', 'c1', 0)
+      """.trimIndent(),
+    )
+    db.query("SELECT genre FROM book_genres WHERE bookId = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals("Sci-Fi", cursor.getString(0))
+    }
+    db.query("SELECT playlistName FROM book_playlists WHERE bookId = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals("Favourites", cursor.getString(0))
+    }
+
+    // deleting the book cascades through the tables created by the chain
+    db.execSQL("DELETE FROM detailed_books WHERE id = 'book-1'")
+    db.query("SELECT COUNT(*) FROM book_genres WHERE bookId = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(0, cursor.getInt(0))
+    }
+    db.query("SELECT COUNT(*) FROM book_playlists WHERE bookId = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(0, cursor.getInt(0))
+    }
+  }
+
+  @Test
+  fun migrateFrom20To26_keepsOfflineSessionsWritable() {
+    helper.createDatabase(TEST_DB, 20).close()
+
+    val db =
+      helper.runMigrationsAndValidate(
+        TEST_DB,
+        26,
+        true,
+        MIGRATION_20_21,
+        MIGRATION_21_22,
+        MIGRATION_22_23,
+        MIGRATION_23_24,
+        MIGRATION_24_25,
+        MIGRATION_25_26,
+      )
+
+    db.execSQL(
+      """
+      INSERT INTO offline_playback_session (
+        id, libraryItemId, episodeId, libraryType,
+        displayTitle, displayAuthor, duration, startTime, currentTime, timeListening,
+        startedAt, updatedAt
+      )
+      VALUES ('s1', 'book-1', 'c1', 'PODCAST', 'Show', 'Author', 600.0, 0.0, 120.0, 30.0, 1, 2)
+      """.trimIndent(),
+    )
+
+    db.query("SELECT libraryType, currentTime FROM offline_playback_session WHERE id = 's1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals("PODCAST", cursor.getString(cursor.getColumnIndexOrThrow("libraryType")))
+      assertEquals(120.0, cursor.getDouble(cursor.getColumnIndexOrThrow("currentTime")), 0.0)
+    }
+  }
+
   companion object {
     private const val TEST_DB = "local-cache-migration-test"
   }
