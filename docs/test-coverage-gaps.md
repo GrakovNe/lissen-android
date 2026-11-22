@@ -90,6 +90,10 @@ Integration (`app/src/androidTest`):
   nothing — the forward test then walks into chapter 3 on its own and fails the seek assertion,
   the backward test waits for chapter 0 until it times out, and the wrap test ends on index 3.
 
+  Every player read also has to happen on the main thread — `onMain { ... }` or `awaitOnMain`,
+  never inline in a test body — or ExoPlayer throws "Player is accessed on the wrong thread".
+  `discontinuities` is a `CopyOnWriteArrayList` and is safe to read from the test thread.
+
   One behaviour is asserted as-is rather than as-specified: when the search wraps around the
   queue, the service seeks to the wrapped chapter *and then* pauses, so the listener ends up
   paused at the start of the book instead of where they stopped. That may well be wrong —

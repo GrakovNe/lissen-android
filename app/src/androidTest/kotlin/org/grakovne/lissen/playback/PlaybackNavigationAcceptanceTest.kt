@@ -96,7 +96,9 @@ class PlaybackNavigationAcceptanceTest : RealPlayerTest() {
     }
 
     awaitOnMain("the step to land past the missing chapter") { player.currentMediaItemIndex == 3 }
-    assertTrue("playback must continue, the queue still has playable chapters", player.isPlaying)
+    onMain {
+      assertTrue("playback must continue, the queue still has playable chapters", player.isPlaying)
+    }
     assertTrue(
       "the service must park the listener at the start of chapter 3: $discontinuities",
       discontinuities.any { it.isSeek(from = 2, to = 3 to 0L) },
@@ -117,7 +119,9 @@ class PlaybackNavigationAcceptanceTest : RealPlayerTest() {
     }
 
     awaitOnMain("the step to land before the missing chapter") { player.currentMediaItemIndex == 0 }
-    assertTrue("playback must continue, the queue still has playable chapters", player.isPlaying)
+    onMain {
+      assertTrue("playback must continue, the queue still has playable chapters", player.isPlaying)
+    }
     assertTrue(
       "the service must park the listener at the start of chapter 0: $discontinuities",
       discontinuities.any { it.isSeek(from = 1, to = 0 to 0L) },
@@ -142,7 +146,9 @@ class PlaybackNavigationAcceptanceTest : RealPlayerTest() {
     }
 
     awaitOnMain("the player to pause") { !player.isPlaying }
-    assertEquals("the wrap search lands on the first playable chapter", 0, player.currentMediaItemIndex)
+    onMain {
+      assertEquals("the wrap search lands on the first playable chapter", 0, player.currentMediaItemIndex)
+    }
     assertTrue(
       "the service must seek the wrapped track before pausing: $discontinuities",
       discontinuities.any { it.isSeek(from = 3, to = 0 to 0L) },
