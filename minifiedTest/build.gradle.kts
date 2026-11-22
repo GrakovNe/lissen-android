@@ -5,6 +5,7 @@ plugins {
 android {
   namespace = "org.grakovne.lissen.minifiedtest"
   compileSdk = 37
+  compileSdkMinor = 1
   targetProjectPath = ":app"
   experimentalProperties["android.experimental.self-instrumenting"] = true
 

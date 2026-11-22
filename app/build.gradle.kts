@@ -71,6 +71,8 @@ ksp {
 android {
   namespace = "org.grakovne.lissen"
   compileSdk = 37
+  // Compose 1.13.0 (composeBom 2026.11.01) requires compileSdk 37.1 or later.
+  compileSdkMinor = 1
 
   // Bundle the exported Room schemas into the androidTest APK so MigrationTestHelper can load them.
   sourceSets {
