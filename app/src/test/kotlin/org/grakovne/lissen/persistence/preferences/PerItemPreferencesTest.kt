@@ -121,15 +121,9 @@ class PerItemPreferencesTest {
 
   @Test
   fun `an entry of the wrong shape is dropped, not defaulted`() {
-    putRaw(
-      rawAdapter.toJson(
-        mapOf(
-          "string" to "just a string",
-          "null" to null,
-          "good" to mapOf("seconds" to 5, "enabled" to true),
-        ),
-      ),
-    )
+    // written by hand on purpose: moshi omits null map values unless serializeNulls is on, so
+    // building this through an adapter would silently drop the null and test nothing
+    putRaw("""{"string":"just a string","null":null,"good":{"seconds":5,"enabled":true}}""")
 
     assertEquals(mapOf("good" to ItemSetting(5, true)), store.getPerItem(KEY, adapter))
   }

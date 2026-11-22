@@ -30,8 +30,8 @@ E2E suite, and unit-testing them would assert the framework, not the app.
 
 | Production code | Why it matters |
 |---|---|
-| `playback/service/PlaybackNavigationService` | Zero coverage, non-trivial branch logic: skipping unavailable tracks forward/backward, wrap-around detection, pausing at the end of the queue. Runs on a real (JVM) ExoPlayer in `app/src/test` — the same trick `RealPlayerTest` uses on-device. |
-| `content/cache/persistent/Migrations` 1→14 | The migration test starts at 14; every older migration ships untested. Plus a full 14→26 chain test so a broken link in the middle is caught. |
+| `playback/service/PlaybackNavigationService` | Zero coverage, non-trivial branch logic: skipping unavailable tracks forward/backward, wrap-around detection, pausing at the end of the queue. Needs a real ExoPlayer, so it belongs in `app/src/androidTest` alongside `RealPlayerTest` — a JVM unit test cannot drive it. |
+| `content/cache/persistent/Migrations` 14→26 | The migration test covered only single hops. A full chain test catches a broken link in the middle. (1→14 stays untested — see the note under *What was implemented*.) |
 | `playback/MediaSessionConnection` deferred actions | Deferred-action draining before connect is invisible in unit tests; needs the real session. (Left as a follow-up: requires a live `PlaybackService`, high setup cost for the value; the `DeferredActions` unit itself is already covered.) |
 
 ### E2E (minified flows with no journey)
@@ -58,6 +58,8 @@ E2E suite, and unit-testing them would assert the framework, not the app.
 Unit (`app/src/test`):
 
 - `ui/components/slider/SliderStateTest` — snapping, clamping, decay target, saver round trip.
+  The `coerceIn` inside `snapToNearest` is unreachable through the public API (`snapTo` clamps
+  first), so that test covers the rounding it performs, not the clamp.
 - `persistence/preferences/PerItemPreferencesTest` — the one-bad-entry-drops-only-that-entry
   parsing contract, empty/corrupt documents, put/get round trips.
 - `domain/ChapterAudioEndTest` — tail attachment, boundary equality with a duration that
@@ -75,16 +77,40 @@ Integration (`app/src/androidTest`):
 
 - `playback/PlaybackNavigationAcceptanceTest` — runs `PlaybackNavigationService` against a
   real ExoPlayer with a silent in-memory source: forward/backward step over an unplayable
-  chapter, stop-instead-of-wrap at the end of the playable queue, speed re-applied on resume.
+  chapter, speed re-applied on resume, and what happens when the last playable chapter steps
+  into a missing one. The queue items must carry the `chapter:<book>:<index>` media id the
+  service parses, so this scenario uses its own silence factory that reads the duration from
+  the uri — the shared `SilenceFactory` reads it from the media id and would throw.
+
+  One behaviour is asserted as-is rather than as-specified: when the search wraps around the
+  queue, the service seeks to the wrapped chapter *and then* pauses, so the listener ends up
+  paused at the start of the book instead of where they stopped. That may well be wrong —
+  pausing without seeking is the more defensible contract — but it is what the code does, and
+  the test pins it so a change is a deliberate one.
+
 - `content/cache/persistent/LocalCacheStorageMigrationTest` — added `20→21` (the libraryId /
   seriesId indexes, verified through `EXPLAIN QUERY PLAN`), a full `20→26` chain carrying
   books through every step, and an offline-session write/read after the full chain.
 
+  Migrations 1→14 are **not** testable as things stand, and this is not just missing effort:
+  `MigrationTestHelper.createDatabase(1)` needs an exported schema JSON for version 1 of the
+  current storage class, and `app/schemas/` only holds 14–26 for
+  `content.cache.persistent.LocalCacheStorage` (10–14 exist under the pre-rename
+  `content.cache.LocalCacheStorage`). Testing them means reconstructing those schemas by hand.
+  A `14→26` chain is the practical ceiling until the old schemas are recovered.
+
 E2E (`minifiedTest`):
 
 - `PlayerBookmarksDownloadsE2ETest` — bookmark create → appears → delete round trip;
-  download-current-chapter start/stop round trip; the next-chapters stepper round trip;
-  volume-boost preset round trip asserted through the settings row subtitle.
+  download-current-chapter round trip; the next-chapters stepper round trip; volume-boost
+  preset round trip asserted through the settings row subtitle.
+
+  Two traps here are worth recording for the next person. The "Current chapter" option
+  dismisses the sheet as part of requesting the download, so anything observed afterwards has
+  to reopen it — and an absence assertion must be made against an *open* sheet, otherwise it
+  only proves the sheet closed. And a small chapter can finish downloading before the sheet is
+  reopened, so the test accepts either the stop action (still running) or the clear action
+  (already finished) as proof the request took effect.
 
 Not covered here (candidates for a follow-up): the playing-queue tab journey and a true
 offline-playback journey (airplane-mode playback of a cached chapter), both of which need
@@ -95,8 +121,13 @@ device-side network control that the current E2E harness does not expose.
 - `./gradlew :app:testDebugUnitTest` — all green.
 - `./gradlew :app:lintKotlinTest :app:lintKotlinAndroidTest` — clean.
 - `./gradlew :app:compileDebugAndroidTestKotlin` and `:minifiedTest:assembleDebug` — compile
-  (no emulator in the dev sandbox; CI runs both suites).
-- Mutation spot-checks were run against the new tests to confirm each test fails when the
-  behavior breaks: the `SliderState` clamp (4 tests die), the `PerItemPreferences` parsing
-  fallback, and the `ChapterAudioEnd` boundary comparison (the duration-vs-span fixture
-  catches the `<=`→`<` slip that value-equal fixtures would miss).
+  only. **The instrumented and E2E suites were never executed here**: the dev sandbox has no
+  `/dev/kvm`, so no emulator can boot. They run on CI. A review round caught four defects in
+  these two files that a single emulator run would have caught immediately, so treat CI green
+  as the real acceptance gate for them, not the compile.
+- Mutation spot-checks were run against the unit tests to confirm each fails when the behavior
+  breaks: the `SliderState` clamp (4 tests die), the `SliderState` saver bounds, the
+  `PerItemPreferences` parsing fallback (3 tests die), and the `ChapterAudioEnd` boundary
+  comparison (the duration-vs-span fixture catches the `<=`→`<` slip that value-equal fixtures
+  would miss). The same check cannot be run against the instrumented and E2E suites without a
+  device.

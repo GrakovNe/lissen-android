@@ -1,10 +1,10 @@
 package org.grakovne.lissen.minifiedtest
 
-import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiAutomatorTestScope
+import androidx.test.uiautomator.UiObject2
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,16 +20,16 @@ class PlayerBookmarksDownloadsE2ETest {
 
     clickElement(By.text("Create bookmark"))
     setTextOf(By.clazz("android.widget.EditText"), "E2E bookmark")
-    // the sheet submits through the trailing add-icon of the editing row; the IME action
-    // would work too but is not reliably reachable from uiautomator
-    rightmostButtonAlignedWith(By.clazz("android.widget.EditText")).click()
+    // the row submits through its trailing add-icon; the IME action would work too but is not
+    // reliably reachable from uiautomator
+    rightmostButtonOnRowOf(By.text("Create bookmark")).click()
 
     assertTrue(
       "the created bookmark should appear in the sheet",
       elementExists(By.text("E2E bookmark"), 15_000),
     )
 
-    rightmostButtonAlignedWith(By.text("E2E bookmark")).click()
+    rightmostButtonOnRowOf(By.text("E2E bookmark")).click()
 
     waitUntilAbsent(By.text("E2E bookmark"))
   }
@@ -39,13 +39,18 @@ class PlayerBookmarksDownloadsE2ETest {
     openFirstBook()
     clickUntil(By.text("Downloads"), By.text("Download book"))
     clickElement(By.text("Current chapter"))
+    // the option dismisses the sheet, so nothing can be observed until it is reopened
 
-    // a tiny chapter may finish before the sheet is reopened, so either the stop action
-    // (still downloading) or the clear action (finished) proves the request took effect
-    val outcome = waitForAnyText("Stop downloading", "Clear downloaded chapters")
+    // a tiny chapter may finish before the sheet is reopened, so either the stop action (still
+    // downloading) or the clear action (finished) proves the request took effect
     clickUntil(By.text("Downloads"), By.text("Download book"))
+    val outcome = waitForAnyTextInSheet("Stop downloading", "Clear downloaded chapters")
     scrollUntilVisible(By.text(outcome))
     clickElement(By.text(outcome))
+
+    // reopened on purpose: the option must be gone from an OPEN sheet, otherwise its absence
+    // would only prove the sheet closed
+    clickUntil(By.text("Downloads"), By.text("Download book"))
     waitUntilAbsent(By.text(outcome))
   }
 
@@ -55,10 +60,21 @@ class PlayerBookmarksDownloadsE2ETest {
     clickUntil(By.text("Downloads"), By.text("Download book"))
     scrollUntilVisible(By.desc("Increase count"))
 
+    // either direction proves the stepper moves the count; which one is enabled depends on how
+    // many chapters the book has left, so try up first and fall back to down
     val before = stepperCount()
     clickElement(By.desc("Increase count"))
-    assertEquals("the stepper should show one more chapter", before + 1, stepperCount())
-    clickElement(By.desc("Decrease count"))
+    val afterUp = stepperCount()
+
+    if (afterUp == before + 1) {
+      clickElement(By.desc("Decrease count"))
+    } else {
+      assertEquals("increase should move the count by one, or be disabled at the maximum", before, afterUp)
+      clickElement(By.desc("Decrease count"))
+      assertEquals("the stepper should show one fewer chapter", before - 1, stepperCount())
+      clickElement(By.desc("Increase count"))
+    }
+
     assertEquals("the stepper should be back at the original count", before, stepperCount())
   }
 
@@ -84,78 +100,95 @@ class PlayerBookmarksDownloadsE2ETest {
     assertEquals("the row should be disabled again", "Disabled", subtitleUnder("Boosted volume"))
   }
 
-  /** The rightmost button whose center falls inside the bounds of the first [reference] node. */
-  private fun UiAutomatorTestScope.rightmostButtonAlignedWith(reference: BySelector) =
-    alignedButtons(reference).maxByOrNull { it.visibleBounds.centerX() }
-      ?: throw AssertionError("no button aligned with $reference")
-
-  private fun UiAutomatorTestScope.alignedButtons(reference: BySelector): List<androidx.test.uiautomator.UiObject2> {
+  /**
+   * Buttons that vertically overlap the first [reference] node, i.e. sit on its row. Overlap
+   * rather than a fixed pixel tolerance: it holds at any display density and cannot bleed into
+   * the neighbouring row.
+   */
+  private fun UiAutomatorTestScope.buttonsOnRowOf(reference: BySelector): List<UiObject2> {
     val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
     while (System.currentTimeMillis() < deadline) {
       val node = device.findObjects(reference).firstOrNull()
       if (node != null) {
-        val bounds = node.visibleBounds
-        val buttons =
+        val band = node.visibleBounds
+        val row =
           device
             .findObjects(By.clazz("android.widget.Button"))
-            .filter { bounds.contains(it.visibleBounds.centerX(), it.visibleBounds.centerY()) }
-        if (buttons.isNotEmpty()) return buttons
+            .filter { it.visibleBounds.top < band.bottom && band.top < it.visibleBounds.bottom }
+        if (row.isNotEmpty()) return row
       }
       Thread.sleep(300)
     }
-    throw AssertionError("no button aligned with $reference appeared within ${DEFAULT_TIMEOUT_MS}ms")
+    throw AssertionError("no button on the row of $reference appeared within ${DEFAULT_TIMEOUT_MS}ms")
   }
+
+  private fun UiAutomatorTestScope.rightmostButtonOnRowOf(reference: BySelector) =
+    buttonsOnRowOf(reference).maxByOrNull { it.visibleBounds.centerX() }
+      ?: throw AssertionError("no button on the row of $reference")
 
   private fun UiAutomatorTestScope.stepperCount(): Int {
-    val row = device.findObjects(By.text("Next chapters")).first().visibleBounds
-    val numbers =
-      device
-        .findObjects(By.clazz("android.widget.EditText"))
-        .filter { row.contains(it.visibleBounds.centerX(), it.visibleBounds.centerY()) }
-        .mapNotNull { it.text.toString().trim().toIntOrNull() }
-    assertTrue("the stepper should show a count on the Next chapters row", numbers.isNotEmpty())
-    return numbers.first()
+    val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
+    while (System.currentTimeMillis() < deadline) {
+      val row = device.findObjects(By.text("Next chapters")).firstOrNull()
+      if (row != null) {
+        val band = row.visibleBounds
+        // the count is a plain Text node between the two stepper buttons (it only becomes an
+        // EditText while being typed into); the row label is text too, so keep only what parses
+        val numbers =
+          device
+            .findObjects(By.clazz("android.widget.TextView"))
+            .filter { it.visibleBounds.top < band.bottom && band.top < it.visibleBounds.bottom }
+            .mapNotNull { it.text?.trim()?.toIntOrNull() }
+        if (numbers.isNotEmpty()) return numbers.first()
+      }
+      Thread.sleep(300)
+    }
+    throw AssertionError("the Next chapters row never showed a numeric count")
   }
 
-  /** The text of the line directly under the row titled [title]. */
+  /** The text of the line directly under the row titled [title], matched by its left edge. */
   private fun UiAutomatorTestScope.subtitleUnder(title: String): String {
     val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
     while (System.currentTimeMillis() < deadline) {
       val heading = device.findObjects(By.text(title)).firstOrNull()
       if (heading != null) {
         val head = heading.visibleBounds
-        val band = Rect(head.left, head.bottom, head.right, head.bottom + 120)
-        val sub =
+        // the supporting line shares the heading's left padding, so match on that and take the
+        // closest line below it rather than any text that happens to sit lower on screen
+        val leftTolerance = (head.height() / 4).coerceAtLeast(8)
+        val below =
           device
             .findObjects(By.text(Pattern.compile(".+")))
-            .firstOrNull { band.contains(it.visibleBounds.centerX(), it.visibleBounds.centerY()) }
-        if (sub != null) return sub.text.toString()
+            .filter { kotlin.math.abs(it.visibleBounds.left - head.left) <= leftTolerance }
+            .filter { it.visibleBounds.top >= head.bottom - 4 }
+            .minByOrNull { it.visibleBounds.top }
+        if (below != null) return below.text.toString()
       }
       Thread.sleep(300)
     }
     throw AssertionError("no subtitle line found under '$title'")
   }
 
-  private fun UiAutomatorTestScope.waitForAnyText(vararg texts: String): String {
+  /**
+   * Waits for one of [texts] while the sheet is open. The download option dismisses the sheet,
+   * so the caller must reopen it first; a text that never appears stays a failure rather than
+   * silently passing.
+   */
+  private fun UiAutomatorTestScope.waitForAnyTextInSheet(vararg texts: String): String {
     val deadline = System.currentTimeMillis() + 60_000
     while (System.currentTimeMillis() < deadline) {
       texts.firstOrNull { elementExists(By.text(it), 1_000) }?.let { return it }
+      if (!elementExists(By.text("Download book"), 1_000)) {
+        throw AssertionError("the downloads sheet closed while waiting for ${texts.toList()}")
+      }
     }
     throw AssertionError("none of ${texts.toList()} appeared within 60s")
   }
 
   private fun UiAutomatorTestScope.openSettings() {
-    for (attempt in 0 until 3) {
-      if (elementExists(By.res("settingsButton"))) {
-        clickElement(By.res("settingsButton"))
-      } else if (elementExists(By.desc("Settings"))) {
-        clickElement(By.desc("Settings"))
-      } else {
-        device.pressBack()
-      }
-      if (elementExists(By.text("Connection"), 10_000)) return
-    }
-    waitForElement(By.text("Connection"))
+    clickUntil(By.desc("Menu"), By.text("Application settings"))
+    clickElement(By.text("Application settings"))
+    waitForElement(By.res("settingsScreen"))
   }
 
   private fun UiAutomatorTestScope.tapPresetButton(text: String) {
@@ -176,4 +209,5 @@ class PlayerBookmarksDownloadsE2ETest {
     }
     throw AssertionError("no preset button with caption '$text' found")
   }
+
 }
