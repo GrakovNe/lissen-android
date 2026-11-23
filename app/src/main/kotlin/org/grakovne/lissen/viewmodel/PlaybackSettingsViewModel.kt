@@ -54,6 +54,9 @@ class PlaybackSettingsViewModel
     val softwareCodecsEnabled: StateFlow<Boolean> = _softwareCodecsEnabled.asStateFlow()
     val softwareCodecsEnabledOnStart: Boolean = playback.getSoftwareCodecsEnabled()
 
+    private val _syncProgressOnOpen = MutableStateFlow(playback.getSyncProgressOnOpen())
+    val syncProgressOnOpen: StateFlow<Boolean> = _syncProgressOnOpen.asStateFlow()
+
     private val _audioFocusLossPolicy = MutableStateFlow(playback.getAudioFocusLossPolicy())
     val audioFocusLossPolicy: StateFlow<AudioFocusLossPolicy> = _audioFocusLossPolicy.asStateFlow()
 
@@ -120,6 +123,12 @@ class PlaybackSettingsViewModel
 
       val current = playback.getSleepTimerSettings()
       playback.saveSleepTimerSettings(current.copy(fadeEnabled = seconds != null, fadeSeconds = seconds ?: current.fadeSeconds))
+    }
+
+    fun preferSyncProgressOnOpen(value: Boolean) {
+      Timber.d("User action: preferSyncProgressOnOpen $value")
+      _syncProgressOnOpen.value = value
+      playback.saveSyncProgressOnOpen(value)
     }
 
     fun preferSoftwareCodecsEnabled(value: Boolean) {

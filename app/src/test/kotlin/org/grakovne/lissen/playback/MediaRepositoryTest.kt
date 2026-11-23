@@ -3,6 +3,7 @@ package org.grakovne.lissen.playback
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -643,6 +644,71 @@ class MediaRepositoryTest {
         repository.refreshTimer()
 
         assertEquals(PlaybackCommand.SetTimer(20.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+      }
+  }
+
+  @Nested
+  inner class RefreshPlayingProgress {
+    @BeforeEach
+    fun enable() {
+      every { preferences.getSyncProgressOnOpen() } returns true
+    }
+
+    @Test
+    fun `a paused book moves to the newer position from the server`() =
+      runTest {
+        playing(podcast(progress = progress(10.0)))
+        coEvery { mediaChannel.fetchBook("podcast", any()) } returns OperationResult.Success(podcast(progress = progress(100.0)))
+
+        repository.refreshPlayingProgress()
+
+        assertEquals(listOf("seekTo(2, 30000)"), player.calls)
+        assertEquals(100.0, repository.totalPosition.value)
+      }
+
+    @Test
+    fun `a playing book is left alone`() =
+      runTest {
+        playing(podcast(progress = progress(10.0)), playing = true)
+
+        repository.refreshPlayingProgress()
+
+        coVerify(exactly = 0) { mediaChannel.fetchBook(any(), any()) }
+        assertTrue(player.calls.none { it.startsWith("seekTo") })
+      }
+
+    @Test
+    fun `a position within the threshold does not seek`() =
+      runTest {
+        playing(podcast(progress = progress(10.0)))
+        coEvery { mediaChannel.fetchBook("podcast", any()) } returns OperationResult.Success(podcast(progress = progress(11.0)))
+
+        repository.refreshPlayingProgress()
+
+        assertTrue(player.calls.none { it.startsWith("seekTo") })
+      }
+
+    @Test
+    fun `a failed fetch keeps the current position`() =
+      runTest {
+        playing(podcast(progress = progress(10.0)))
+        coEvery { mediaChannel.fetchBook("podcast", any()) } returns OperationResult.Error(OperationError.NetworkError)
+
+        repository.refreshPlayingProgress()
+
+        assertTrue(player.calls.none { it.startsWith("seekTo") })
+        assertEquals(10.0, repository.totalPosition.value)
+      }
+
+    @Test
+    fun `nothing is fetched when the option is disabled`() =
+      runTest {
+        every { preferences.getSyncProgressOnOpen() } returns false
+        playing(podcast(progress = progress(10.0)))
+
+        repository.refreshPlayingProgress()
+
+        coVerify(exactly = 0) { mediaChannel.fetchBook(any(), any()) }
       }
   }
 }

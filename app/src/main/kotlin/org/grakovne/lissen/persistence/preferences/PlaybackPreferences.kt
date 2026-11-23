@@ -51,6 +51,10 @@ class PlaybackPreferences
 
     fun saveSoftwareCodecsEnabled(value: Boolean) = store.putBoolean(KEY_SOFTWARE_CODECS, value)
 
+    fun getSyncProgressOnOpen(): Boolean = store.getBoolean(KEY_SYNC_PROGRESS_ON_OPEN, true)
+
+    fun saveSyncProgressOnOpen(value: Boolean) = store.putBoolean(KEY_SYNC_PROGRESS_ON_OPEN, value)
+
     fun getAudioFocusLossPolicy(): AudioFocusLossPolicy =
       store
         .getString(KEY_AUDIO_FOCUS_LOSS_POLICY)
@@ -242,6 +246,7 @@ class PlaybackPreferences
       private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
       private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
       private const val KEY_SOFTWARE_CODECS = "software_codecs"
+      private const val KEY_SYNC_PROGRESS_ON_OPEN = "sync_progress_on_open"
       private const val KEY_AUDIO_FOCUS_LOSS_POLICY = "audio_focus_loss_policy"
       private const val KEY_EQUALIZER = "equalizer"
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"

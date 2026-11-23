@@ -23,6 +23,7 @@ data class SettingsBackup(
   val equalizer: EqualizerSettings? = null,
   val audioFocusLossPolicy: String? = null,
   val softwareCodecsEnabled: Boolean? = null,
+  val syncProgressOnOpen: Boolean? = null,
   val hideCompleted: Boolean? = null,
   val libraryGrouping: String? = null,
   val libraryGroupings: Map<String, String>? = null,

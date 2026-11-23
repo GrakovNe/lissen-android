@@ -148,6 +148,8 @@
     <string name="settings_screen_material_you_description">Passe die Farben der App an dein Hintergrundbild an</string>
     <string name="settings_screen_software_codecs_enabled_title">Software-Decodierung erzwingen</string>
     <string name="settings_screen_software_codecs_enabled_description">Verwende Software-Codecs für die Audiowiedergabe</string>
+    <string name="settings_screen_sync_progress_on_open_title">Fortschritt beim Öffnen abgleichen</string>
+    <string name="settings_screen_sync_progress_on_open_description">Position vom Server übernehmen, wenn die App mit einem pausierten Buch geöffnet wird, z. B. nach dem Hören auf einem anderen Gerät</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_title">Starte die App neu, um die neuen Codecs zu verwenden</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Neustart</string>
     <string name="codes_not_supported_warning_toast">Audioformat wird nicht unterstützt</string>
