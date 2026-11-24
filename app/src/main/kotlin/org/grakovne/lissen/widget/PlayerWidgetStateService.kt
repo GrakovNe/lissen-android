@@ -13,11 +13,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.widget.cover.PlayerCoverWidget
 import org.grakovne.lissen.widget.state.PlayerStateWidget
 import timber.log.Timber
@@ -33,6 +36,7 @@ class PlayerWidgetStateService
     @param:ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
+    private val preferences: PlaybackPreferences,
   ) : RunningComponent {
     private val scope =
       CoroutineScope(
@@ -48,25 +52,41 @@ class PlayerWidgetStateService
           mediaRepository.playingBook,
           mediaRepository.isPlaying,
           mediaRepository.currentChapterIndex,
-        ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int ->
-          val chapterTitle = provideChapterTitle(playingItem, chapterIndex)
-
-          val maybeCover =
-            playingItem
-              ?.id
-              ?.let { provideCover(it) }
-
-          PlayingItemState(
-            id = playingItem?.id ?: "",
-            title = playingItem?.title ?: "",
-            chapterTitle = chapterTitle,
-            isPlaying = isPlaying,
-            coverFile = maybeCover,
-          )
-        }.collect { playingItemState ->
-          updatePlayingItem(playingItemState)
-        }
+          preferences.lastPlayingItemFlow,
+        ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int, lastPlayingItem: DetailedItem? ->
+          provideState(playingItem, isPlaying, chapterIndex, lastPlayingItem)
+        }.distinctUntilChanged()
+          .collect { playingItemState ->
+            updatePlayingItem(playingItemState)
+          }
       }
+    }
+
+    /**
+     * Nothing is loaded after a cold start until the app or the session restores a book, so the widget
+     * shows the last played book instead of going blank. Playing it resumes through the media session.
+     */
+    internal suspend fun provideState(
+      playingItem: DetailedItem?,
+      isPlaying: Boolean,
+      chapterIndex: Int,
+      lastPlayingItem: DetailedItem?,
+    ): PlayingItemState {
+      val shownItem = playingItem ?: lastPlayingItem
+
+      val shownChapterIndex =
+        when (playingItem) {
+          null -> lastPlayingItem?.let { calculateChapterIndex(it, it.progress?.currentTime ?: 0.0) }
+          else -> chapterIndex
+        }
+
+      return PlayingItemState(
+        id = shownItem?.id ?: "",
+        title = shownItem?.title ?: "",
+        chapterTitle = provideChapterTitle(shownItem, shownChapterIndex),
+        isPlaying = playingItem != null && isPlaying,
+        coverFile = shownItem?.id?.let { provideCover(it) },
+      )
     }
 
     @Volatile

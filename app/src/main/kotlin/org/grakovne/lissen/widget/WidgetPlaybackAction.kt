@@ -8,6 +8,19 @@ suspend fun safelyRun(
   playingItemId: String,
   context: Context,
   action: (WidgetPlaybackController) -> Unit,
+) = safelyUse(context, "$action on $playingItemId") { controller ->
+  controller.runForItem(playingItemId) { action(controller) }
+}
+
+suspend fun safelyTogglePlayback(
+  playingItemId: String,
+  context: Context,
+) = safelyUse(context, "play/pause toggle on $playingItemId") { it.togglePlayback(playingItemId) }
+
+private suspend fun safelyUse(
+  context: Context,
+  description: String,
+  block: suspend (WidgetPlaybackController) -> Unit,
 ) {
   try {
     val playbackController =
@@ -17,8 +30,8 @@ suspend fun safelyRun(
           entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
         ).widgetPlaybackController()
 
-    playbackController.runForItem(playingItemId) { action(playbackController) }
+    block(playbackController)
   } catch (ex: Exception) {
-    Timber.w("Unable to run $action on $playingItemId due to $ex")
+    Timber.w("Unable to run $description due to $ex")
   }
 }

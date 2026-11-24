@@ -48,6 +48,7 @@ import org.grakovne.lissen.ui.theme.MediumBackground
 import org.grakovne.lissen.widget.bitmapFromFile
 import org.grakovne.lissen.widget.bitmapFromResource
 import org.grakovne.lissen.widget.safelyRun
+import org.grakovne.lissen.widget.safelyTogglePlayback
 import org.grakovne.lissen.widget.state.PlayerStateWidget.Companion.bookIdKey
 import timber.log.Timber
 import java.io.File
@@ -275,10 +276,10 @@ class PlayToggleActionCallback : ActionCallback {
     glanceId: GlanceId,
     parameters: ActionParameters,
   ) {
-    safelyRun(
+    safelyTogglePlayback(
       playingItemId = parameters[bookIdKey] ?: return,
       context = context,
-    ) { it.togglePlayPause() }
+    )
   }
 }
 
